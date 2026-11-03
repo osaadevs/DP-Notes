@@ -186,8 +186,8 @@ System.out.println(p1 == p2);    <span class="c">// true</span></pre>
     <p class="small"><b>A Singleton alone does not give exclusive access.</b> It only guarantees there is <b>one</b> <code>PayrollEngine</code> object, and therefore one lock that every caller shares. The exclusion comes from that lock. Two behaviours are possible, and the question decides which: <b>reject immediately</b> (<code>tryLock()</code> returns false at once, "payroll is running, try later") or <b>wait</b> (<code>lock()</code> blocks until the current run finishes). Ownership is released in <code>finally</code>, so an exception during the calculation can't leave the system locked forever.</p>
     <div class="g2" style="align-items:start">
 <pre class="code"><span class="k">public final class</span> PayrollEngine {
-  <span class="k">private static final</span> PayrollEngine INSTANCE =
-      <span class="k">new</span> PayrollEngine();
+  <span class="k">private static final</span> PayrollEngine
+      INSTANCE = <span class="k">new</span> PayrollEngine();
   <span class="k">private final</span> ReentrantLock lock =
       <span class="k">new</span> ReentrantLock(); <span class="c">// j.u.concurrent</span>
   <span class="k">private</span> PayrollEngine() { }
@@ -201,7 +201,7 @@ System.out.println(p1 == p2);    <span class="c">// true</span></pre>
     <span class="k">finally</span> { lock.unlock(); } <span class="c">// release</span>
   }</pre>
 <pre class="code">  <span class="c">// option 2: wait for the run to end</span>
-  <span class="k">public void</span> runPayrollWhenFree(String user) {
+  <span class="k">public void</span> runWhenFree(String user) {
     lock.lock();
     <span class="k">try</span> { calculateAll(user); }
     <span class="k">finally</span> { lock.unlock(); }
@@ -235,11 +235,11 @@ System.out.println(p1 == p2);    <span class="c">// true</span></pre>
   <div class="g2">
     <div class="panel">
       <h2>One global tax calculator <span class="r"><span class="y">2025</span> Q1.5, 4m</span></h2>
-      <p class="small">Each checkout counter adds up the items' <code>getCost()</code> (the Decorator gives the final item prices). In the Payment state the kiosk calls <code>TaxCalculator.getInstance().calculateTax(subtotal)</code>. Every counter gets the same instance, so they all use one rate and one set of rules. Change the rate once and it changes everywhere.</p>
+      <p class="small">Each checkout counter adds up the items' <code>getCost()</code> (the Decorator gives the final item prices). When <code>checkout()</code> moves the kiosk into the Payment state, it calls <code>TaxCalculator.getInstance().calculateTax(subtotal)</code> and adds the result (full class: "State: kiosk in full"). Every counter gets the same instance, so they all use one rate and one set of rules. Change the rate once and it changes everywhere.</p>
     </div>
     <div class="panel">
       <h2>OrderID generator <span class="r"><span class="y">2025</span> Q4, 5m</span></h2>
-      <p class="small">Use an eager Singleton with an <code>AtomicLong</code> counter, so two threads asking at the same moment never get the same ID. The first step of the template method <code>handlePayment()</code> is <code>OrderIdGenerator.getInstance().nextId()</code>, then validate → process → send receipt. All payment types share the one generator.</p>
+      <p class="small">Use an eager Singleton with an <code>AtomicLong</code> counter, so two threads asking at the same moment never get the same ID. Once the order passes its checks, <code>OrderService.placeOrder()</code> calls <code>OrderIdGenerator.getInstance().nextId()</code> and stores the ID on the order; then <code>handlePayment()</code> runs validate → process → send receipt, and the receipt shows that ID. All payment types share the one generator (full flow: tab 13, 2025 Q4).</p>
 <pre class="code" style="margin-top:1.5mm"><span class="k">public final class</span> OrderIdGenerator {
   <span class="k">private static final</span> OrderIdGenerator
       INSTANCE = <span class="k">new</span> OrderIdGenerator();
@@ -278,28 +278,6 @@ tax.rate=0.06
     </div>
   </div>
 
-  <div class="g2">
-    <div class="panel">
-      <h2>Often combined with</h2>
-      <table class="tight small">
-        <tr><td style="width:26%"><b>Factory</b></td><td>The factory picks the DB type; the connection manager is a Singleton.</td></tr>
-        <tr><td><b>Facade</b></td><td>Only one facade is needed, so make it a Singleton.</td></tr>
-        <tr><td><b>State</b></td><td>State objects with no data can be shared Singletons.</td></tr>
-        <tr><td><b>Template</b></td><td>The first step of the template method gets an ID from a Singleton.</td></tr>
-      </table>
-    </div>
-    <div class="panel">
-      <h2>Mistakes that lose marks</h2>
-      <ul class="small">
-        <li>Leaving the constructor public.</li>
-        <li>Making <code>getInstance()</code> non-static.</li>
-        <li>Not underlining static members in the class diagram.</li>
-        <li>Saying the basic lazy version is thread-safe.</li>
-        <li>Using a Singleton when the question says "maximum N" (that's a Multiton).</li>
-        <li>Calling it a structural pattern. It's creational.</li>
-      </ul>
-    </div>
-  </div>
 </div>
 <div class="foot"><span>01 Singleton · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
@@ -317,25 +295,30 @@ tax.rate=0.06
     <h2>Fantasy cricket with an "extended Singleton" <span class="r"><span class="y">2023</span> Q4.1, 5m</span></h2>
     <p class="small">Use a <b>Multiton</b>: a Singleton that allows a fixed maximum number of objects per key. Player objects can only be created through <code>addPlayer(role, name)</code>, which counts how many of each role exist and refuses once the limit is reached: 5 batsmen, 5 bowlers, 1 wicketkeeper. The <b>captain</b> is a plain Singleton, because there must be exactly one; appointing a new captain replaces the old one instead of adding a second.</p>
     <div class="g2" style="align-items:start">
-<pre class="code"><span class="k">public final class</span> Player {
-  <span class="k">private static final</span> Map&lt;String,Integer&gt; LIMIT =
-    Map.of(<span class="s">"BATSMAN"</span>,5, <span class="s">"BOWLER"</span>,5, <span class="s">"KEEPER"</span>,1);
-  <span class="k">private static final</span> Map&lt;String,List&lt;Player&gt;&gt; team
-    = <span class="k">new</span> HashMap&lt;&gt;();
-  <span class="k">private final</span> String role, name;
-  <span class="k">private</span> Player(String role, String name) {
-    <span class="k">this</span>.role = role; <span class="k">this</span>.name = name; }
+<pre class="code" data-j>
+public final class Player {
+  private static final Map<String,Integer>
+    LIMIT = Map.of("BATSMAN", 5,
+                "BOWLER", 5, "KEEPER", 1);
+  private static final
+    Map<String,List<Player>> team =
+      new HashMap<>();
+  private final String role, name;
+  private Player(String role, String name) {
+    this.role = role; this.name = name; }
 
-  <span class="k">public static synchronized</span> Player addPlayer(
-      String role, String name) {
-    <span class="k">if</span> (!LIMIT.containsKey(role))
-      <span class="k">throw new</span> IllegalArgumentException(role);
-    team.putIfAbsent(role, <span class="k">new</span> ArrayList&lt;&gt;());
-    <span class="k">if</span> (team.get(role).size() &gt;= LIMIT.get(role))
-      <span class="k">throw new</span> IllegalStateException(<span class="s">"Max reached"</span>);
-    Player p = <span class="k">new</span> Player(role, name);
+  public static synchronized Player
+      addPlayer(String role, String name) {
+    if (!LIMIT.containsKey(role))
+      throw new IllegalArgumentException();
+    team.putIfAbsent(role,new ArrayList<>());
+    if (team.get(role).size()
+          >= LIMIT.get(role))
+      throw new IllegalStateException(
+          "Max reached for " + role);
+    Player p = new Player(role, name);
     team.get(role).add(p);
-    <span class="k">return</span> p;
+    return p;
   }
 }</pre>
 <pre class="code"><span class="k">public final class</span> Captain {
@@ -369,7 +352,164 @@ tax.rate=0.06
 <div class="foot"><span>01 Singleton · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 01 SINGLETON : lecture examples (added) ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: lecture examples</h1><div class="lede">The lecture's Multiton printer code, the Quiz 2 connection manager in full, and the "trace the output" check.</div></div>
+    <div class="meta">Creational<br><b>Examples</b></div>
+  </header>
+  <div class="panel">
+    <h2>Multiton: exactly 3 printers, handed out in turn <span class="r">lecture "extending Singleton"</span></h2>
+    <div class="gc">
+<pre class="code" data-j>
+public final class PrinterManager {
+  private static final int MAX_PRINTERS = 3;
+  private static final List<PrinterManager>
+      printers = new ArrayList<>();
+  private static int nextPrinter = 0;
+  private final int number;           // 1, 2 or 3
+
+  private PrinterManager(int number) {
+    this.number = number; }
+
+  public static synchronized PrinterManager
+      getPrinter() {
+    if (printers.size() < MAX_PRINTERS)  // create
+      printers.add(new PrinterManager(
+          printers.size() + 1));
+    PrinterManager p = printers.get(nextPrinter);
+    nextPrinter = (nextPrinter + 1) % MAX_PRINTERS;
+    return p;                            // round robin
+  }
+  public void print(String job) {
+    System.out.println("Printer " + number
+        + ": " + job); }
+}</pre>
+      <div class="small">
+        <p><b>Calls:</b> p1 → Printer 1 (created), p2 → Printer 2 (created), p3 → Printer 3 (created), p4 → Printer 1 again. Never more than 3 objects exist.</p>
+        <p>The slide's first version (<code>getInstance()</code> returning <code>instances.get(size − 1)</code>) also stops at 3, but once full it always returns Printer 3. The round-robin version above spreads the jobs over all three. <code>synchronized</code> is added so two threads can't both see "size &lt; 3" and create a fourth.</p>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>One DB connection, in full <span class="r"><span class="y q">Quiz 2</span> Q4</span></h2>
+    <div class="gc">
+<pre class="code" data-j>
+public final class DatabaseConnectionManager {
+  private static DatabaseConnectionManager instance;
+  private final Connection connection; // java.sql
+
+  private DatabaseConnectionManager()
+      throws SQLException {
+    connection = DriverManager.getConnection(
+        DbConfig.URL, DbConfig.USER, DbConfig.PASS);
+  }
+  public static synchronized
+      DatabaseConnectionManager getInstance()
+      throws SQLException {
+    if (instance == null)
+      instance = new DatabaseConnectionManager();
+    return instance;
+  }
+  public Connection getConnection() {
+    return connection; }
+}
+// STUB: settings for the external DB server
+final class DbConfig {
+  static final String URL =
+      "jdbc:mysql://localhost:3306/shop";
+  static final String USER = "app", PASS = "secret";
+}</pre>
+      <div class="small">
+        <p><b>How it answers the quiz:</b> the constructor is private, so only <code>getInstance()</code> can create the manager, and it does so once. The manager opens the connection in its constructor, so there is exactly one live connection, and every caller receives it through <code>getConnection()</code>.</p>
+        <p><code>synchronized</code> stops two threads creating two managers (and two connections) at the same moment.</p>
+        <p class="tiny">Every caller shares one connection, so database calls queue behind each other. That is what the quiz asked for ("only one active"); a busy system would use a connection <b>pool</b> instead.</p>
+        <p class="tiny"><code>DbConfig</code> is a stub: the URL, user and password stand for the real database server's settings.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton · examples</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: checks and combinations</h1><div class="lede">Predicting the output, one more thread-safe version, how it combines with other patterns, and mistakes to avoid.</div></div>
+    <div class="meta">Creational<br><b>Examples</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+    <div class="stack">
+      <div class="panel">
+        <h2>Trace the output <span class="r">lecture check</span></h2>
+<pre class="code" data-j>
+Singleton s1 = Singleton.getInstance();
+Singleton s2 = Singleton.getInstance();
+System.out.println(s1 == s2);   // true</pre>
+        <p class="small mt">First call: <code>instance</code> is null, so one object is created and stored. Second call: <code>instance</code> is not null, so the same object is returned. <code>==</code> compares references, and both point to the same object, so it prints <b>true</b>.</p>
+        <p class="small">If the constructor were <b>public</b>, <code>new Singleton()</code> twice would make two objects and <code>s1 == s2</code> would print <b>false</b>. If <code>instance</code> were not <b>static</b>, each object would have its own field and a static method couldn't use it.</p>
+      </div>
+      <div class="panel">
+        <h2>One more thread-safe version</h2>
+        <p class="small"><b>Holder class</b> (lazy, no locking): the JVM loads the inner class, and so creates the object, only on the first call.</p>
+<pre class="code" data-j>
+public final class Logger {
+  private Logger() { }
+  private static class Holder {
+    static final Logger INSTANCE =
+        new Logger(); }
+  public static Logger getInstance() {
+    return Holder.INSTANCE; }
+}</pre>
+      </div>
+    </div>
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">Multiton class diagram</h2><span class="tiny">code on the previous page</span></div>
+      <svg class="dg" data-d="multiton"></svg>
+      <p class="tiny mt">The static list is the "pool" of at most 3 objects; the self-association shows the class holding its own instances. Lecture table: 1 DB manager → Singleton · 3 printers or 5 ATM controllers → Multiton · 10 reusable worker threads → Object Pool · unlimited customers → a normal class.</p>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <h2>Often combined with</h2>
+      <table class="tight small">
+        <tr><td style="width:26%"><b>Factory</b></td><td>The factory picks the DB type; the connection manager is a Singleton.</td></tr>
+        <tr><td><b>Facade</b></td><td>Only one facade is needed, so make it a Singleton.</td></tr>
+        <tr><td><b>State</b></td><td>State objects with no data can be shared Singletons.</td></tr>
+        <tr><td><b>Template</b></td><td>The order gets its ID from a Singleton before the template method runs.</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>Mistakes that lose marks</h2>
+      <ul class="small">
+        <li>Leaving the constructor public.</li>
+        <li>Making <code>getInstance()</code> non-static.</li>
+        <li>Not underlining static members in the class diagram.</li>
+        <li>Saying the basic lazy version is thread-safe.</li>
+        <li>Using a Singleton when the question says "maximum N" (that's a Multiton).</li>
+        <li>Calling it a structural pattern. It's creational.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton · examples</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['multiton'] = {
+  items: [
+    {id:'pm', k:'class', x:0, y:0, name:'PrinterManager', stereo:'Multiton',
+      attrs:['_- MAX_PRINTERS : int = 3', '_- printers : List<PrinterManager>', '_- nextPrinter : int', '- number : int'],
+      ops:['- PrinterManager(number : int)', '_+ getPrinter() : PrinterManager', '+ print(job : String) : void']},
+  ],
+  edges: [
+    {a:'pm', as:'right', ao:.14, b:'pm', bs:'right', bo:.42, type:'assoc', loop:24, label:'printers  0..3'},
+  ]
+};
 DIAGRAMS['singleton'] = {
   items: [
     {id:'lab', k:'class', x:0, y:22, w:110, name:'LabModule'},

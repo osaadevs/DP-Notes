@@ -38,7 +38,7 @@
   <div class="panel">
     <h2>OOP ideas used <span class="r">"explain how abstract classes are used"</span></h2>
     <p class="small"><b>Inheritance</b> (subclasses extend the parent) · <b>abstract class and abstract methods</b> (the parent can't be created on its own and forces subclasses to write the varying steps) · <b>method overriding</b> · <b>final</b> (locks the order) · <b>access modifiers</b> (protected steps, private common steps) · <b>polymorphism</b> (the parent calls whichever subclass version exists).</p>
-    <p class="small"><b>Why an abstract class and not an interface?</b> The base has to hold real code (the common steps and the fixed order) as well as abstract steps. An interface can't enforce the order or share that code.</p>
+    <p class="small"><b>Why an abstract class and not an interface?</b> Java interfaces <b>can</b> hold code (<code>default</code> and <code>static</code> methods), so "interfaces have no implementation" is not the reason. The reasons: a <code>default</code> method can't be <code>final</code>, so any class could override the template and change the order; an interface can't have <code>protected</code> steps or instance fields (the order, the amount); an abstract class has all three. Details: "Template Method: salary code, interfaces vs abstract classes".</p>
   </div>
 
   <div class="g2">
@@ -55,7 +55,7 @@
       <ul class="small">
         <li>Template method not marked <code>final</code>.</li>
         <li>Making every step abstract (then nothing is shared).</li>
-        <li>Using an interface for the base class.</li>
+        <li>Using an interface for the base class (its default template method can't be final).</li>
         <li>The client calling the steps one by one.</li>
         <li>Drawing dashed (implements) arrows. Subclasses <b>extend</b>, so solid lines.</li>
       </ul>
@@ -157,7 +157,7 @@ p.handlePayment(order);
 
   <div class="panel">
     <h2>Which pattern, and why <span class="r"><span class="y">2022</span> Q2.2 6m · <span class="y">2023</span> Q1.2 5m</span></h2>
-    <p class="small"><b>Template Method.</b> Every employee's salary is worked out in the same order: gross → EPF → deductions → net. The EPF, tax and net formulas are the same for everyone. Only some components differ (overtime, allowances, no-pay). So <code>calculateNetSalary()</code> is a final template method in an abstract <code>SalaryCalculator</code>, the common formulas are written there once, and each employee type overrides only its own components. 2023's deviation is easy: <code>ExecutiveSalary</code> overrides <code>overtime()</code> and <code>noPay()</code> to return 0. The 2023 formulas map straight onto the hooks: <code>overtime()</code> = basic × OT hours / (30 × 8), <code>noPay()</code> = basic × days / 30, attendance allowance in <code>allowances()</code> (absent 0 → 75%, 1–3 → 50%, more than 3 → none).</p>
+    <p class="small"><b>Template Method.</b> Every employee's salary is worked out in the same order: gross → EPF → deductions → net. The EPF, tax and net formulas are the same for everyone. Only some components differ (overtime, allowances, no-pay). So <code>calculateNetSalary()</code> is a final template method in an abstract <code>SalaryCalculator</code>, the common formulas are written there once, and each employee type overrides only its own components. 2023's deviation is easy: <code>ExecutiveSalary</code> overrides <code>overtime()</code> and <code>noPay()</code> to return 0. The 2023 formulas map straight onto the hooks: <code>overtime()</code> = basic × OT hours / (30 × 8), <code>noPay()</code> = basic × days / 30, attendance allowance in <code>allowances()</code>: the paper gives absent 0 → 75%, more than 1 and less than 3 → 50%, more than 3 → none, which leaves exactly 1 and exactly 3 days unspecified. <b>Assumption</b> (state it in the answer): 1 to 3 absent days → 50%.</p>
   </div>
 
   <div class="fig">
@@ -168,11 +168,13 @@ p.handlePayment(order);
   <div class="g2" style="align-items:start">
 <pre class="code"><span class="k">public abstract class</span> SalaryCalculator {
   <span class="k">protected double</span> basic;
+  <span class="k">protected int</span> otHours, absentDays, noPayDays;
 
   <span class="k">public final double</span> calculateNetSalary() {
     <span class="k">double</span> gross = basic + allowances()
                  + overtime();
     <span class="k">double</span> epf = gross * Config.get(<span class="s">"epf"</span>);
+    <span class="c">// assumed: no tax at or below 100,000</span>
     <span class="k">double</span> tax = Math.max(0,
                  (gross - 100000) * 0.06);
     <span class="k">return</span> gross - (epf + noPay() + tax);
@@ -214,39 +216,47 @@ p.handlePayment(order);
     <h2>Online course completion <span class="r"><span class="y q">Quiz 6</span>, 2 + 8 + 3 + 4m</span></h2>
     <p class="small"><b>Why Template Method:</b> every course follows the same completion order, and it must be enforced, but two steps differ per course (programming: coding challenge marked by automated tests; design: portfolio marked by an instructor with a rubric). The abstract class fixes the order in a final <code>completeCourse()</code>, writes the common steps once, and leaves the two varying steps abstract.</p>
     <div class="g2" style="align-items:start">
-<pre class="code"><span class="k">public abstract class</span> OnlineCourse {
-  <span class="k">public final void</span> completeCourse() {
-    <span class="k">if</span> (!validateRegistration()) <span class="k">return</span>;
+<pre class="code" data-j>
+public abstract class OnlineCourse {
+  protected final String studentId;
+  protected OnlineCourse(String studentId) {
+    this.studentId = studentId; }
+  public final void completeCourse() {
+    if (!validateRegistration()) return;
     deliverFinalAssessment();
-    <span class="k">double</span> score = evaluatePerformance();
+    double score = evaluatePerformance();
     generateCertificate(score);
   }
-  <span class="k">private boolean</span> validateRegistration() {
-    <span class="k">return true</span>; } <span class="c">// common</span>
-  <span class="k">protected abstract void</span>
+  private boolean validateRegistration() {
+    return Registry.isEnrolled(studentId); }
+  protected abstract void
       deliverFinalAssessment();
-  <span class="k">protected abstract double</span>
+  protected abstract double
       evaluatePerformance();
-  <span class="k">private void</span> generateCertificate(<span class="k">double</span> s) {
-    <span class="k">if</span> (s &gt;= 50)
-      System.out.println(<span class="s">"Certificate"</span>);
-  }
+  private void generateCertificate(double s) {
+    if (s >= 50) System.out.println(
+        "Certificate " + studentId); }
 }</pre>
-<pre class="code"><span class="k">public class</span> ProgrammingCourse
-        <span class="k">extends</span> OnlineCourse {
-  <span class="k">protected void</span> deliverFinalAssessment() {
-    System.out.println(<span class="s">"Coding test"</span>); }
-  <span class="k">protected double</span> evaluatePerformance() {
-    <span class="k">return</span> AutoTests.run(studentId); }
+<pre class="code" data-j>
+public class ProgrammingCourse
+        extends OnlineCourse {
+  public ProgrammingCourse(String id) {
+    super(id); }
+  protected void deliverFinalAssessment() {
+    System.out.println("Coding test"); }
+  protected double evaluatePerformance() {
+    return AutoTests.run(studentId); }
 }
-<span class="k">public class</span> DesignCourse
-        <span class="k">extends</span> OnlineCourse {
-  <span class="k">protected void</span> deliverFinalAssessment() {
-    System.out.println(<span class="s">"Submit portfolio"</span>); }
-  <span class="k">protected double</span> evaluatePerformance() {
-    <span class="k">return</span> Instructor.rubric(studentId); }
+public class DesignCourse
+        extends OnlineCourse {
+  public DesignCourse(String id) {
+    super(id); }
+  protected void deliverFinalAssessment() {
+    System.out.println("Submit portfolio"); }
+  protected double evaluatePerformance() {
+    return Instructor.rubric(studentId); }
 }
-<span class="c">// Q5 optional extras → Decorator</span></pre>
+// stubs: "Template Method: lecture example"</pre>
     </div>
   </div>
 
@@ -255,7 +265,7 @@ p.handlePayment(order);
       <h2>E-commerce checkout <span class="r"><span class="y">2024</span> Q4.2, 4.4, 10m</span></h2>
       <p class="small"><b>Template Method.</b> <code>CheckoutProcess</code> has a final <code>checkout()</code>: validate cart → process payment → arrange delivery → send confirmation. Validate cart and send confirmation are common; payment and delivery (domestic / international) vary.</p>
       <p class="small"><b>Use of abstract classes:</b> <code>CheckoutProcess</code> is abstract because it holds real code (common steps and the fixed order) plus abstract steps. It can't be instantiated; subclasses supply the varying parts.</p>
-      <p class="tiny">4.3 exceptions → Chain (tab 08) · 4.5 authorization → Proxy (tab 05)</p>
+      <p class="tiny">4.3 exceptions → Chain (tab 08) · 4.5 authorization → Proxy (tab 05) · Quiz 6 Q5 optional extras → Decorator (tab 06)</p>
     </div>
     <div class="panel">
       <h2>Support procedure <span class="r"><span class="y q">Quiz 7</span> Q4, 4m</span></h2>
@@ -277,7 +287,269 @@ p.handlePayment(order);
 <div class="foot"><span>07 Template Method · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 07 TEMPLATE : lecture example + complete code (added) ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: lecture example and complete code</h1><div class="lede">The lecture's pasta recipe, then the supporting classes the payment (W3) and course answers use.</div></div>
+    <div class="meta">Behavioural<br><b>Examples · complete code</b></div>
+  </header>
+  <div class="panel">
+    <h2>PastaDish <span class="r">lecture: same recipe order, different ingredients</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public abstract class PastaDish {
+  public final void makeRecipe() { //template
+    boilWater();  addPasta();
+    cookPasta();  drainAndPlate();
+    addSauce();   addProtein();
+    addGarnish();
+  }
+  protected abstract void addPasta();
+  protected abstract void addSauce();
+  protected abstract void addProtein();
+  protected abstract void addGarnish();
+  private void boilWater() {
+    System.out.println("Boiling water"); }
+  private void cookPasta() {
+    System.out.println("Cooking pasta"); }
+  private void drainAndPlate() {
+    System.out.println("Drain, plate"); }
+}</pre>
+<pre class="code" data-j>
+public class SpaghettiMeatballs
+    extends PastaDish {
+  protected void addPasta() {
+    System.out.println("Add spaghetti"); }
+  protected void addProtein() {
+    System.out.println("Add meatballs"); }
+  protected void addSauce() {
+    System.out.println("Add tomato sauce"); }
+  protected void addGarnish() {
+    System.out.println("Add Parmesan"); }
+}
+// PenneAlfredo: penne, chicken,
+// Alfredo sauce, parsley (same 4 methods)
+PastaDish d = new SpaghettiMeatballs();
+d.makeRecipe();</pre>
+    </div>
+
+  </div>
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>Payment (W3): the other classes</h2>
+<pre class="code" data-j>
+public class Order {
+  private String id; // set in placeOrder
+  private final String customer, method;
+  private final String cardNo;
+  private final double amount;
+  public Order(String customer,
+      String method, String cardNo,
+      double amount) {
+    this.customer = customer;
+    this.method = method;
+    this.cardNo = cardNo;
+    this.amount = amount; }
+  public void setId(String id) {
+    this.id = id; }
+  public String getId() { return id; }
+  public String getMethod() {
+    return method; }
+  public String getCustomer() {
+    return customer; }
+  public String getCardNo() {
+    return cardNo; }
+  public double getAmount() {
+    return amount; }
+}
+public class PayPalPaymentProcessor
+    extends PaymentProcessor {
+  protected void processPayment(Order o) {
+    System.out.println("PayPal charge "
+        + o.getAmount()); }
+}</pre>
+    </div>
+    <div class="panel">
+      <h2>External services (STUBS)</h2>
+<pre class="code" data-j>
+public class CashOnDeliveryProcessor
+    extends PaymentProcessor {
+  protected void processPayment(Order o) {
+    System.out.println("Collect cash on "
+        + "delivery"); }
+}
+// STUB: card number check
+final class CardValidator {
+  static boolean isValid(String cardNo) {
+    return cardNo != null
+        && cardNo.length() == 16; }
+}
+// STUB: the bank's payment API
+final class BankGateway {
+  static void charge(String cardNo,
+                     double amount) {
+    System.out.println("Bank charged "
+        + amount); }
+}
+// STUBS for the course answer
+final class Registry {   // enrolment DB
+  static boolean isEnrolled(String id) {
+    return true; } }
+final class AutoTests {  // test runner
+  static double run(String id) {
+    return 80; } }
+final class Instructor { // marking
+  static double rubric(String id) {
+    return 72; } }</pre>
+      <p class="tiny mt">Each stub stands in for an outside system (bank, test runner, marking) so the classes compile; the numbers are demo values.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method · examples</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 07 TEMPLATE : salary in full + interfaces + OOP (added) ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: salary code, interfaces vs abstract classes</h1><div class="lede">The 2023 Q1 subclasses with every formula, why the base must be an abstract class, and the OOP terms.</div></div>
+    <div class="meta">Behavioural<br><b>Complete code · theory</b></div>
+  </header>
+  <div class="panel">
+    <h2>2023 Q1 salary subclasses <span class="r">base class: "Template Method: salary questions"</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public class PermanentSalary
+    extends SalaryCalculator {
+  public PermanentSalary(double basic,
+      int otHours, int absentDays,
+      int noPayDays) {
+    this.basic = basic;
+    this.otHours = otHours;
+    this.absentDays = absentDays;
+    this.noPayDays = noPayDays; }
+  protected double overtime() {
+    return basic * otHours / (30 * 8); }
+  protected double noPay() {
+    return basic * noPayDays / 30; }
+  // ASSUMPTION: 1 and 3 absent days -> 50%
+  protected double allowances() {
+    if (absentDays == 0) return basic * 0.75;
+    if (absentDays <= 3) return basic * 0.50;
+    return 0; }
+}</pre>
+<pre class="code" data-j>
+// executives: no overtime, no no-pay
+public class ExecutiveSalary
+    extends PermanentSalary {
+  public ExecutiveSalary(double basic,
+                         int absentDays) {
+    super(basic, 0, absentDays, 0); }
+  protected double overtime() { return 0; }
+  protected double noPay()    { return 0; }
+}
+// STUB: rates from configuration
+final class Config {
+  static double get(String key) {
+    return key.equals("epf") ? 0.08 : 0; }
+}
+double net = new PermanentSalary(
+    80000, 10, 0, 0).calculateNetSalary();</pre>
+    </div>
+    <p class="tiny mt">For 2023, <code>ExecutiveSalary</code> extends <code>PermanentSalary</code> so it keeps the attendance allowance and only drops overtime and no-pay (the 2022 executive in the class diagram adds a bonus in <code>allowances()</code> instead). Employer EPF (12%) and ETF (3%) are employer costs; they go into "Total EPF" and payroll reports, not into the employee's deductions.</p>
+  </div>
+  <div class="panel">
+    <h2>Interface or abstract class for the template?</h2>
+    <div class="gc">
+<pre class="code" data-j>
+interface Course {
+  default void completeCourse() { // code is
+    deliverFinalAssessment();      // allowed
+    evaluatePerformance();
+  }
+  // "final default" won't compile
+  void deliverFinalAssessment();
+  double evaluatePerformance();
+}
+class BadCourse implements Course {
+  // legal: skips the order completely
+  public void completeCourse() { }
+  public void deliverFinalAssessment() { }
+  public double evaluatePerformance() {
+    return 100; }
+}</pre>
+      <div class="small">
+        <p>Since Java 8 an interface <b>can contain code</b>: <code>default</code> methods (overridable bodies) and <code>static</code> methods; since Java 9, <code>private</code> helper methods too. So an interface could hold a default <code>completeCourse()</code>. It is still the wrong choice for Template Method because:</p>
+        <ul>
+          <li>a <code>default</code> method <b>can't be final</b>, so an implementing class can override it and change or skip steps;</li>
+          <li>interface methods are public or private, <b>never protected</b>, so the steps would be callable by any client;</li>
+          <li>an interface has <b>no instance fields</b> (only constants), so it can't hold <code>studentId</code> or <code>basic</code>.</li>
+        </ul>
+        <p>An abstract class has a <code>final</code> template, <code>protected</code> steps and fields. Use an interface for a <b>can-do</b> contract shared by unrelated classes; an abstract class for an <b>is-a</b> family with shared code.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: Quiz 6 diagram, OOP and SOLID</h1><div class="lede">The class diagram the course-completion quiz asked for (8m), and what each part of the pattern does in OOP terms.</div></div>
+    <div class="meta">Behavioural<br><b>Quiz answer · theory</b></div>
+  </header>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Course completion class diagram <span class="tiny" style="font-weight:400">· <span class="y q">Quiz 6</span> Q2, 8m</span></h2><span class="tiny">code: "Template Method: more answers"</span></div>
+    <svg class="dg" data-d="course"></svg>
+  </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Template Method code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small">
+      <tr><th style="width:18%">Concept</th><th style="width:38%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Abstraction</b></td><td><code>abstract class OnlineCourse</code>, <code>protected abstract evaluatePerformance()</code></td><td>The class can't be instantiated and forces every course to supply the steps that differ.</td></tr>
+      <tr><td><b>Inheritance</b></td><td><code>ProgrammingCourse extends OnlineCourse</code></td><td>Subclasses inherit the fixed order and the common steps without copying them.</td></tr>
+      <tr><td><b>Method overriding + polymorphism</b></td><td><code>completeCourse()</code> calls <code>evaluatePerformance()</code></td><td>The parent's code runs the subclass's version at runtime (Hollywood principle).</td></tr>
+      <tr><td><b>final</b></td><td><code>public final void completeCourse()</code></td><td>No subclass can reorder or skip steps.</td></tr>
+      <tr><td><b>Encapsulation / access</b></td><td><code>private validateRegistration()</code>, <code>protected</code> steps, <code>protected final studentId</code></td><td>Common steps can't be replaced; steps can't be called directly by clients.</td></tr>
+      <tr><td><b>SRP / DRY</b></td><td>common steps in the parent, differences in subclasses</td><td>Each formula or step exists once; a rule change is made in one place.</td></tr>
+      <tr><td><b>OCP</b></td><td>new course type = new subclass</td><td>The completion process is extended without editing it.</td></tr>
+      <tr><td><b>LSP (watch it)</b></td><td>overridden steps such as <code>validate()</code></td><td>A subclass may strengthen a step (<code>super.validate() &amp;&amp; …</code>) but must keep the step's meaning.</td></tr>
+    </table>
+  </div>
+  <div class="panel small">
+    <h2>How the PastaDish code shows the method kinds</h2>
+            <p>Common steps are <code>private</code> (no subclass can change them), varying steps <code>protected abstract</code>, the template <code>public final</code>. Other lecture examples: <code>SelfDrivingVehicle.driveToDestination()</code> with abstract <code>steer()</code>, <code>accelerate()</code>, <code>brake()</code> for car and motorcycle; <code>BasicEngineering.Papers()</code> with common <code>Math()</code>, <code>SoftSkills()</code> and abstract <code>SpecialPaper()</code>.</p>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['course'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:40, name:'LearningPlatform'},
+    {id:'a', k:'class', cx:320, y:0, name:'OnlineCourse', stereo:'abstract', abstract:true,
+      attrs:['# studentId : String'],
+      ops:['+ completeCourse() : void {final}', '- validateRegistration() : boolean', '/# deliverFinalAssessment() : void', '/# evaluatePerformance() : double', '- generateCertificate(score : double) : void']},
+    {id:'p', k:'class', cx:200, y:150, name:'ProgrammingCourse', ops:['# deliverFinalAssessment() : void', '# evaluatePerformance() : double']},
+    {id:'d', k:'class', cx:440, y:150, name:'DesignCourse', ops:['# deliverFinalAssessment() : void', '# evaluatePerformance() : double']},
+    {k:'text', x:120, y:204, lines:['coding challenge, automated tests'], size:8, italic:true},
+    {k:'text', x:375, y:204, lines:['portfolio, instructor rubric'], size:8, italic:true},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'a', bs:'left', bx:51, type:'assoc', label:'uses'},
+    {a:'p', as:'top', b:'a', bs:'bottom', type:'extend', mid:132},
+    {a:'d', as:'top', b:'a', bs:'bottom', type:'extend', mid:132},
+  ]
+};
 DIAGRAMS['template'] = {
   items: [
     {id:'cl', k:'class', x:0, y:30, name:'OrderService'},

@@ -13,7 +13,7 @@
       <div class="small">
         <p><b>High Availability</b> = the system keeps running when a part fails (little or no downtime).</p>
         <ul>
-          <li>Run each component as several <b>stateless copies behind a load balancer</b>, with health checks and automatic restart (Kubernetes).</li>
+          <li>Run each component as several <b>stateless copies behind a load balancer</b>, with health checks and automatic restart (e.g. by an orchestrator such as Kubernetes).</li>
           <li><b>No single point of failure</b>: a Singleton or Facade on one server becomes replicas.</li>
           <li><b>Database replication</b> / clusters with automatic failover.</li>
           <li>Timeouts, retries and <b>circuit breakers</b>; a <b>fallback handler</b> at the end of a Chain.</li>

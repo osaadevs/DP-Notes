@@ -85,49 +85,60 @@
   <div>
     <div class="codecap">W3 · Java</div>
     <div class="g2" style="align-items:start">
-<pre class="code"><span class="c">// 1. SUBJECT</span>
-<span class="k">public interface</span> Document {
-    Page getPage(<span class="k">int</span> n);
+<pre class="code" data-j>
+// 1. SUBJECT
+public interface Document {
+    Page getPage(int n);
 }
-
-<span class="c">// 2. REAL SUBJECT: expensive to load</span>
-<span class="k">public class</span> LargeDocument
-        <span class="k">implements</span> Document {
-    <span class="k">private</span> List&lt;Page&gt; pages;
-    <span class="k">public</span> LargeDocument(String path) {
-        pages = Storage.loadAll(path); <span class="c">// slow</span>
+// 2. REAL SUBJECT: costly to create
+public class LargeDocument
+        implements Document {
+    private final String path;
+    private final long[] pageIndex;
+    public LargeDocument(String path) {
+        this.path = path;
+        // opens the file, reads its page index
+        pageIndex = Storage.readIndex(path);
     }
-    <span class="k">public</span> Page getPage(<span class="k">int</span> n) {
-        <span class="k">return</span> pages.get(n);
+    public Page getPage(int n) {
+        // reads ONLY page n from the file
+        return Storage.readPage(path,
+                                pageIndex[n]);
     }
 }
+// 4. CLIENT: can't tell it's a proxy
+Document doc = new DocumentProxy("notes.pdf");
+doc.getPage(1);  // opens file, reads page 1
+doc.getPage(2);  // reads page 2 only
+doc.getPage(1);  // from cache, no file read</pre>
+<pre class="code" data-j>
+// 3. PROXY: same interface, lazy, cache
+public class DocumentProxy
+        implements Document {
+    private final String path;
+    private LargeDocument real; // null
+    private final Map<Integer, Page> cache =
+        new HashMap<>();
 
-<span class="c">// 4. CLIENT: can't tell it's a proxy</span>
-Document doc = <span class="k">new</span> DocumentProxy(<span class="s">"notes.pdf"</span>);
-doc.getPage(1);  <span class="c">// loads page 1 only</span>
-doc.getPage(1);  <span class="c">// from cache</span></pre>
-<pre class="code"><span class="c">// 3. PROXY: same interface, lazy</span>
-<span class="k">public class</span> DocumentProxy
-        <span class="k">implements</span> Document {
-    <span class="k">private final</span> String path;
-    <span class="k">private final</span> Map&lt;Integer, Page&gt; cache =
-        <span class="k">new</span> HashMap&lt;&gt;();
-
-    <span class="k">public</span> DocumentProxy(String path) {
-        <span class="k">this</span>.path = path;  <span class="c">// nothing loaded</span>
+    public DocumentProxy(String path) {
+        this.path = path;  // nothing loaded
     }
 
-    <span class="k">public</span> Page getPage(<span class="k">int</span> n) {
-        <span class="k">if</span> (!cache.containsKey(n)) {
-            <span class="c">// load just this one page</span>
-            Page p = Storage.loadPage(path, n);
+    public Page getPage(int n) {
+        Page p = cache.get(n);
+        if (p == null) {
+            if (real == null)   // first use
+                real = new LargeDocument(path);
+            p = real.getPage(n); // 1 page
             cache.put(n, p);
         }
-        <span class="k">return</span> cache.get(n);
+        return p;
     }
-}</pre>
+}
+// Page and Storage (STUB file access):
+// page "Proxy: complete code"</pre>
     </div>
-    <p class="tiny mt">Lecture version of the same idea: <code>ProxyImage</code> keeps <code>realImage = null</code> and only does <code>new RealImage(file)</code> the first time <code>display()</code> is called.</p>
+    <p class="tiny mt">The proxy delays the costly part (opening the file and reading its index) until the first page is asked for, then forwards each <code>getPage(n)</code> to the real document, which reads that one page. The whole document is never loaded. Lecture version of the same idea: <code>ProxyImage</code> (page "Proxy: lecture examples").</p>
   </div>
 </div>
 <div class="foot"><span>05 Proxy · write</span><span>page <b class="pnum"></b></span></div>
@@ -147,7 +158,8 @@ doc.getPage(1);  <span class="c">// from cache</span></pre>
     <p class="small"><b>Protection Proxy.</b> <code>ArchiveAccessProxy</code> and <code>RestrictedArchive</code> both implement <code>BookArchive</code>. The user only ever gets the proxy. Its <code>getBook(id)</code> first checks the user's role and permission (for example, a researcher with an approved request and a valid membership), logs the access, and only then forwards to the real archive. Otherwise it throws <code>AccessDeniedException</code>. <b>Example:</b> a student asking for an 1820 manuscript is refused; an approved researcher gets it, and the access is logged.</p>
     <div class="g2 mt" style="align-items:start">
       <svg class="dg" data-d="proxy-archive"></svg>
-<pre class="code"><span class="k">public</span> RareBook getBook(String id) {
+<pre class="code"><span class="c">// all classes: "Proxy: complete code"</span>
+<span class="k">public</span> RareBook getBook(String id) {
   <span class="k">if</span> (!user.hasRole(<span class="s">"RESEARCHER"</span>)
       || !user.isApproved(id))
     <span class="k">throw new</span>
@@ -219,12 +231,244 @@ doc.getPage(1);  <span class="c">// from cache</span></pre>
 <div class="foot"><span>05 Proxy · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 05 PROXY : lecture examples (added) ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: lecture examples</h1><div class="lede">A virtual proxy (image viewer) and a protection proxy (bank withdrawal), as in the slides.</div></div>
+    <div class="meta">Structural<br><b>Examples</b></div>
+  </header>
+  <div class="panel">
+    <h2>Virtual proxy: image viewer <span class="r">the image is loaded only when displayed</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public interface Image {           // Subject
+  void display(); }
+
+public class RealImage implements Image {
+  private final String fileName;
+  private byte[] data;
+  public RealImage(String fileName) {
+    this.fileName = fileName;
+    loadFromDisk();          // expensive
+  }
+  private void loadFromDisk() {
+    System.out.println("Loading " + fileName);
+    data = new byte[1024];   // simulated file
+  }
+  public void display() {
+    System.out.println("Displaying "
+        + fileName); }
+}</pre>
+      <div>
+<pre class="code" data-j>
+public class ProxyImage implements Image {
+  private final String fileName;
+  private RealImage realImage;     // null
+  public ProxyImage(String fileName) {
+    this.fileName = fileName; }    // no load
+  public void display() {
+    if (realImage == null)         // 1st call
+      realImage = new RealImage(fileName);
+    realImage.display();           // forward
+  }
+}
+// client
+Image image = new ProxyImage("cat.jpg");
+// nothing loaded yet
+image.display();  // Loading, Displaying
+image.display();  // Displaying only</pre>
+        <p class="tiny mt">Lecture output: the second <code>display()</code> reuses the RealImage, so the file is read once.</p>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Protection proxy: bank login and withdrawal <span class="r">checks before forwarding</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public interface Account {         // Subject
+  void withdraw(double amount); }
+
+public class RealAccount implements Account {
+  private final String accountId;
+  private double balance;
+  public RealAccount(String id, double bal) {
+    accountId = id; balance = bal; }
+  public void withdraw(double amount) {
+    if (balance >= amount) {
+      balance -= amount;
+      System.out.println("New balance: "
+          + balance);
+    } else
+      System.out.println("Insufficient");
+  }
+}
+// client
+Account account = new AccountProxy(
+    new RealAccount("A1001", 10000),
+    "bank123", 5000);
+account.withdraw(1500);  // allowed
+account.withdraw(4000);  // daily limit</pre>
+<pre class="code" data-j>
+public class AccountProxy
+    implements Account {
+  private final Account realAccount;
+  private final String password;
+  private final double dailyLimit;
+  private double withdrawnToday = 0;
+  private boolean active = true;
+  public AccountProxy(Account real,
+      String password, double dailyLimit) {
+    this.realAccount = real;
+    this.password = password;
+    this.dailyLimit = dailyLimit; }
+
+  public void withdraw(double amount) {
+    if (!authenticate(password)) return;
+    if (!active) { System.out.println(
+        "Account inactive"); return; }
+    if (withdrawnToday + amount
+        > dailyLimit) {
+      System.out.println("Daily limit");
+      return; }
+    withdrawnToday += amount;
+    realAccount.withdraw(amount); //fwd
+  }
+  private boolean authenticate(String pwd) {
+    if (!"bank123".equals(pwd)) {
+      System.out.println("Invalid password");
+      return false; }
+    return true;
+  }
+}</pre>
+    </div>
+    <p class="tiny mt">Correction: the slide's <code>authenticate()</code> tests <code>"bank123".equals(pwd)</code> without the <code>!</code>, so it rejects the right password. The version above rejects only a wrong one. The stored password is a demo value; a real system checks a hashed password against the bank's user store.</p>
+  </div>
+</div>
+<div class="foot"><span>05 Proxy · examples</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 05 PROXY : complete code + OOP (added) ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: complete code</h1><div class="lede">The helper types the LMS (W3) and rare-book answers use, so both compile as a whole.</div></div>
+    <div class="meta">Structural<br><b>Complete code</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>LMS: Page and Storage <span class="r">for W3</span></h2>
+<pre class="code" data-j>
+public class Page {
+  private final int number;
+  private final String content;
+  public Page(int number, String text) {
+    this.number = number;
+    this.content = text; }
+  public String getContent() {
+    return content; }
+}
+// STUB: stands in for the LMS file store.
+// A real version uses RandomAccessFile or
+// a PDF library to seek to one page.
+final class Storage {
+  static long[] readIndex(String path) {
+    System.out.println("Opening " + path);
+    return new long[500];  // 500 pages
+  }
+  static Page readPage(String path,
+                       long at) {
+    System.out.println("Reading 1 page");
+    return new Page((int) at, "...");
+  }
+}</pre>
+    </div>
+    <div class="panel">
+      <h2>Rare books in full <span class="r"><span class="y">2025</span> Q3.5</span></h2>
+<pre class="code" data-j>
+public interface BookArchive {
+  RareBook getBook(String id); }
+public record RareBook(String id,
+                       String title) { }
+public record User(String name,
+    String role, Set<String> approved) {
+  boolean hasRole(String r) {
+    return role.equals(r); }
+  boolean isApproved(String id) {
+    return approved.contains(id); }
+}
+final class AuditLog {          // STUB
+  static void record(User u, String id) {
+    System.out.println(u.name() + " read "
+        + id); } }
+public class AccessDeniedException
+    extends RuntimeException {
+  public AccessDeniedException(String m) {
+    super(m); } }
+public class RestrictedArchive
+    implements BookArchive {
+  public RareBook getBook(String id) {
+    // STUB: the real archive database
+    return new RareBook(id, "Diary"); }
+}
+public class ArchiveAccessProxy
+    implements BookArchive {
+  private final RestrictedArchive archive =
+      new RestrictedArchive();
+  private final User user;
+  public ArchiveAccessProxy(User u) {
+    user = u; }
+  public RareBook getBook(String id) {
+    if (!user.hasRole("RESEARCHER")
+        || !user.isApproved(id))
+      throw new AccessDeniedException(id);
+    AuditLog.record(user, id);    // log
+    return archive.getBook(id);
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>05 Proxy · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: OOP and SOLID, other cases</h1><div class="lede">What each part of a proxy does in OOP terms, and the other proxy situations from the lecture.</div></div>
+    <div class="meta">Structural<br><b>Theory</b></div>
+  </header>
+  <div class="panel">
+    <h2>OOP and SOLID in the Proxy code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small tight">
+      <tr><th style="width:18%">Concept</th><th style="width:38%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Polymorphism</b></td><td><code>Document doc = new DocumentProxy(…)</code>; both classes implement <code>Document</code></td><td>The client calls <code>getPage()</code> and can't tell the proxy from the real object (slide quiz: true).</td></tr>
+      <tr><td><b>Encapsulation</b></td><td><code>private LargeDocument real</code>, <code>private Map cache</code>; <code>private authenticate()</code></td><td>The real object and the checks are hidden; the client can't skip them.</td></tr>
+      <tr><td><b>Composition</b></td><td>proxy holds a reference to the real subject</td><td>The proxy reuses the real object's work instead of copying it.</td></tr>
+      <tr><td><b>Lazy initialisation</b></td><td><code>if (real == null) real = new LargeDocument(path)</code></td><td>The costly object is built only when first needed.</td></tr>
+      <tr><td><b>SRP</b></td><td>access / caching / logging in the proxy; business logic in the real subject</td><td><code>RealAccount</code> only moves money; <code>AccountProxy</code> only guards it.</td></tr>
+      <tr><td><b>OCP / LSP</b></td><td>add a proxy without changing <code>RealAccount</code> or clients</td><td>New behaviour by adding a class; the proxy can stand in wherever the subject is expected.</td></tr>
+    </table>
+  </div>
+  <div class="panel small">
+    <h2>Other lecture cases <span class="r">type of proxy in brackets</span></h2>
+    <p><b>Hospital (protection):</b> <code>PatientService.viewPatient(id)</code>; the proxy lets a doctor and an administrator through and refuses a receptionist. <b>Mobile banking (remote):</b> the app's <code>getBalance()</code> looks local, but the proxy sends the request over HTTPS to the bank server. <b>API gateway (remote + protection):</b> one entry in front of microservices that authenticates, rate-limits and routes. <b>Warehouse routing (smart):</b> the proxy sends an order only to a warehouse with stock. <b>Netflix / Spotify / Google Drive:</b> subscription checks, caching, and thumbnails before the full file.</p>
+  </div>
+</div>
+<div class="foot"><span>05 Proxy · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
 DIAGRAMS['proxy'] = {
   items: [
     {id:'cl', k:'class', x:0, y:14, name:'LMSReader'},
     {id:'s', k:'class', cx:300, y:0, name:'Document', stereo:'interface', ops:['+ getPage(n : int) : Page']},
-    {id:'r', k:'class', cx:150, y:96, name:'LargeDocument', attrs:['- pages : List<Page>'], ops:['+ getPage(n : int) : Page']},
+    {id:'r', k:'class', cx:150, y:96, name:'LargeDocument', attrs:['- path : String', '- pageIndex : long[]'], ops:['+ LargeDocument(path)', '+ getPage(n : int) : Page']},
     {id:'p', k:'class', cx:470, y:96, name:'DocumentProxy', attrs:['- path : String', '- cache : Map<Integer,Page>', '- real : LargeDocument'], ops:['+ getPage(n : int) : Page']},
   ],
   edges: [

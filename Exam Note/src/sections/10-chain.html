@@ -123,7 +123,8 @@
         || r.getType() == ACCOUNT_BLOCKED;
   }
 }
-<span class="c">// L2Support: INSTALLATION_ERROR</span>
+<span class="c">// L2Support, SpecialistSupport, SupportRequest:</span>
+<span class="c">// "Chain: complete code"</span>
 <span class="k">public class</span> L3Support <span class="k">extends</span> SupportHandler {
   <span class="k">protected boolean</span> attemptToSolve(
           SupportRequest r) {
@@ -131,7 +132,6 @@
         || r.getType() == PERFORMANCE;
   }
 }
-<span class="c">// SpecialistSupport: returns true (fallback)</span>
 
 <span class="c">// CLIENT: build once, send to the first</span>
 SupportHandler chain = <span class="k">new</span> L1Support();
@@ -152,7 +152,7 @@ chain.handle(<span class="k">new</span> SupportRequest(
 <div class="body">
   <header class="ph">
     <div class="code">08</div>
-    <div><h1>Chain: the spam filter question</h1><div class="lede">2022 Q3 was a full 25-mark Chain question. All five parts, answered.</div></div>
+    <div><h1>Chain: the spam filter question, OOP and SOLID</h1><div class="lede">2022 Q3 (25 marks), all five parts answered, then the OOP terms.</div></div>
     <div class="meta">Behavioural<br><b>Answers</b></div>
   </header>
 
@@ -189,6 +189,17 @@ chain.handle(<span class="k">new</span> SupportRequest(
       </div>
     </div>
   </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Chain code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small tight">
+      <tr><th style="width:18%">Concept</th><th style="width:38%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Abstraction + inheritance</b></td><td><code>L1Support extends SupportHandler</code>, <code>abstract attemptToSolve()</code></td><td>Levels share the passing and logging code and write only their own check.</td></tr>
+      <tr><td><b>Self-association / composition</b></td><td><code>protected SupportHandler next</code></td><td>Each handler holds a link to one more handler, which forms the chain at runtime.</td></tr>
+      <tr><td><b>Polymorphism</b></td><td><code>next.handle(r)</code></td><td>The caller doesn't know which level is next; the right <code>attemptToSolve()</code> runs.</td></tr>
+      <tr><td><b>Loose coupling</b></td><td><code>SupportDesk</code> knows only the first handler</td><td>Levels change without touching the client.</td></tr>
+      <tr><td><b>SRP / OCP</b></td><td>one check per handler; new level = new class + one <code>setNext()</code></td><td>No if-else to edit when a level or filter is added.</td></tr>
+    </table>
+  </div>
 </div>
 <div class="foot"><span>08 Chain of Responsibility · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
@@ -220,9 +231,10 @@ chain.handle(<span class="k">new</span> SupportRequest(
 }</pre>
 <pre class="code"><span class="k">class</span> InventoryCheck <span class="k">extends</span> Validator {
   <span class="k">protected boolean</span> check(Order o) {
-    <span class="k">return</span> Stock.has(o.getItems()); }
+    <span class="k">return</span> Stock.available(o); }
 }
-<span class="c">// FraudCheck, DeliveryAreaCheck: same shape</span>
+<span class="c">// FraudCheck, DeliveryAreaCheck, stubs:</span>
+<span class="c">// "Chain: complete code"</span>
 
 <span class="c">// CLIENT</span>
 Validator v = <span class="k">new</span> InventoryCheck();
@@ -263,6 +275,243 @@ v.linkWith(<span class="k">new</span> FraudCheck())
   </div>
 </div>
 <div class="foot"><span>08 Chain of Responsibility · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<!-- ===================== 08 CHAIN : complete code (added) ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain: complete code</h1><div class="lede">The request type and handlers the W3 support desk uses, the rest of the order checks, and a spam-filter handler for 2022 Q3.</div></div>
+    <div class="meta">Behavioural<br><b>Complete code</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>Support desk (W3): the rest</h2>
+<pre class="code" data-j>
+public enum IssueType {
+  PASSWORD_RESET, ACCOUNT_BLOCKED,
+  INSTALLATION_ERROR, DB_CONNECTIVITY,
+  PERFORMANCE, OTHER }
+
+public class SupportRequest {
+  private final IssueType type;
+  private final String description;
+  public SupportRequest(IssueType t,
+                        String d) {
+    type = t; description = d; }
+  public IssueType getType() {
+    return type; }
+  public String getDescription() {
+    return description; }
+}
+// the handlers use the constants directly:
+// import static IssueType.*;
+public class L2Support
+    extends SupportHandler {
+  protected boolean attemptToSolve(
+      SupportRequest r) {
+    return r.getType()
+        == INSTALLATION_ERROR;
+  }
+}
+public class SpecialistSupport
+    extends SupportHandler {
+  // fallback: rare problems end here
+  protected boolean attemptToSolve(
+      SupportRequest r) {
+    return true; }
+}</pre>
+    </div>
+    <div class="panel">
+      <h2>Order checks (2025 Q4.4): the rest</h2>
+<pre class="code" data-j>
+class FraudCheck extends Validator {
+  protected boolean check(Order o) {
+    return !FraudService.isSuspicious(o); }
+}
+class DeliveryAreaCheck extends Validator {
+  protected boolean check(Order o) {
+    return Zones.delivers(
+        o.getCustomer()); }
+}
+// STUBS for outside systems
+final class Stock {          // inventory DB
+  static boolean available(Order o) {
+    return true; } }
+final class FraudService {   // risk engine
+  static boolean isSuspicious(Order o) {
+    return o.getAmount() > 1_000_000; } }
+final class Zones {          // courier API
+  static boolean delivers(String c) {
+    return true; } }</pre>
+      <p class="tiny mt"><code>Order</code> is the class on "Template Method: lecture example and complete code". The library version (membership → availability → fines) has the same shape with a <code>BorrowRequest</code>.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Spam filter handler <span class="r"><span class="y">2022</span> Q3.2 / 3.4</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public abstract class SpamFilter {
+  private SpamFilter next;
+  public SpamFilter setNext(SpamFilter n) {
+    next = n; return n; }
+  // true = deliver, false = spam (stop)
+  public boolean isClean(Email e) {
+    if (isSpam(e)) return false;
+    return next == null || next.isClean(e);
+  }
+  protected abstract boolean isSpam(Email e);
+}
+public record Email(String sender,
+    java.time.LocalTime sentAt,
+    String body, List<String> attachments) { }</pre>
+<pre class="code" data-j>
+class SenderFilter extends SpamFilter {
+  private final Set<String> blacklist =
+      Set.of("spam@bad.com");   // demo data
+  protected boolean isSpam(Email e) {
+    return blacklist.contains(e.sender()); }
+}
+class AttachmentFilter extends SpamFilter {
+  protected boolean isSpam(Email e) {
+    return e.attachments().stream()
+        .anyMatch(f -> f.endsWith(".exe")); }
+}
+// TimeFilter, ContentFilter: same idea
+SpamFilter chain = new SenderFilter();
+chain.setNext(new TimeFilter())
+     .setNext(new ContentFilter())
+     .setNext(new AttachmentFilter());</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>08 Chain of Responsibility · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 08 CHAIN : expense approval + exceptions + OOP (added) ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain: expense approval and exception handling</h1><div class="lede">The lecture's approval chain in full, and the 2023/2024 exception chain written out.</div></div>
+    <div class="meta">Behavioural<br><b>Examples</b></div>
+  </header>
+  <div class="panel">
+    <h2>Expense approval <span class="r">lecture group activity</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public class ExpenseRequest {
+  private final double amount;
+  private final String description;
+  public ExpenseRequest(double a, String d) {
+    amount = a; description = d; }
+  public double getAmount() { return amount; }
+  public String getDescription() {
+    return description; }
+}
+public abstract class ExpenseApprover {
+  protected ExpenseApprover next;
+  public void setNextApprover(
+      ExpenseApprover n) { next = n; }
+  public final void approveRequest(
+      ExpenseRequest r) {
+    if (canApprove(r)) processRequest(r);
+    else if (next != null)
+      next.approveRequest(r);
+    else System.out.println(
+        "Cannot be approved");
+  }
+  protected abstract boolean
+      canApprove(ExpenseRequest r);
+  protected abstract void
+      processRequest(ExpenseRequest r);
+}</pre>
+<pre class="code" data-j>
+public class TeamLeaderApprover
+    extends ExpenseApprover {
+  private static final double LIMIT = 1000;
+  protected boolean canApprove(
+      ExpenseRequest r) {
+    return r.getAmount() <= LIMIT; }
+  protected void processRequest(
+      ExpenseRequest r) {
+    System.out.println("Team Leader "
+        + "approved " + r.getAmount()); }
+}
+// ManagerApprover    LIMIT = 5000
+// DirectorApprover   LIMIT = 20000
+// CEOApprover: canApprove() returns true
+//   (same code, different LIMIT and name)
+
+ExpenseApprover t = new TeamLeaderApprover();
+ExpenseApprover m = new ManagerApprover();
+ExpenseApprover d = new DirectorApprover();
+ExpenseApprover c = new CEOApprover();
+t.setNextApprover(m);
+m.setNextApprover(d);
+d.setNextApprover(c);
+t.approveRequest(
+    new ExpenseRequest(3500, "Meeting"));
+// Manager approved 3500.0</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Exceptions by type and priority <span class="r"><span class="y">2023</span> Q4.3 · <span class="y">2024</span> Q4.3</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public abstract class ErrorHandler {
+  private ErrorHandler next;
+  public ErrorHandler setNext(
+      ErrorHandler n) {
+    next = n; return n; }
+  public void handle(Exception e) {
+    if (canHandle(e)) process(e);
+    else if (next != null) next.handle(e);
+  }
+  protected abstract boolean
+      canHandle(Exception e);
+  protected abstract void
+      process(Exception e);
+}
+class ValidationErrorHandler
+    extends ErrorHandler {
+  protected boolean canHandle(Exception e) {
+    return e instanceof
+        IllegalArgumentException; }
+  protected void process(Exception e) {
+    System.out.println("Please check: "
+        + e.getMessage()); }
+}</pre>
+<pre class="code" data-j>
+class PaymentErrorHandler
+    extends ErrorHandler {
+  protected boolean canHandle(Exception e) {
+    return e instanceof PaymentException; }
+  protected void process(Exception e) {
+    System.out.println("Payment failed, "
+        + "try another method"); }
+}
+class DefaultHandler extends ErrorHandler {
+  protected boolean canHandle(Exception e) {
+    return true; }               // fallback
+  protected void process(Exception e) {
+    System.out.println("Logged, admin "
+        + "alerted: " + e); }
+}
+class PaymentException
+    extends RuntimeException { }
+// checkout
+ErrorHandler h = new ValidationErrorHandler();
+h.setNext(new PaymentErrorHandler())
+ .setNext(new DefaultHandler());
+try { checkout.run(); }
+catch (Exception e) { h.handle(e); }</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>08 Chain of Responsibility · examples</span><span>page <b class="pnum"></b></span></div>
 </section>
 
 <script>

@@ -115,7 +115,7 @@ String isbn = sc.scanBook();</pre>
   <div class="panel">
     <h2><span class="w">W4</span> Same pattern, legacy payment machine <span class="r"><span class="y q">Quiz 1</span> Q5</span></h2>
     <div class="g2" style="align-items:start">
-      <p class="small">Target = <code>PaymentProcessor.pay(amount)</code>, the interface the parking system expects. Adaptee = the vendor's <code>LegacyPaymentMachine</code>. <code>LegacyPaymentAdapter</code> converts rupees → cents and the result code → true/false. The PaymentDue state only calls <code>processor.pay()</code>.</p>
+      <p class="small">Target = <code>PaymentProcessor.pay(amount)</code>, the interface the parking system expects. Adaptee = the vendor's <code>LegacyPaymentMachine</code>. <code>LegacyPaymentAdapter</code> converts rupees → cents and the result code → true/false. The PaymentDue state only calls <code>processor.pay()</code>. All classes in full: page "Adapter: Quiz 1 in full".</p>
 <pre class="code"><span class="k">class</span> LegacyPaymentAdapter
       <span class="k">implements</span> PaymentProcessor {
   <span class="k">private</span> LegacyPaymentMachine m =
@@ -183,7 +183,250 @@ String isbn = sc.scanBook();</pre>
 <div class="foot"><span>04 Adapter · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 04 ADAPTER : class + two-way (added) ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: class adapter and two-way adapter</h1><div class="lede">The other two kinds from the "three kinds" table, written out for the barcode scanner.</div></div>
+    <div class="meta">Structural<br><b>Variants</b></div>
+  </header>
+  <div class="panel">
+    <h2>Class adapter <span class="r">adapter <b>extends</b> the adaptee and <b>implements</b> the target</span></h2>
+    <div class="gc">
+      <div>
+<pre class="code" data-j>
+// Target and Adaptee are the same as W3
+public interface BarcodeScanner {
+  String scanBook();
+}
+public class NewBarcodeScanner {      // vendor
+  public String readBarcode() {
+    return "978-0134685991"; }
+}
+// CLASS ADAPTER: inherits readBarcode()
+public class ScannerClassAdapter
+    extends NewBarcodeScanner
+    implements BarcodeScanner {
+  public String scanBook() {
+    return readBarcode();   // inherited call
+  }
+}
+// client: no adaptee object to pass in
+BarcodeScanner sc = new ScannerClassAdapter();
+String isbn = sc.scanBook();</pre>
+      </div>
+      <div class="small">
+        <svg class="dg" data-d="adapter-class"></svg>
+        <p class="mt"><b>Difference from the object adapter (W3):</b> no <code>scanner</code> field and no constructor parameter. The adapter <b>is a</b> <code>NewBarcodeScanner</code> (inheritance) instead of <b>having</b> one (composition).</p>
+        <ul>
+          <li>Works only if the adaptee is <b>not final</b> and Java allows one superclass.</li>
+          <li>Fixed to that one class: it can't adapt a subclass chosen at runtime.</li>
+          <li><code>readBarcode()</code> is also public on the adapter, so the adaptee's interface leaks.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Two-way adapter <span class="r">one class implements <b>both</b> interfaces</span></h2>
+    <p class="small"><b>Use when</b> old and new code must both work during a migration. Example: the old desk software calls <code>scanBook()</code> but some desks now have new scanners; the new self-service kiosk calls <code>readBarcode()</code> but some desks still have old scanners. Assumption: the new subsystem's method is put behind its own interface, <code>ModernScanner</code>.</p>
+    <div class="gc">
+<pre class="code" data-j>
+public interface BarcodeScanner {      // old side
+  String scanBook(); }
+public interface ModernScanner {       // new side
+  String readBarcode(); }
+
+public class TwoWayScannerAdapter
+    implements BarcodeScanner, ModernScanner {
+  private final ModernScanner modern;
+  private final BarcodeScanner legacy;
+  // wrap a NEW scanner for OLD code
+  public TwoWayScannerAdapter(ModernScanner m) {
+    modern = m; legacy = null; }
+  // wrap an OLD scanner for NEW code
+  public TwoWayScannerAdapter(BarcodeScanner l) {
+    legacy = l; modern = null; }
+
+  public String scanBook() {           // old call
+    return modern != null ? modern.readBarcode()
+                          : legacy.scanBook(); }
+  public String readBarcode() {        // new call
+    return legacy != null ? legacy.scanBook()
+                          : modern.readBarcode(); }
+}</pre>
+      <div class="small">
+        <svg class="dg" data-d="adapter-2way"></svg>
+
+
+<pre class="code mt" data-j>
+// old code, new scanner
+BarcodeScanner a =
+  new TwoWayScannerAdapter(
+    new NewBarcodeScanner());
+a.scanBook();
+// kiosk, old scanner
+ModernScanner b =
+  new TwoWayScannerAdapter(
+    new OldDeskScanner());
+b.readBarcode();</pre>
+        <p class="tiny mt"><code>NewBarcodeScanner</code> implements <code>ModernScanner</code>; <code>OldDeskScanner</code> implements <code>BarcodeScanner</code>. Cost: two translations to keep correct, and the adapter must be told which side it wraps.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter · variants</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 04 ADAPTER : lecture examples + OOP (added) ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: lecture examples</h1><div class="lede">The printer and payment-gateway code from the slides, and the Java library adapters.</div></div>
+    <div class="meta">Structural<br><b>Examples</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>Printer → ModernPrinter <span class="r">lecture</span></h2>
+<pre class="code" data-j>
+public interface Printer {    // Target
+  void print(String text); }
+public class ModernPrinter {  // Adaptee
+  public void printPDF(String file) {
+    System.out.println("Printing PDF : "
+        + file); }
+}
+public class PrinterAdapter   // Adapter
+    implements Printer {
+  private ModernPrinter modernPrinter;
+  public PrinterAdapter(ModernPrinter p) {
+    this.modernPrinter = p; }
+  @Override
+  public void print(String text) {
+    modernPrinter.printPDF(text); }
+}
+// Client
+Printer printer =
+    new PrinterAdapter(
+        new ModernPrinter());
+printer.print("Report.pdf");
+// Printing PDF : Report.pdf</pre>
+      <p class="tiny mt">The slide's UML draws the adapter → adaptee link as composition (filled diamond at PrinterAdapter): the adapter owns its adaptee.</p>
+    </div>
+    <div class="panel">
+      <h2>Old system → new payment gateway <span class="r">lecture</span></h2>
+<pre class="code" data-j>
+public interface PaymentGateway { // old
+  void pay(double amount); }
+public class NewGateway {         // new
+  public void makePayment(double value) {
+    System.out.println("Payment of $"
+        + value + " processed");
+  }
+}
+public class PaymentAdapter
+    implements PaymentGateway {
+  private NewGateway newGateway;
+  public PaymentAdapter(NewGateway g) {
+    this.newGateway = g; }
+  @Override
+  public void pay(double amount) {
+    newGateway.makePayment(amount); }
+}
+PaymentGateway gateway =
+    new PaymentAdapter(new NewGateway());
+gateway.pay(150.75);</pre>
+      <p class="tiny mt">Same shape on the next slide with <code>Stripe.makePayment()</code> behind <code>StripeAdapter</code>. Java library adapters: <code>InputStreamReader</code> (InputStream → Reader), <code>Arrays.asList()</code> (array → List), <code>Collections.enumeration()</code> (Collection → Enumeration).</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter · examples</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: Quiz 1 in full, OOP and SOLID</h1><div class="lede">Every class the W4 parking answer uses, then what each part of an adapter does in OOP terms.</div></div>
+    <div class="meta">Structural<br><b>Complete code · theory</b></div>
+  </header>
+  <div class="panel">
+    <h2>Quiz 1 legacy parking payment, all classes <span class="r"><span class="y q">Quiz 1</span> Q5</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// TARGET: what the parking system calls
+public interface PaymentProcessor {
+  boolean pay(double amount); }
+
+// ADAPTEE: STUB of the vendor class.
+// The real one drives the machine; its
+// method name and codes are assumed.
+public class LegacyPaymentMachine {
+  // amount in cents; returns 0 = success
+  public int makeTransaction(int cents) {
+    return cents > 0 ? 0 : 1; }
+}</pre>
+<pre class="code" data-j>
+public class LegacyPaymentAdapter
+    implements PaymentProcessor {
+  private final LegacyPaymentMachine m;
+  public LegacyPaymentAdapter(
+      LegacyPaymentMachine m) { this.m = m; }
+  public boolean pay(double amount) {
+    int cents =
+        (int) Math.round(amount * 100);
+    return m.makeTransaction(cents) == 0;
+  }
+}
+// used by PaymentDueState (tab 09)
+PaymentProcessor processor =
+    new LegacyPaymentAdapter(
+        new LegacyPaymentMachine());</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Adapter code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small tight">
+      <tr><th style="width:18%">Concept</th><th style="width:38%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Abstraction / interface</b></td><td><code>BarcodeScanner</code>, <code>Printer</code>, <code>PaymentProcessor</code></td><td>The client is written against the target only, so any adapter can be plugged in.</td></tr>
+      <tr><td><b>Composition</b></td><td><code>private final NewBarcodeScanner scanner</code></td><td>Object adapter reuses the vendor class without inheriting from it.</td></tr>
+      <tr><td><b>Inheritance</b></td><td><code>ScannerClassAdapter extends NewBarcodeScanner</code></td><td>Class adapter reuses the adaptee's method by inheriting it.</td></tr>
+      <tr><td><b>Polymorphism</b></td><td><code>sc.scanBook()</code> on a <code>BarcodeScanner</code> variable</td><td>The adapter's version runs; the client can't tell it isn't an old scanner.</td></tr>
+      <tr><td><b>Encapsulation</b></td><td>conversion code (rupees → cents, result codes) inside <code>pay()</code></td><td>Translation details stay in one class.</td></tr>
+      <tr><td><b>OCP / SRP</b></td><td>new vendor = new adapter class; the adapter only translates</td><td>Hundreds of call sites stay closed to change; each class has one reason to change.</td></tr>
+      <tr><td><b>DIP</b></td><td>parking system depends on <code>PaymentProcessor</code>, not <code>LegacyPaymentMachine</code></td><td>The vendor detail sits behind an abstraction the system owns.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['adapter-class'] = {
+  items: [
+    {id:'t', k:'class', x:0, y:0, name:'BarcodeScanner', stereo:'interface', ops:['+ scanBook() : String']},
+    {id:'ad', k:'class', x:150, y:6, name:'NewBarcodeScanner', ops:['+ readBarcode() : String']},
+    {id:'a', k:'class', x:60, y:90, name:'ScannerClassAdapter', ops:['+ scanBook() : String']},
+  ],
+  edges: [
+    {a:'a', as:'top', ao:.25, b:'t', bs:'bottom', type:'realize'},
+    {a:'a', as:'top', ao:.8, b:'ad', bs:'bottom', type:'extend'},
+  ]
+};
+DIAGRAMS['adapter-2way'] = {
+  items: [
+    {id:'o', k:'class', x:0, y:0, name:'BarcodeScanner', stereo:'interface', ops:['+ scanBook()']},
+    {id:'n', k:'class', x:150, y:0, name:'ModernScanner', stereo:'interface', ops:['+ readBarcode()']},
+    {id:'a', k:'class', x:50, y:84, name:'TwoWayScannerAdapter', attrs:['- modern : ModernScanner', '- legacy : BarcodeScanner'], ops:['+ scanBook()', '+ readBarcode()']},
+  ],
+  edges: [
+    {a:'a', as:'top', ao:.2, b:'o', bs:'bottom', type:'realize'},
+    {a:'a', as:'top', ao:.8, b:'n', bs:'bottom', type:'realize'},
+  ]
+};
 DIAGRAMS['adapter'] = {
   items: [
     {id:'cl', k:'class', x:0, y:22, name:'LibrarySystem'},

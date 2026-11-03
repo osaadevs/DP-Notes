@@ -132,7 +132,8 @@ c.getCost();        <span class="c">// 200 + 80 + 20 = 300.0</span></pre>
         <span class="k">return</span> coffee.getDescription()
                + <span class="s">", Milk"</span>; }
 }
-<span class="c">// Sugar (+20), Chocolate (+120): same shape</span></pre>
+<span class="c">// Sugar (+20), Chocolate (+120) in full:</span>
+<span class="c">// "Decorator: complete code"</span></pre>
     </div>
   </div>
 </div>
@@ -209,14 +210,15 @@ it = <span class="k">new</span> GiftWrap(it);</pre>
     <h2>User profile: wrapping and real-world challenges <span class="r"><span class="y q">Quiz 5</span>, 3m + 4m</span></h2>
     <div class="g2" style="align-items:start">
 <pre class="code">UserProfile p = <span class="k">new</span> BasicUserProfile(
-    <span class="s">"Nimal"</span>, <span class="s">"nimal@mail.com"</span>, <span class="s">"n.png"</span>);
+    <span class="s">"Nimal"</span>, <span class="s">"nimal@mail.com"</span>,
+    <span class="s">"n.png"</span>, <span class="s">"pw1"</span>);
 p = <span class="k">new</span> PremiumBadgeDecorator(p);
 p = <span class="k">new</span> TwoFactorAuthDecorator(
         p, <span class="s">"0771234567"</span>);
 p = <span class="k">new</span> ProfileThemeDecorator(p, <span class="s">"Dark"</span>);
 p.getDetails();
 <span class="c">// [PREMIUM] Nimal (nimal@mail.com)</span>
-<span class="c">//   | theme: Dark</span></pre>
+<span class="c">//   | 2FA on | theme: Dark</span></pre>
       <table class="tight small">
         <tr><td style="width:27%"><b>Code complexity</b></td><td>Many small classes; hard to see one object's full feature set.</td></tr>
         <tr><td><b>Debugging</b></td><td>A call passes through many wrappers; the bug can be in any layer.</td></tr>
@@ -234,7 +236,7 @@ p.getDetails();
         <li><b>Debugging</b> → log in each decorator; test each one on its own.</li>
       </ul>
       <ul>
-        <li><b>Order matters</b> (discount then tax ≠ tax then discount) → fix the wrapping order in the builder.</li>
+        <li><b>Order can matter</b>: two % add-ons commute, but a fixed discount + % tax don't (see "Decorator: complete code") → fix the order in one builder.</li>
         <li><b>Performance</b> → negligible for short chains; cache the total.</li>
       </ul>
     </div>
@@ -243,7 +245,239 @@ p.getDetails();
 <div class="foot"><span>06 Decorator · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 06 DECORATOR : Quiz 5 profile (added) ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: Quiz 5 user profile in full</h1><div class="lede">Class structure (8m) and Java (3m) for the premium badge, 2FA and theme, with 2FA still enforced when more wrappers are added outside it.</div></div>
+    <div class="meta">Structural<br><b>Quiz answer</b></div>
+  </header>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Class structure</h2><span class="tiny">every decorator is a UserProfile and has a UserProfile</span></div>
+    <svg class="dg" data-d="deco-profile"></svg>
+  </div>
+  <div class="panel small">
+    <h2>Q2: how the pattern is applied <span class="r">3m</span></h2>
+    <p><code>UserProfile</code> becomes an interface (the <b>Component</b>) with <code>getDetails()</code> and <code>login()</code>. The existing name / email / picture class becomes <code>BasicUserProfile</code> (the <b>Concrete Component</b>) and is not modified further. An abstract <code>ProfileDecorator</code> implements <code>UserProfile</code> and holds one, forwarding every call. Each feature is a <b>Concrete Decorator</b>: <code>PremiumBadgeDecorator</code> changes how the profile is shown, <code>TwoFactorAuthDecorator</code> adds an OTP check to <code>login()</code>, <code>ProfileThemeDecorator</code> adds the theme. A user gets only the features they turned on, by wrapping, with no subclass per combination.</p>
+  </div>
+  <div class="panel small">
+    <h2>Why authentication can't be skipped</h2>
+    <p><code>ProfileThemeDecorator</code> is the outermost wrapper, but it doesn't override <code>login()</code>; the version it inherits from <code>ProfileDecorator</code> calls <code>inner.login()</code>, which reaches <code>TwoFactorAuthDecorator</code>, which checks the password (further in) and then the OTP. Any decorator added later behaves the same way. <b>The rule:</b> a decorator may <b>add</b> to a call but must always <b>pass it inwards</b>; a decorator whose <code>login()</code> returned <code>true</code> without calling <code>inner.login()</code> would switch 2FA off for every profile it wraps.</p>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator · Quiz 5</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: Quiz 5 Java, OOP and SOLID</h1><div class="lede">Every class for the profile structure on the previous page, and the client that wraps one profile with all three features (Q4, 3m).</div></div>
+    <div class="meta">Structural<br><b>Quiz answer</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// COMPONENT
+public interface UserProfile {
+  String getDetails();
+  boolean login(String pw, String otp);
+}
+// CONCRETE COMPONENT (the original data)
+public class BasicUserProfile
+    implements UserProfile {
+  private final String name, email, picture;
+  // demo only: a real system stores a hash
+  private final String password;
+  public BasicUserProfile(String name,
+      String email, String pic, String pw) {
+    this.name = name; this.email = email;
+    this.picture = pic; this.password = pw; }
+  public String getDetails() {
+    return name + " (" + email + ")"; }
+  public boolean login(String pw, String otp) {
+    return password.equals(pw); } // no OTP
+}
+// ABSTRACT DECORATOR: forwards EVERYTHING
+public abstract class ProfileDecorator
+    implements UserProfile {
+  protected final UserProfile inner;
+  protected ProfileDecorator(UserProfile p) {
+    inner = p; }
+  public String getDetails() {
+    return inner.getDetails(); }
+  public boolean login(String pw, String otp) {
+    return inner.login(pw, otp); }
+}
+// STUB: external SMS / OTP provider
+final class OtpService {
+  static boolean verify(String phone,
+                        String otp) {
+    return "123456".equals(otp); }  // demo
+}</pre>
+<pre class="code" data-j>
+public class PremiumBadgeDecorator
+    extends ProfileDecorator {
+  public PremiumBadgeDecorator(UserProfile p) {
+    super(p); }
+  public String getDetails() {
+    return "[PREMIUM] " + inner.getDetails(); }
+}
+public class TwoFactorAuthDecorator
+    extends ProfileDecorator {
+  private final String phone;
+  public TwoFactorAuthDecorator(UserProfile p,
+                                String phone) {
+    super(p); this.phone = phone; }
+  public String getDetails() {
+    return inner.getDetails() + " | 2FA on"; }
+  // password first (inner), THEN the OTP
+  public boolean login(String pw, String otp) {
+    return inner.login(pw, otp)
+        && OtpService.verify(phone, otp); }
+}
+public class ProfileThemeDecorator
+    extends ProfileDecorator {
+  private final String theme;
+  public ProfileThemeDecorator(UserProfile p,
+                               String theme) {
+    super(p); this.theme = theme; }
+  public String getDetails() {
+    return inner.getDetails()
+        + " | theme: " + theme; }
+  // no login() here: the inherited one
+  // forwards to the 2FA layer inside
+}
+// CLIENT
+UserProfile p = new BasicUserProfile("Nimal",
+    "nimal@mail.com", "n.png", "pw1");
+p = new PremiumBadgeDecorator(p);
+p = new TwoFactorAuthDecorator(p, "0771234567");
+p = new ProfileThemeDecorator(p, "Dark");
+p.login("pw1", null);      // false: no OTP
+p.login("pw1", "123456");  // true</pre>
+  </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Decorator code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small tight">
+      <tr><th style="width:18%">Concept</th><th style="width:38%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Interface (is-a)</b></td><td><code>CoffeeDecorator implements Coffee</code></td><td>A wrapped coffee is still a <code>Coffee</code>, so it can be wrapped again or used anywhere.</td></tr>
+      <tr><td><b>Composition (has-a)</b></td><td><code>protected Coffee coffee</code> set in the constructor</td><td>Behaviour is combined at runtime instead of fixed by subclasses (no 2ⁿ classes).</td></tr>
+      <tr><td><b>Polymorphism + delegation</b></td><td><code>coffee.getCost() + 80</code></td><td>Each layer calls whatever it wraps without knowing its class, then adds its part.</td></tr>
+      <tr><td><b>Inheritance</b></td><td><code>Milk extends CoffeeDecorator</code></td><td>Shares the wrapping field and default forwarding (<code>ProfileDecorator.login()</code>).</td></tr>
+      <tr><td><b>SRP / OCP</b></td><td>one add-on per class; new add-on = new class</td><td><code>BasicCoffee</code> and existing add-ons never change.</td></tr>
+      <tr><td><b>LSP</b></td><td>any decorator can replace the object it wraps</td><td>Holds only if every decorator keeps the contract, e.g. always forwarding <code>login()</code>.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator · Quiz 5</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 06 DECORATOR : complete code + order + OOP (added) ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: complete code and wrapping order</h1><div class="lede">The add-ons the shorter snippets leave out, and when the order of wrappers changes the answer.</div></div>
+    <div class="meta">Structural<br><b>Complete code</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// COFFEE (W3): the other two add-ons
+public class Sugar extends CoffeeDecorator {
+  public Sugar(Coffee c) { super(c); }
+  public double getCost() {
+    return coffee.getCost() + 20; }
+  public String getDescription() {
+    return coffee.getDescription()
+        + ", Sugar"; }
+}
+public class Chocolate extends CoffeeDecorator {
+  public Chocolate(Coffee c) { super(c); }
+  public double getCost() {
+    return coffee.getCost() + 120; }
+  public String getDescription() {
+    return coffee.getDescription()
+        + ", Chocolate"; }
+}</pre>
+<pre class="code" data-j>
+// KIOSK (2025 Q1): decorator + other add-ons
+public abstract class AddOnDecorator
+    implements CheckoutItem {
+  protected final CheckoutItem item;
+  protected AddOnDecorator(CheckoutItem i) {
+    item = i; }
+}
+public class EcoBag extends AddOnDecorator {
+  public EcoBag(CheckoutItem i) { super(i); }
+  public double getCost() {
+    return item.getCost() + 50; }
+  public String getDescription() {
+    return item.getDescription()
+        + " + eco-bag"; }
+}
+// ExpressPacking: as EcoBag, +100 (assumed)</pre>
+  </div>
+  <div class="panel">
+    <h2>When does the wrapping order change the total?</h2>
+    <div class="gc">
+<pre class="code" data-j>
+class FixedDiscount extends AddOnDecorator {
+  FixedDiscount(CheckoutItem i) { super(i); }
+  public double getCost() {
+    return item.getCost() - 100; }
+  public String getDescription() {
+    return item.getDescription(); }
+}
+class Tax extends AddOnDecorator {
+  Tax(CheckoutItem i) { super(i); }
+  public double getCost() {
+    return item.getCost() * 1.10; }
+  public String getDescription() {
+    return item.getDescription(); }
+}
+CheckoutItem g = new GroceryItem("Oil", 500);
+new Tax(new FixedDiscount(g)).getCost(); //440
+new FixedDiscount(new Tax(g)).getCost(); //450</pre>
+      <div class="small">
+        <p><b>Two percentages: order doesn't matter.</b> Multiplication commutes: 500 × 0.9 × 1.1 = 500 × 1.1 × 0.9 = <b>495</b>. A 10% discount and a 10% tax give the same total whichever wraps the other.</p>
+        <p><b>Fixed amount + percentage: order matters.</b> Rs 100 off and 10% tax on a Rs 500 item:</p>
+        <ul>
+          <li>discount first, then tax: (500 − 100) × 1.1 = <b>440</b></li>
+          <li>tax first, then discount: 500 × 1.1 − 100 = <b>450</b></li>
+        </ul>
+        <p>Decide the rule (usually tax on the discounted price) and build the chain in one place.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['deco-profile'] = {
+  items: [
+    {id:'c', k:'class', cx:300, y:0, name:'UserProfile', stereo:'interface', ops:['+ getDetails() : String', '+ login(pw, otp) : boolean']},
+    {id:'b', k:'class', cx:100, y:92, name:'BasicUserProfile', attrs:['- name, email, picture : String', '- password : String'], ops:['+ getDetails() : String', '+ login(pw, otp) : boolean']},
+    {id:'d', k:'class', cx:420, y:92, name:'ProfileDecorator', stereo:'abstract', abstract:true, attrs:['# inner : UserProfile'], ops:['+ getDetails() : String', '+ login(pw, otp) : boolean']},
+    {id:'m', k:'class', cx:250, y:210, name:'PremiumBadgeDecorator', ops:['+ getDetails()']},
+    {id:'t', k:'class', cx:420, y:210, name:'TwoFactorAuthDecorator', attrs:['- phone : String'], ops:['+ getDetails()', '+ login(pw, otp)']},
+    {id:'h', k:'class', cx:590, y:210, name:'ProfileThemeDecorator', attrs:['- theme : String'], ops:['+ getDetails()']},
+    {id:'o', k:'class', cx:420, y:300, name:'OtpService', stereo:'external stub', ops:['_+ verify(phone, otp) : boolean'], shade:true},
+  ],
+  edges: [
+    {a:'b', as:'top', b:'c', bs:'bottom', bo:.3, type:'realize', mid:74},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.7, type:'realize', mid:74},
+    {a:'d', as:'right', ao:.2, b:'c', bs:'right', bo:.5, type:'aggr', via:[[560,106],[560,27]], label:'inner  1', lx:566, ly:66, lanchor:'start'},
+    {a:'m', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'t', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'h', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'t', as:'bottom', b:'o', bs:'top', type:'depend', label:'uses'},
+  ]
+};
 DIAGRAMS['decorator'] = {
   items: [
     {id:'c', k:'class', cx:270, y:0, name:'Coffee', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},

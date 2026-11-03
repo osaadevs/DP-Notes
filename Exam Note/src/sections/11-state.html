@@ -32,6 +32,7 @@
         <tr><td>ON</td><td>off</td><td>turn TV off</td><td>OFF</td></tr>
         <tr><td>MUTE</td><td>on</td><td>sound back</td><td>ON</td></tr>
         <tr><td>MUTE</td><td>off</td><td>turn TV off</td><td>OFF</td></tr>
+        <tr><td>ON / MUTE</td><td>on / mute (same)</td><td>nothing</td><td>same</td></tr>
       </table>
     </div>
   </div>
@@ -132,9 +133,8 @@
   <span class="k">public void</span> archive(Document d) {
     System.out.println(<span class="s">"Publish first"</span>); }
 }
-<span class="c">// Draft: edit ok, submit → Moderation</span>
-<span class="c">// Published: archive → Archived only</span>
-<span class="c">// Archived: everything refused</span></pre>
+<span class="c">// Draft, Published, Archived in full:</span>
+<span class="c">// "State: complete code"</span></pre>
     </div>
   </div>
 </div>
@@ -177,6 +177,7 @@
   <span class="k">public void</span> setState(ParkingState s) {
     state = s; }
   <span class="k">public void</span> reserve() { state.reserve(<span class="k">this</span>); }
+  <span class="k">public void</span> cancel()  { state.cancel(<span class="k">this</span>); }
   <span class="k">public void</span> enter()   { state.enter(<span class="k">this</span>); }
   <span class="k">public void</span> exit()    { state.exit(<span class="k">this</span>); }
   <span class="k">public void</span> pay(<span class="k">double</span> amt) {
@@ -185,7 +186,7 @@
     </div>
     <div class="panel">
       <h2>Q5 Legacy payment machine</h2>
-      <p class="small">The vendor's machine can't be modified, so use an <b>Adapter</b>. <code>LegacyPaymentAdapter</code> implements the <code>PaymentProcessor</code> interface the system expects and calls the vendor's method inside. <code>PaymentDueState.pay()</code> calls <code>processor.pay(amount)</code>; if it succeeds it moves the session to Closed. Code: tab 04, W4.</p>
+      <p class="small">States in full: "State: complete code". The vendor's machine can't be modified, so use an <b>Adapter</b>. <code>LegacyPaymentAdapter</code> implements the <code>PaymentProcessor</code> interface the system expects and calls the vendor's method inside. <code>PaymentDueState.pay()</code> calls <code>processor.pay(amount)</code>; if it succeeds it moves the session to Closed. Code: tab 04, W4.</p>
     </div>
   </div>
 </div>
@@ -209,21 +210,25 @@
   <div class="panel">
     <h2>How to incorporate the states, with an example transition</h2>
     <div class="g2" style="align-items:start">
-      <p class="small"><b>State pattern.</b> <code>Kiosk</code> is the context and holds a <code>KioskState</code>. <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code> and <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code> and <code>cancel()</code>.<br><br><b>Example:</b> in <code>ScanningState</code>, pressing Checkout adds up the decorated items' <code>getCost()</code>, adds tax with <code>TaxCalculator.getInstance()</code> (Singleton) and moves to <code>PaymentState</code>. In <code>IdleState</code>, <code>pay()</code> is refused: "scan items first".</p>
+      <p class="small"><b>State pattern.</b> <code>Kiosk</code> is the context and holds a <code>KioskState</code>. <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code> and <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code>, <code>cancel()</code> and <code>printReceipt()</code>, the five events on the diagram.<br><br><b>Example:</b> in <code>ScanningState</code>, pressing Checkout adds up the decorated items' <code>getCost()</code>, adds tax with <code>TaxCalculator.getInstance()</code> (Singleton) and moves to <code>PaymentState</code>. In <code>IdleState</code>, <code>pay()</code> is refused: "scan items first". All five states in full: "State: kiosk in full".</p>
 <pre class="code"><span class="k">public class</span> ScanningState
         <span class="k">implements</span> KioskState {
   <span class="k">public void</span> scanItem(Kiosk k,
                        CheckoutItem i) {
     k.addItem(i); }        <span class="c">// stay here</span>
   <span class="k">public void</span> checkout(Kiosk k) {
-    <span class="k">double</span> total = TaxCalculator
-        .getInstance()
-        .applyTax(k.subtotal());
-    k.setTotal(total);
+    <span class="k">double</span> sub = k.subtotal();
+    k.setTotal(sub + TaxCalculator
+        .getInstance().calculateTax(sub));
     k.setState(<span class="k">new</span> PaymentState());
   }
+  <span class="k">public void</span> cancel(Kiosk k) {
+    k.clearItems();
+    k.setState(<span class="k">new</span> IdleState()); }
   <span class="k">public void</span> pay(Kiosk k, <span class="k">double</span> a) {
     System.out.println(<span class="s">"Checkout first"</span>); }
+  <span class="k">public void</span> printReceipt(Kiosk k) {
+    System.out.println(<span class="s">"Pay first"</span>); }
 }</pre>
     </div>
   </div>
@@ -254,7 +259,424 @@
 <div class="foot"><span>09 State · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 09 STATE : complete code (added) ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: complete code</h1><div class="lede">The document states W3 leaves as comments, and every parking state. Each class allows exactly the arrows on its state diagram and refuses everything else.</div></div>
+    <div class="meta">Behavioural<br><b>Complete code</b></div>
+  </header>
+  <div class="panel">
+    <h2>Document workflow: the other three states <span class="r"><span class="y">2024</span> Q3</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// default: every action refused
+public abstract class BaseDocState
+    implements DocumentState {
+  public void edit(Document d, String t) {
+    no(); }
+  public void submit(Document d)  { no(); }
+  public void approve(Document d) { no(); }
+  public void reject(Document d)  { no(); }
+  public void archive(Document d) { no(); }
+  protected void no() {
+    System.out.println("Not allowed in "
+        + getClass().getSimpleName()); }
+}
+public class DraftState extends BaseDocState {
+  public void edit(Document d, String t) {
+    d.setContent(t); }          // stay
+  public void submit(Document d) {
+    d.setState(new ModerationState()); }
+}</pre>
+<pre class="code" data-j>
+public class PublishedState
+    extends BaseDocState {
+  public void archive(Document d) {
+    d.setState(new ArchivedState()); }
+}
+// final state: inherits "refuse" for all
+public class ArchivedState
+    extends BaseDocState { }
+
+// Document also needs:
+//   void setContent(String c) {
+//     content = c; }
+// ModerationState (W3) could also
+// extend BaseDocState.</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Smart parking: all states <span class="r"><span class="y q">Quiz 1</span> · events: reserve, cancel, enter, exit, pay</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public interface ParkingState {
+  void reserve(ParkingSession s);
+  void cancel(ParkingSession s);
+  void enter(ParkingSession s);
+  void exit(ParkingSession s);
+  void pay(ParkingSession s, double amt);
+}
+// default: every event refused
+public abstract class BaseParkingState
+    implements ParkingState {
+  public void reserve(ParkingSession s) {
+    no(); }
+  public void cancel(ParkingSession s) {no();}
+  public void enter(ParkingSession s) {no();}
+  public void exit(ParkingSession s) {no();}
+  public void pay(ParkingSession s,
+                  double a) { no(); }
+  protected void no() { System.out.println(
+      "Not allowed in "
+      + getClass().getSimpleName()); }
+}
+public class AvailableState
+    extends BaseParkingState {
+  public void reserve(ParkingSession s) {
+    s.setState(new ReservedState()); }
+  public void enter(ParkingSession s) {
+    s.setState(new OccupiedState()); }
+}                                   // walk-in</pre>
+<pre class="code" data-j>
+public class ReservedState
+    extends BaseParkingState {
+  public void enter(ParkingSession s) {
+    s.setState(new OccupiedState()); }
+  public void cancel(ParkingSession s) {
+    s.setState(new AvailableState()); }
+}
+public class OccupiedState
+    extends BaseParkingState {
+  public void exit(ParkingSession s) {
+    s.setFee(s.hoursParked() * 100);
+    s.setState(new PaymentDueState()); }
+}
+public class PaymentDueState
+    extends BaseParkingState {
+  public void pay(ParkingSession s,
+                  double amt) {
+    if (amt >= s.getFee()
+        && s.getProcessor().pay(amt))
+      s.setState(new ClosedState());
+    else System.out.println(
+        "Payment failed, still due");
+  }
+}
+// final state: nothing allowed
+public class ClosedState
+    extends BaseParkingState { }
+</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>09 State · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE : kiosk in full (added) ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: kiosk in full</h1><div class="lede">2025 Q1: the five events on the kiosk diagram, every state, the context, and the Singleton tax calculator they share.</div></div>
+    <div class="meta">Behavioural<br><b>Complete code</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public interface KioskState {
+  void scanItem(Kiosk k, CheckoutItem i);
+  void checkout(Kiosk k);
+  void pay(Kiosk k, double amount);
+  void cancel(Kiosk k);
+  void printReceipt(Kiosk k);
+}
+public class Kiosk {                 // CONTEXT
+  private KioskState state =
+      new IdleState();
+  private final List<CheckoutItem> items =
+      new ArrayList<>();
+  private double total;
+  public void setState(KioskState s) {
+    state = s; }
+  // events, delegated to the current state
+  public void scan(CheckoutItem i) {
+    state.scanItem(this, i); }
+  public void checkout() {
+    state.checkout(this); }
+  public void pay(double a) {
+    state.pay(this, a); }
+  public void cancel() { state.cancel(this); }
+  public void printReceipt() {
+    state.printReceipt(this); }
+  // helpers used by the states
+  void addItem(CheckoutItem i) {
+    items.add(i); }
+  void clearItems() {
+    items.clear(); total = 0; }
+  double subtotal() {
+    return items.stream()
+        .mapToDouble(CheckoutItem::getCost)
+        .sum(); }
+  void setTotal(double t) { total = t; }
+  double getTotal() { return total; }
+}
+public final class TaxCalculator { // SINGLETON
+  private static final TaxCalculator INSTANCE
+      = new TaxCalculator();
+  private final double rate = 0.18; // assumed
+  private TaxCalculator() { }
+  public static TaxCalculator getInstance() {
+    return INSTANCE; }
+  public double calculateTax(double sub) {
+    return sub * rate; }
+}</pre>
+<pre class="code" data-j>
+public class IdleState implements KioskState {
+  public void scanItem(Kiosk k,
+                       CheckoutItem i) {
+    k.addItem(i);
+    k.setState(new ScanningState()); }
+  public void checkout(Kiosk k) {
+    say("Scan items first"); }
+  public void pay(Kiosk k, double a) {
+    say("Scan items first"); }
+  public void cancel(Kiosk k) {
+    say("Nothing to cancel"); }
+  public void printReceipt(Kiosk k) {
+    say("No sale"); }
+  static void say(String m) {
+    System.out.println(m); }
+}
+// ScanningState: page "State: kiosk and
+// interfaces" (scanItem stays, checkout ->
+// Payment, cancel -> Idle)
+public class PaymentState
+    implements KioskState {
+  public void pay(Kiosk k, double amount) {
+    if (amount >= k.getTotal())
+      k.setState(new CompletedState());
+    else IdleState.say("Payment failed, "
+        + "try again");     // stay here
+  }
+  public void cancel(Kiosk k) {   // edit cart
+    k.setState(new ScanningState()); }
+  public void scanItem(Kiosk k,
+      CheckoutItem i) {
+    IdleState.say("Cancel to add items"); }
+  public void checkout(Kiosk k) {
+    IdleState.say("Already at payment"); }
+  public void printReceipt(Kiosk k) {
+    IdleState.say("Pay first"); }
+}
+public class CompletedState
+    implements KioskState {
+  public void printReceipt(Kiosk k) {
+    System.out.println("Receipt: "
+        + k.getTotal());
+    k.clearItems();
+    k.setState(new IdleState()); }
+  public void scanItem(Kiosk k,
+      CheckoutItem i) {
+    IdleState.say("Take your receipt"); }
+  public void checkout(Kiosk k) {
+    IdleState.say("Sale complete"); }
+  public void pay(Kiosk k, double a) {
+    IdleState.say("Already paid"); }
+  public void cancel(Kiosk k) {
+    IdleState.say("Already paid"); }
+}</pre>
+  </div>
+</div>
+<div class="foot"><span>09 State · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE : lecture examples + OOP (added) ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: TV remote and vending machine</h1><div class="lede">The two lecture examples in code: the TV state table from the first State page, and the vending machine that replaces if/else on a status field.</div></div>
+    <div class="meta">Behavioural<br><b>Examples</b></div>
+  </header>
+  <div class="panel">
+    <h2>TV remote <span class="r">states OFF / ON / MUTE · events pressOn, pressOff, pressMute</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public interface State {
+  void pressOnButton(TV tv);
+  void pressOffButton(TV tv);
+  void pressMuteButton(TV tv);
+}
+public class TV {            // CONTEXT
+  private State currentState =
+      new OffState();
+  public void setState(State s) {
+    currentState = s; }
+  public void pressOnButton() {
+    currentState.pressOnButton(this); }
+  public void pressOffButton() {
+    currentState.pressOffButton(this); }
+  public void pressMuteButton() {
+    currentState.pressMuteButton(this); }
+}
+public class OffState implements State {
+  public void pressOnButton(TV tv) {
+    System.out.println("TV on");
+    tv.setState(new OnState()); }
+  public void pressOffButton(TV tv) { }
+  public void pressMuteButton(TV tv) { }
+}             // off and mute do nothing</pre>
+<pre class="code" data-j>
+public class OnState implements State {
+  public void pressOnButton(TV tv) {
+    System.out.println("Already on"); }
+  public void pressOffButton(TV tv) {
+    tv.setState(new OffState()); }
+  public void pressMuteButton(TV tv) {
+    System.out.println("Muted");
+    tv.setState(new MuteState()); }
+}
+public class MuteState implements State {
+  public void pressOnButton(TV tv) {
+    System.out.println("Sound back");
+    tv.setState(new OnState()); }
+  public void pressOffButton(TV tv) {
+    tv.setState(new OffState()); }
+  public void pressMuteButton(TV tv) {
+    System.out.println("Already muted"); }
+}
+TV tv = new TV();        // OFF
+tv.pressOnButton();      // ON
+tv.pressMuteButton();    // MUTE
+tv.pressOnButton();      // ON
+tv.pressOffButton();     // OFF</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Vending machine <span class="r">lecture: Idle · Has One Dollar · Out of Stock</span></h2>
+    <svg class="dg" data-d="state-vend"></svg>
+    <p class="small mt"><b>Traditional version:</b> every method is <code>if (currentState == State.Idle) … else if (currentState == State.HasOneDollar) …</code>. <b>State version:</b> <code>insertDollar()</code> becomes <code>currentState.insertDollar(this)</code>, and each state class holds its own rules. The code is on the next page.</p>
+  </div>
+</div>
+<div class="foot"><span>09 State · examples</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: vending machine code, OOP and SOLID</h1><div class="lede">The lecture's vending machine with State classes, then what each part of the pattern does in OOP terms.</div></div>
+    <div class="meta">Behavioural<br><b>Examples · theory</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public interface VendState {
+  void insertDollar(VendingMachine m);
+  void ejectMoney(VendingMachine m);
+  void dispense(VendingMachine m);
+}
+public class VendingMachine {     // CONTEXT
+  private final VendState idle =
+      new IdleState();
+  private final VendState hasOneDollar =
+      new HasOneDollarState();
+  private final VendState outOfStock =
+      new OutOfStockState();
+  private VendState currentState;
+  private int count;
+  public VendingMachine(int count) {
+    this.count = Math.max(count, 0);
+    currentState = count > 0 ? idle
+                             : outOfStock; }
+  public void insertDollar() {
+    currentState.insertDollar(this); }
+  public void ejectMoney() {
+    currentState.ejectMoney(this); }
+  public void dispense() {
+    currentState.dispense(this); }
+  void setState(VendState s) {
+    currentState = s; }
+  VendState getIdleState() { return idle; }
+  VendState getHasOneDollarState() {
+    return hasOneDollar; }
+  VendState getOutOfStockState() {
+    return outOfStock; }
+  int getCount() { return count; }
+  void doReturnMoney() {
+    System.out.println("Money returned"); }
+  void doReleaseProduct() {
+    count--;
+    System.out.println("Product out"); }
+}</pre>
+<pre class="code" data-j>
+class IdleState implements VendState {
+  public void insertDollar(VendingMachine m) {
+    System.out.println("Dollar inserted");
+    m.setState(m.getHasOneDollarState()); }
+  public void ejectMoney(VendingMachine m) {
+    System.out.println("No money"); }
+  public void dispense(VendingMachine m) {
+    System.out.println("Payment required"); }
+}
+class HasOneDollarState implements VendState {
+  public void insertDollar(VendingMachine m) {
+    System.out.println("Already have $1");
+    m.doReturnMoney();
+    m.setState(m.getIdleState()); }
+  public void ejectMoney(VendingMachine m) {
+    m.doReturnMoney();
+    m.setState(m.getIdleState()); }
+  public void dispense(VendingMachine m) {
+    boolean last = m.getCount() == 1;
+    m.doReleaseProduct();
+    m.setState(last ? m.getOutOfStockState()
+                    : m.getIdleState()); }
+}
+class OutOfStockState implements VendState {
+  public void insertDollar(VendingMachine m) {
+    m.doReturnMoney(); }     // stay
+  public void ejectMoney(VendingMachine m) {
+    System.out.println("No money"); }
+  public void dispense(VendingMachine m) {
+    System.out.println("Sold out"); }
+}</pre>
+  </div>
+  <p class="tiny">State objects are created once and reused. These vending <code>IdleState</code> classes are separate from the kiosk's.</p>
+  <div class="panel">
+    <h2>OOP and SOLID in the State code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small tight">
+      <tr><th style="width:18%">Concept</th><th style="width:38%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Interface + polymorphism</b></td><td><code>DocumentState</code>; <code>state.submit(this)</code></td><td>The context calls one method and the current state's version runs: no if/else on status.</td></tr>
+      <tr><td><b>Composition / delegation</b></td><td><code>private DocumentState state</code> in <code>Document</code></td><td>Behaviour is supplied by a replaceable object, so it changes when <code>setState()</code> swaps it.</td></tr>
+      <tr><td><b>Encapsulation</b></td><td>transition rules inside each state class</td><td>Only allowed moves exist; e.g. <code>ArchivedState</code> has no way back.</td></tr>
+      <tr><td><b>Inheritance (optional)</b></td><td><code>BaseParkingState</code> refuses every event by default</td><td>Concrete states override only the events they allow.</td></tr>
+      <tr><td><b>SRP / OCP</b></td><td>one class per state; a new state = a new class</td><td>Adding Overstay or LegalReview doesn't touch the other states' rules.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>09 State · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['state-vend'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:67},
+    {id:'id', k:'state', x:30, y:50, w:70, h:34, label:'Idle'},
+    {id:'hd', k:'state', x:250, y:50, w:120, h:34, label:'Has One Dollar'},
+    {id:'os', k:'state', x:470, y:55, w:100, label:'Out of Stock'},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'id', bs:'left', type:'trans'},
+    {a:'id', as:'right', ao:.3, b:'hd', bs:'left', bo:.3, type:'trans', label:'insertDollar', ly:55},
+    {a:'hd', as:'left', ao:.7, b:'id', bs:'right', bo:.7, type:'trans', label:'ejectMoney / doReturnMoney', ly:94},
+    {a:'hd', as:'top', ao:.3, b:'id', bs:'top', bo:.5, type:'trans', loop:22, label:'insertDollar / doReturnMoney'},
+    {a:'hd', as:'bottom', ao:.4, b:'id', bs:'bottom', bo:.5, type:'trans', loop:30, label:'dispense [count > 1] / doReleaseProduct'},
+    {a:'hd', as:'right', b:'os', bs:'left', type:'trans', label:'dispense [count == 1]'},
+    {a:'os', as:'top', ao:.3, b:'os', bs:'top', bo:.7, type:'trans', loop:16, label:'insertDollar / doReturnMoney'},
+  ]
+};
 DIAGRAMS['state-doc'] = {
   items: [
     {id:'i', k:'init', cx:6, cy:42},
@@ -308,14 +730,14 @@ DIAGRAMS['state-park'] = {
     {a:'oc', as:'right', b:'pd', bs:'left', type:'trans', label:'exit()'},
     {a:'pd', as:'right', b:'cl', bs:'left', type:'trans', label:'pay()'},
     {a:'cl', as:'right', b:'f', bs:'left', type:'trans'},
-    {a:'re', as:'top', b:'av', bs:'top', type:'trans', loop:22, label:'cancel() / timeout'},
+    {a:'re', as:'top', b:'av', bs:'top', type:'trans', loop:22, label:'cancel()'},
     {a:'av', as:'bottom', b:'oc', bs:'bottom', type:'trans', loop:22, label:'enter()  (walk-in)'},
   ]
 };
 DIAGRAMS['park-class'] = {
   items: [
-    {id:'c', k:'class', x:0, y:0, name:'ParkingSession', stereo:'Context', attrs:['- state : ParkingState', '- vehicleNo : String', '- fee : double'], ops:['+ reserve() / enter() / exit()', '+ pay(amount : double)', '+ setState(s : ParkingState)']},
-    {id:'s', k:'class', x:250, y:6, name:'ParkingState', stereo:'interface', ops:['+ reserve(s : ParkingSession)', '+ enter(s : ParkingSession)', '+ exit(s : ParkingSession)', '+ pay(s, amount : double)']},
+    {id:'c', k:'class', x:0, y:0, name:'ParkingSession', stereo:'Context', attrs:['- state : ParkingState', '- vehicleNo : String', '- fee : double'], ops:['+ reserve() / cancel()', '+ enter() / exit()', '+ pay(amount : double)', '+ setState(s : ParkingState)']},
+    {id:'s', k:'class', x:250, y:6, name:'ParkingState', stereo:'interface', ops:['+ reserve(s : ParkingSession)', '+ cancel(s : ParkingSession)', '+ enter(s : ParkingSession)', '+ exit(s : ParkingSession)', '+ pay(s, amount : double)']},
     {id:'a', k:'class', cx:50, y:150, w:100, name:'AvailableState'},
     {id:'b', k:'class', cx:158, y:150, w:100, name:'ReservedState'},
     {id:'o', k:'class', cx:266, y:150, w:100, name:'OccupiedState'},
@@ -333,20 +755,22 @@ DIAGRAMS['park-class'] = {
 };
 DIAGRAMS['state-kiosk'] = {
   items: [
-    {id:'i', k:'init', cx:6, cy:42},
-    {id:'id', k:'state', x:28, y:30, w:60, label:'Idle'},
-    {id:'sc', k:'state', x:150, y:30, w:80, label:'Scanning'},
-    {id:'py', k:'state', x:296, y:30, w:78, label:'Payment'},
-    {id:'co', k:'state', x:436, y:30, w:88, label:'Completed'},
+    {id:'i', k:'init', cx:6, cy:52},
+    {id:'id', k:'state', x:28, y:40, w:60, label:'Idle'},
+    {id:'sc', k:'state', x:150, y:40, w:80, label:'Scanning'},
+    {id:'py', k:'state', x:296, y:40, w:78, label:'Payment'},
+    {id:'co', k:'state', x:436, y:40, w:88, label:'Completed'},
   ],
   edges: [
     {a:'i', as:'right', b:'id', bs:'left', type:'trans'},
-    {a:'id', as:'right', b:'sc', bs:'left', type:'trans', label:'scanItem()'},
-    {a:'sc', as:'right', b:'py', bs:'left', type:'trans', label:'checkout()'},
+    {a:'id', as:'right', b:'sc', bs:'left', ao:.35, bo:.35, type:'trans', label:'scanItem()', ly:44},
+    {a:'sc', as:'left', ao:.75, b:'id', bs:'right', bo:.75, type:'trans', label:'cancel()', ly:72},
+    {a:'sc', as:'right', ao:.35, b:'py', bs:'left', bo:.35, type:'trans', label:'checkout()', ly:44},
+    {a:'py', as:'left', ao:.75, b:'sc', bs:'right', bo:.75, type:'trans', label:'cancel()', ly:72},
     {a:'py', as:'right', b:'co', bs:'left', type:'trans', label:'pay() ok'},
     {a:'sc', as:'top', ao:.3, b:'sc', bs:'top', bo:.7, type:'trans', loop:14, label:'scanItem()'},
-    {a:'py', as:'top', b:'sc', bs:'top', bo:.85, type:'trans', loop:42, label:'cancel / payment failed'},
-    {a:'co', as:'bottom', b:'id', bs:'bottom', type:'trans', loop:22, label:'printReceipt() / timeout'},
+    {a:'py', as:'top', ao:.3, b:'py', bs:'top', bo:.7, type:'trans', loop:14, label:'pay() failed'},
+    {a:'co', as:'bottom', b:'id', bs:'bottom', type:'trans', loop:30, label:'printReceipt()'},
   ]
 };
 </script>

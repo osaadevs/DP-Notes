@@ -78,7 +78,8 @@ Database db =
 
   <div class="panel">
     <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
-    <div class="say">I would use the <b>Factory Method</b> pattern, which is a creational pattern. It defines an interface for creating an object but lets the factory (or a subclass) decide <b>which class to instantiate</b>, so the client never uses <code>new</code> on a concrete class.</div>
+    <div class="say">I would use the <b>Factory Method</b> pattern, which is a creational pattern. It defines an interface for creating an object but lets <b>subclasses decide which class to instantiate</b>, so the client never uses <code>new</code> on a concrete class.</div>
+    <p class="tiny">The W2/W3 code on this page is the <b>Simple Factory</b> form (one class, one switch), which is what Quiz 2 and the 2025 BookFactory ask for. The GoF form, with Creator subclasses, is on the page "Factory Method: GoF version in full". Say which form you are writing.</p>
     <p class="small"><b>Reasons:</b> (1) <b>loose coupling</b>, because the client depends only on the <code>Database</code> interface, not on MySQL or MongoDB classes; (2) the <b>creation logic is in one place</b> instead of if-else copied across the code; (3) it is <b>easy to extend (Open/Closed)</b>: a new type is one new class and one new case, and client code doesn't change.</p>
     <p class="small"><b>Mapping:</b> Product = <b>Database</b> «interface» · concrete products = <b>MySQLDatabase, PostgreSQLDatabase, MongoDatabase</b> · factory = <b>DatabaseFactory.getDatabase(type)</b> · client = <b>ProductService</b>.</p>
   </div>
@@ -104,8 +105,8 @@ Database db =
     <span class="k">public void</span> create(Product p) {
         <span class="c">/* INSERT into MySQL */</span> }
 }
-<span class="c">// PostgreSQLDatabase, MongoDatabase:</span>
-<span class="c">// same shape</span></pre>
+<span class="c">// PostgreSQL, Mongo + Product class:</span>
+<span class="c">// "Factory Method: complete code"</span></pre>
 <pre class="code"><span class="c">// 3. FACTORY: the only place with "new"</span>
 <span class="k">public class</span> DatabaseFactory {
   <span class="k">public static</span> Database getDatabase(
@@ -165,7 +166,8 @@ db.create(product);</pre>
     <span class="k">public</span> String getCategory() {
         <span class="k">return</span> <span class="s">"Fiction"</span>; }
 }
-<span class="c">// ResearchBook, Magazine: same shape</span></pre>
+<span class="c">// ResearchBook, Magazine in full:</span>
+<span class="c">// "Factory Method: complete code"</span></pre>
 <pre class="code"><span class="k">public class</span> BookFactory {
   <span class="k">public static</span> Book createBook(
           String type, String title) {
@@ -190,7 +192,7 @@ Book b = BookFactory.createBook(
   <div class="g2">
     <div class="panel">
       <h2>Bank accounts <span class="r"><span class="y">2023</span> Q4.2, 5m</span></h2>
-      <p class="small">Factory Method. An <code>Account</code> interface (or abstract class) with <code>deposit()</code>, <code>withdraw()</code> and <code>calculateInterest()</code>. <code>CurrentAccount</code>, <code>SavingAccount</code> and <code>ChildrenAccount</code> implement it with their own rules (overdraft, interest, withdrawal limit). <code>AccountFactory.createAccount(type)</code> returns the right one. The bank code only uses <code>Account</code>, so a new FixedDeposit account can be added without touching it.</p>
+      <p class="small">Factory Method (Simple Factory form; full code on "Factory Method: complete code"). An <code>Account</code> abstract class with <code>deposit()</code>, <code>withdraw()</code> and <code>calculateInterest()</code>. <code>CurrentAccount</code>, <code>SavingAccount</code> and <code>ChildrenAccount</code> implement it with their own rules (overdraft, interest, withdrawal limit). <code>AccountFactory.createAccount(type)</code> returns the right one. The bank code only uses <code>Account</code>, so a new FixedDeposit account can be added without touching it.</p>
     </div>
     <div class="panel">
       <h2>Payment objects <span class="r"><span class="y">2025</span> Q4.1(d)</span></h2>
@@ -208,7 +210,7 @@ Book b = BookFactory.createBook(
 <div class="body">
   <header class="ph">
     <div class="code">02</div>
-    <div><h1>Factory Method: more answers</h1><div class="lede">Short 5-mark answers, the names to swap in, and the challenges.</div></div>
+    <div><h1>Factory Method: more answers</h1><div class="lede">Short 5-mark answers, the names to swap in, the challenges, and the OOP / SOLID terms.</div></div>
     <div class="meta">Creational<br><b>Answers</b></div>
   </header>
   <div class="g2">
@@ -243,25 +245,344 @@ Book b = BookFactory.createBook(
       </ul>
     </div>
   </div>
-  <div class="gc">
-    <div class="fig">
-      <div class="cap"><h2 style="margin:0">The strict GoF version</h2><span class="tiny">subclasses decide</span></div>
-      <svg class="dg" data-d="factory-gof"></svg>
-    </div>
-    <div class="panel">
-      <h2>Two forms</h2>
-      <p class="small"><b>Simple factory</b> (what the lectures and past answers use): one class with a static <code>create(type)</code> method and a switch.</p>
-      <p class="small"><b>GoF Factory Method</b>: an abstract Creator declares <code>factoryMethod()</code>, and each ConcreteCreator subclass returns its own product.</p>
-      <p class="small">Either is accepted. Use the simple one unless the question says "let subclasses decide".</p>
-
-    </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Factory code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small">
+      <tr><th style="width:18%">Concept</th><th style="width:36%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Abstraction</b></td><td><code>Database</code>, <code>Payment</code> interfaces; method return types are the interface</td><td>Client code names only the interface, never <code>MySQLDatabase</code> or <code>CreditCard</code>.</td></tr>
+      <tr><td><b>Polymorphism</b></td><td><code>db.create(product)</code>, <code>payment.pay(amount)</code></td><td>The call runs the version of whichever object the factory returned at runtime.</td></tr>
+      <tr><td><b>Inheritance + overriding</b></td><td><code>CreditCardFactory extends PaymentFactory</code>, overrides <code>createPayment()</code></td><td>Each subclass supplies its own product; the shared <code>processPayment()</code> is inherited unchanged.</td></tr>
+      <tr><td><b>Encapsulation</b></td><td>the switch in <code>getDatabase()</code>; the <code>new</code> inside each <code>createPayment()</code></td><td>How objects are built is hidden in one place; callers can't depend on it.</td></tr>
+      <tr><td><b>SRP</b></td><td><code>DatabaseFactory</code> creates; <code>ProductService</code> uses</td><td>Creation and business logic change for different reasons, so they live in different classes.</td></tr>
+      <tr><td><b>OCP</b></td><td>GoF: add <code>CryptoFactory</code> + <code>Crypto</code></td><td>Extended by adding classes. (Simple Factory: clients are closed, the switch is not.)</td></tr>
+      <tr><td><b>DIP / LSP</b></td><td><code>ProductService</code> holds <code>Database db</code>; <code>processPayment()</code> uses <code>Payment</code></td><td>High-level code depends on abstractions, and any implementation can be substituted without breaking it.</td></tr>
+    </table>
   </div>
-
 </div>
 <div class="foot"><span>02 Factory Method · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 02 FACTORY : complete code (added) ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method: complete code</h1><div class="lede">The classes the shorter snippets leave out, so every example compiles as a whole.</div></div>
+    <div class="meta">Creational<br><b>Complete code</b></div>
+  </header>
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>Database example: the rest <span class="r"><span class="y q">Quiz 2</span></span></h2>
+<pre class="code" data-j>
+// the data being saved
+public class Product {
+  private final String id, name;
+  private final double price;
+  public Product(String id, String name,
+                 double price) {
+    this.id = id; this.name = name;
+    this.price = price; }
+  public String getId()   { return id; }
+  public String getName() { return name; }
+  public double getPrice() {
+    return price; }
+}
+// STUB bodies: println stands in for
+// the real JDBC / MongoDB driver calls
+public class PostgreSQLDatabase
+    implements Database {
+  public void connect() {
+    System.out.println("PostgreSQL up"); }
+  public void create(Product p) {
+    System.out.println("PG insert "
+        + p.getId()); }
+}
+public class MongoDatabase
+    implements Database {
+  public void connect() {
+    System.out.println("MongoDB up"); }
+  public void create(Product p) {
+    System.out.println("Mongo insert "
+        + p.getId()); }
+}</pre>
+    </div>
+    <div class="panel">
+      <h2>Book types: the rest <span class="r"><span class="y">2025</span> Q3.3</span></h2>
+<pre class="code" data-j>
+public class ResearchBook implements Book {
+  private final String title;
+  public ResearchBook(String title) {
+    this.title = title; }
+  public String getTitle() {
+    return title; }
+  public String getCategory() {
+    return "Research"; }
+}
+public class Magazine implements Book {
+  private final String title;
+  public Magazine(String title) {
+    this.title = title; }
+  public String getTitle() {
+    return title; }
+  public String getCategory() {
+    return "Magazine"; }
+}</pre>
+      <p class="tiny mt">Together with <code>Book</code>, <code>FictionBook</code> and <code>BookFactory</code> on the answers page, this is the whole 2025 Q3.2–3.3 answer.</p>
+    </div>
+    <div class="panel">
+      <h2>Payment objects <span class="r"><span class="y">2025</span> Q4.1(d)</span></h2>
+<pre class="code" data-j>
+public class PaymentFactory {
+  public static PaymentProcessor create(
+      String method) {
+    switch (method) {
+      case "CARD": return new
+          CreditCardPaymentProcessor();
+      case "PAYPAL": return new
+          PayPalPaymentProcessor();
+      case "COD": return new
+          CashOnDeliveryProcessor();
+      default: throw new
+          IllegalArgumentException(method);
+    }
+  }
+}</pre>
+      <p class="tiny mt">The processors are the Template Method classes in tab 07.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>02 Factory Method · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method: bank accounts in full</h1><div class="lede">The 2023 Q4.2 accounts written out: abstract product, three concrete products, one factory.</div></div>
+    <div class="meta">Creational<br><b>Complete code</b></div>
+  </header>
+  <div class="panel">
+    <h2>Bank accounts in full <span class="r"><span class="y">2023</span> Q4.2 · rates and limits are example values, not from the question</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+public abstract class Account {
+  protected final String accountNo;
+  protected double balance;
+  protected Account(String no, double open) {
+    accountNo = no; balance = open; }
+  public void deposit(double amt) {
+    if (amt <= 0)
+      throw new IllegalArgumentException();
+    balance += amt; }
+  public abstract void withdraw(double amt);
+  public abstract double interestRate();
+  public double calculateInterest() {
+    return balance * interestRate(); }
+  public double getBalance() {
+    return balance; }
+}
+public class CurrentAccount extends Account {
+  private static final double
+      OVERDRAFT = 50000;
+  public CurrentAccount(String n, double o) {
+    super(n, o); }
+  public void withdraw(double amt) {
+    if (balance - amt < -OVERDRAFT)
+      throw new IllegalStateException(
+          "Overdraft limit");
+    balance -= amt; }
+  public double interestRate() {
+    return 0; }
+}</pre>
+<pre class="code" data-j>
+public class SavingAccount extends Account {
+  public SavingAccount(String n, double o) {
+    super(n, o); }
+  public void withdraw(double amt) {
+    if (amt > balance)   // no overdraft
+      throw new IllegalStateException(
+          "Funds");
+    balance -= amt; }
+  public double interestRate() {
+    return 0.04; }
+}
+public class ChildrenAccount extends Account {
+  private static final double MAX_TX = 5000;
+  public ChildrenAccount(String n,double o){
+    super(n, o); }
+  public void withdraw(double amt) {
+    if (amt > MAX_TX || amt > balance)
+      throw new IllegalStateException(
+          "Limit");
+    balance -= amt; }
+  public double interestRate() {
+    return 0.06; }
+}
+public class AccountFactory {
+  public static Account createAccount(
+      String type, String no, double o) {
+    switch (type.toUpperCase()) {
+      case "CURRENT":
+        return new CurrentAccount(no, o);
+      case "SAVING":
+        return new SavingAccount(no, o);
+      case "CHILDREN":
+        return new ChildrenAccount(no, o);
+      default: throw new
+          IllegalArgumentException(type);
+    }
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>02 Factory Method · complete code</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 02 FACTORY : GoF version (added) ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method: GoF version in full</h1><div class="lede">The lecture's payment example: an abstract Creator, one ConcreteCreator per product. Then how it differs from a Simple Factory.</div></div>
+    <div class="meta">Creational<br><b>GoF form</b></div>
+  </header>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Class diagram (GoF)</h2><span class="tiny">Creator «uses» Product; each ConcreteCreator «creates» its ConcreteProduct</span></div>
+    <svg class="dg" data-d="factory-pay"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// PRODUCT
+public interface Payment {
+  void pay(double amount);
+}
+// CONCRETE PRODUCTS
+public class CreditCard
+    implements Payment {
+  public void pay(double amount) {
+    System.out.println("Paid " + amount
+        + " using Credit Card"); }
+}
+public class PayPal implements Payment {
+  public void pay(double amount) {
+    System.out.println("Paid " + amount
+        + " using PayPal"); }
+}
+public class Crypto implements Payment {
+  public void pay(double amount) {
+    System.out.println("Paid " + amount
+        + " using Crypto"); }
+}</pre>
+<pre class="code" data-j>
+// CREATOR
+public abstract class PaymentFactory {
+  // the factory method: subclasses decide
+  public abstract Payment createPayment();
+  // someOperation(): uses the product
+  // without knowing its concrete class
+  public void processPayment(double amount) {
+    Payment payment = createPayment();
+    payment.pay(amount);
+  }
+}
+// CONCRETE CREATORS
+public class CreditCardFactory
+    extends PaymentFactory {
+  public Payment createPayment() {
+    return new CreditCard(); }
+}
+public class PayPalFactory
+    extends PaymentFactory {
+  public Payment createPayment() {
+    return new PayPal(); }
+}
+public class CryptoFactory
+    extends PaymentFactory {
+  public Payment createPayment() {
+    return new Crypto(); }
+}
+// CLIENT (PaymentSystem)
+PaymentFactory factory =
+    new CreditCardFactory();
+factory.processPayment(1000.00);
+// Paid 1000.0 using Credit Card</pre>
+  </div>
+  <p class="tiny">The in-class assessment used the same shape: <code>RoutineTask</code> product, <code>DailyTask</code> / <code>WeeklyTask</code> / <code>MonthlyTask</code>, abstract <code>TaskCreator</code> with <code>createTask()</code> and <code>scheduleTask()</code>, and one creator subclass per task type.</p>
+</div>
+<div class="foot"><span>02 Factory Method · GoF form</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 02 FACTORY : simple vs GoF + OOP (added) ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory: Simple Factory vs Factory Method</h1><div class="lede">Two different designs that are often given the same name. Know which one you are writing.</div></div>
+    <div class="meta">Creational<br><b>Theory</b></div>
+  </header>
+  <div class="panel">
+    <h2>Simple Factory vs GoF Factory Method <span class="r">lecture comparison</span></h2>
+    <table class="small">
+      <tr><th style="width:17%"></th><th style="width:41%">Simple Factory</th><th>Factory Method (GoF)</th></tr>
+      <tr><td><b>Structure</b></td><td>One factory class, usually a static <code>create(type)</code> method (<code>DatabaseFactory</code>, <code>BookFactory</code>).</td><td>A hierarchy: an abstract <b>Creator</b> declares <code>factoryMethod()</code>; one <b>ConcreteCreator</b> per product overrides it (<code>CreditCardFactory</code>…).</td></tr>
+      <tr><td><b>Who decides</b></td><td>An if-else / switch on a parameter, inside the factory.</td><td>The subclass, through inheritance and overriding. The client decides only which creator object to use.</td></tr>
+      <tr><td><b>Adding a type</b></td><td>New product class <b>and</b> edit the switch. Clients stay closed; the factory itself is modified.</td><td>New product class <b>and</b> new creator subclass. No existing class is edited (Open/Closed for the whole design).</td></tr>
+      <tr><td><b>Creator logic</b></td><td>Only creates.</td><td>The Creator can also hold shared code that uses the product (<code>processPayment()</code>, <code>scheduleTask()</code>).</td></tr>
+      <tr><td><b>Status</b></td><td>A common idiom, not one of the 23 GoF patterns.</td><td>One of the GoF creational patterns.</td></tr>
+      <tr><td><b>Cost</b></td><td>Few classes; the switch grows.</td><td>More classes (a creator per product).</td></tr>
+    </table>
+    <p class="small mt"><b>Which to write:</b> if the question says <b>"Factory Method"</b>, <b>"let subclasses decide"</b>, or wants new types added <b>without editing existing classes</b>, write the GoF form. If it only asks to create different objects from one place by type (Quiz 2, 2025 BookFactory), a Simple Factory meets the requirement; call it a Simple Factory and, for extra marks, say how the GoF form would remove the switch.</p>
+  </div>
+  <div class="gc">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">The GoF structure in general</h2><span class="tiny">subclasses decide</span></div>
+      <svg class="dg" data-d="factory-gof"></svg>
+    </div>
+    <div class="panel">
+      <h2>Participants</h2>
+      <table class="tight small">
+        <tr><td style="width:38%"><b>Product</b></td><td><code>Payment</code></td></tr>
+        <tr><td><b>ConcreteProduct</b></td><td><code>CreditCard</code>, <code>PayPal</code>, <code>Crypto</code></td></tr>
+        <tr><td><b>Creator</b></td><td><code>PaymentFactory</code></td></tr>
+        <tr><td><b>ConcreteCreator</b></td><td><code>CreditCardFactory</code>…</td></tr>
+        <tr><td><b>Client</b></td><td><code>PaymentSystem</code></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>02 Factory Method · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['factory-pay'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:10, name:'PaymentSystem'},
+    {id:'cr', k:'class', x:130, y:0, name:'PaymentFactory', stereo:'abstract', abstract:true, ops:['/+ createPayment() : Payment', '+ processPayment(amount) : void']},
+    {id:'pr', k:'class', x:390, y:0, name:'Payment', stereo:'interface', ops:['+ pay(amount : double) : void']},
+    {id:'c1', k:'class', x:170, y:84, name:'CreditCardFactory', ops:['+ createPayment() : Payment']},
+    {id:'c2', k:'class', x:170, y:134, name:'PayPalFactory', ops:['+ createPayment() : Payment']},
+    {id:'c3', k:'class', x:170, y:184, name:'CryptoFactory', ops:['+ createPayment() : Payment']},
+    {id:'p1', k:'class', x:400, y:84, w:92, name:'CreditCard', ops:['+ pay(amount)']},
+    {id:'p2', k:'class', x:400, y:134, w:92, name:'PayPal', ops:['+ pay(amount)']},
+    {id:'p3', k:'class', x:400, y:184, w:92, name:'Crypto', ops:['+ pay(amount)']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'cr', bs:'left', type:'assoc'},
+    {a:'cr', as:'right', b:'pr', bs:'left', type:'depend', label:'uses'},
+    {a:'c1', as:'left', b:'cr', bs:'bottom', bx:150, type:'extend'},
+    {a:'c2', as:'left', b:'cr', bs:'bottom', bx:150, type:'extend'},
+    {a:'c3', as:'left', b:'cr', bs:'bottom', bx:150, type:'extend'},
+    {a:'p1', as:'right', b:'pr', bs:'bottom', bx:520, type:'realize'},
+    {a:'p2', as:'right', b:'pr', bs:'bottom', bx:520, type:'realize'},
+    {a:'p3', as:'right', b:'pr', bs:'bottom', bx:520, type:'realize'},
+    {a:'c1', as:'right', b:'p1', bs:'left', type:'depend', label:'«create»'},
+    {a:'c2', as:'right', b:'p2', bs:'left', type:'depend', label:'«create»'},
+    {a:'c3', as:'right', b:'p3', bs:'left', type:'depend', label:'«create»'},
+  ]
+};
 DIAGRAMS['factory'] = {
   items: [
     {id:'cl', k:'class', x:0, y:6, name:'ProductService', attrs:['- db : Database'], ops:['+ save(p : Product) : void']},

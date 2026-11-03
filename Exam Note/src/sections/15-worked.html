@@ -3,7 +3,7 @@
 <div class="body">
   <header class="ph">
     <div class="code">13</div>
-    <div><h1>Worked answer: 2025 Q4</h1><div class="lede">A full multi-pattern question, answered at exam length. This is the style to expect.</div></div>
+    <div><h1>Worked answer: 2025 Q4</h1><div class="lede">A full multi-pattern question, answered at exam length.</div></div>
     <div class="meta">Worked<br><b>25 marks</b></div>
   </header>
 
@@ -16,7 +16,7 @@
       <tr><td>(a) common payment steps, different processing</td><td><b>Template Method</b></td><td>The order of steps is fixed in a final <code>handlePayment()</code>; only <code>processPayment()</code> is written by each payment type, so the workflow is standard and nothing is duplicated.</td></tr>
       <tr><td>(b) checks in sequence, easy to extend</td><td><b>Chain of Responsibility</b></td><td>Each check is a handler linked to the next; a failure stops the order. A new check is one new class and one link, with no change to the others.</td></tr>
       <tr><td>(c) one global OrderID generator</td><td><b>Singleton</b></td><td>Only one generator exists, so one counter is shared by every part of the system and IDs are never duplicated.</td></tr>
-      <tr><td>(d) creating payment objects</td><td><b>Factory Method</b></td><td>The customer picks the method at runtime; <code>PaymentFactory.create(method)</code> returns the right processor, so the client has no <code>new</code> or if-else.</td></tr>
+      <tr><td>(d) creating payment objects</td><td><b>Factory Method</b></td><td>The customer picks the method at runtime; <code>PaymentFactory.create(method)</code> returns the right processor, so the client has no <code>new</code> or if-else (code: tab 02 "complete code").</td></tr>
     </table>
   </div>
 
@@ -34,6 +34,7 @@
         <tr><td><b>3.4</b> validation flow (5m)</td><td>tab 08 answers, Validator code</td></tr>
         <tr><td><b>3.5</b> OrderID generator (5m)</td><td>tab 01 answers, OrderIdGenerator</td></tr>
       </table>
+
     </div>
 <pre class="code"><span class="k">public void</span> placeOrder(Order o) {
   Validator chain = <span class="k">new</span> InventoryCheck();
@@ -94,12 +95,12 @@
     <div class="stack">
       <div class="panel">
         <h2>1.4 Kiosk states, example transition <span class="r">5m</span></h2>
-        <p class="small"><code>Kiosk</code> (context) holds a <code>KioskState</code>; <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code>, <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code>.</p>
-        <p class="small"><b>Example:</b> in Scanning, pressing Checkout adds up the items, adds tax and calls <code>kiosk.setState(new PaymentState())</code>. State diagram and code: tab 09 answers.</p>
+        <p class="small"><code>Kiosk</code> (context) holds a <code>KioskState</code>; <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code>, <code>CompletedState</code> implement the five events on the kiosk diagram: <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code>, <code>cancel()</code>, <code>printReceipt()</code>.</p>
+        <p class="small"><b>Example:</b> in Scanning, pressing Checkout adds up the items, adds tax and calls <code>kiosk.setState(new PaymentState())</code>. State diagram: tab 09 "kiosk and interfaces"; every class: "State: kiosk in full".</p>
       </div>
       <div class="panel">
         <h2>1.5 Singleton in the pricing flow <span class="r">4m</span></h2>
-        <p class="small">Scanned items are decorated with their add-ons, so <code>item.getCost()</code> is the final item price. In the Payment state the kiosk adds them up and calls <code>TaxCalculator.getInstance().calculateTax(subtotal)</code>. Every counter gets the same instance, so a rate change applies everywhere at once.</p>
+        <p class="small">Scanned items are decorated with their add-ons, so <code>item.getCost()</code> is the final item price. When <code>checkout()</code> moves the kiosk into the Payment state, it adds them up and calls <code>TaxCalculator.getInstance().calculateTax(subtotal)</code>, then adds the tax to get the total. Every counter gets the same instance, so a rate change applies everywhere at once.</p>
       </div>
     </div>
   </div>
@@ -129,10 +130,10 @@ DIAGRAMS['worked-q4'] = {
   ],
   edges: [
     {a:'os', as:'right', ao:.25, b:'v', bs:'left', type:'assoc', label:'1. validate', mid:150},
-    {a:'os', as:'right', ao:.75, b:'pf', bs:'left', type:'assoc', label:'2. create', mid:150},
+    {a:'os', as:'right', ao:.75, b:'pf', bs:'left', type:'assoc', label:'3. create', mid:150},
     {a:'c1', as:'top', ax:290, b:'v', bs:'bottom', bx:290, type:'extend'},
     {a:'pf', as:'right', b:'pp', bs:'left', type:'depend', label:'«create»'},
-    {a:'pp', as:'top', b:'g', bs:'bottom', type:'depend', label:'3. nextId()'},
+    {a:'os', as:'top', b:'g', bs:'left', type:'depend', label:'2. nextId()', lx:120, ly:44},
     {a:'c2', as:'top', b:'pp', bs:'bottom', type:'extend'},
   ]
 };

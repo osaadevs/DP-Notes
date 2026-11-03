@@ -91,7 +91,8 @@
   <div>
     <div class="codecap">W3 · Java</div>
     <div class="g2" style="align-items:start">
-<pre class="code"><span class="c">// SUBSYSTEMS: do the real work</span>
+<pre class="code"><span class="c">// SUBSYSTEMS (bodies in full: "Facade:</span>
+<span class="c">// banking example and complete code")</span>
 <span class="k">class</span> LoginService {
   <span class="k">boolean</span> verify(String user) { ... }
 }
@@ -189,7 +190,193 @@ library.borrowBook(<span class="s">"U001"</span>, <span class="s">"B123"</span>)
 <div class="foot"><span>03 Facade · answers</span><span>page <b class="pnum"></b></span></div>
 </section>
 
+
+<!-- ===================== 03 FACADE : banking + complete code (added) ===================== -->
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade: banking example</h1><div class="lede">The lecture's main example: a customer uses one BankService instead of three account subsystems.</div></div>
+    <div class="meta">Structural<br><b>Example</b></div>
+  </header>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Class diagram</h2><span class="tiny">before: Customer → every account · after: Customer → BankService only</span></div>
+    <svg class="dg" data-d="facade-bank"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// SUBSYSTEM: common account interface
+public interface IAccount {
+  void deposit(double amount);
+  void withdraw(double amount);
+  double getBalance();
+}
+public abstract class AbstractAccount
+    implements IAccount {
+  protected double balance;
+  public void deposit(double a) {
+    balance += a; }
+  public void withdraw(double a) {
+    if (a > balance) throw new
+        IllegalStateException("Funds");
+    balance -= a; }
+  public double getBalance() {
+    return balance; }
+}
+public class SavingAccount
+    extends AbstractAccount { }
+public class CheckingAccount
+    extends AbstractAccount { }
+public class InvestmentAccount
+    extends AbstractAccount { }
+// (each can override withdraw() with
+//  its own rules; kept simple here)
+
+// CLIENT: knows only the facade
+BankService bank = new BankService();
+bank.openAccount("SAVING", "John");
+bank.openAccount("CHECKING", "Alice");
+bank.deposit("John", 5000);
+bank.transferMoney("John", "Alice", 1000);
+System.out.println(
+    bank.getBalance("John"));   // 4000.0</pre>
+<pre class="code" data-j>
+// FACADE: one entry point, only delegates
+public class BankService {
+  private final Map<String, IAccount>
+      accounts = new HashMap<>();
+
+  public void openAccount(String type,
+                          String accNo) {
+    IAccount a;
+    switch (type) {
+      case "SAVING":
+        a = new SavingAccount(); break;
+      case "CHECKING":
+        a = new CheckingAccount(); break;
+      default:
+        a = new InvestmentAccount();
+    }
+    accounts.put(accNo, a);
+  }
+  public void deposit(String no, double amt) {
+    find(no).deposit(amt); }
+  public void withdraw(String no, double amt) {
+    find(no).withdraw(amt); }
+  public void transferMoney(String from,
+      String to, double amt) {
+    find(from).withdraw(amt);   // fails first
+    find(to).deposit(amt);      // if no funds
+  }
+  public double getBalance(String accNo) {
+    return find(accNo).getBalance(); }
+  private IAccount find(String accNo) {
+    IAccount a = accounts.get(accNo);
+    if (a == null) throw new
+        IllegalArgumentException(accNo);
+    return a;
+  }
+}</pre>
+  </div>
+  <div>
+    <div class="panel small">
+      <h2>Why this is a Facade</h2>
+      <p><b>Facade</b> = <code>BankService</code>. <b>Subsystem</b> = <code>IAccount</code> and the three account classes. <b>Client</b> = the customer's app. <code>transferMoney()</code> coordinates two accounts in the right order (withdraw, then deposit), so the client never has to. The facade adds no new banking rule; the rules stay in the accounts.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>03 Facade · example</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade: complete code, comparisons, OOP and SOLID</h1><div class="lede">The library subsystems written out, Facade vs Factory Method, and the OOP terms.</div></div>
+    <div class="meta">Structural<br><b>Complete code · theory</b></div>
+  </header>
+  <div class="gc">
+<pre class="code" data-j>
+// Library subsystems for the W3 LibraryFacade.
+// STUB data: in-memory sets stand in for the
+// real user database, catalogue, payment
+// gateway and SMS/email service.
+class LoginService {
+  private final Set<String> users =
+      Set.of("U001", "U002");
+  boolean verify(String user) {
+    return users.contains(user); }
+}
+class InventoryService {
+  private final Set<String> onShelf =
+      new HashSet<>(Set.of("B123", "B456"));
+  boolean isAvailable(String book) {
+    return onShelf.contains(book); }
+  void reserve(String book) {
+    onShelf.remove(book); }
+}
+class PaymentService {
+  void chargeFee(String user) {
+    System.out.println("Fee charged: " + user); }
+}
+class NotificationService {
+  void send(String user, String msg) {
+    System.out.println(user + ": " + msg); }
+}</pre>
+    <div class="panel small">
+      <h2>Facade vs Factory Method <span class="r">lecture table</span></h2>
+      <table class="tight">
+        <tr><td style="width:28%"><b>Purpose</b></td><td>Factory: creates objects. Facade: coordinates existing objects behind a simple interface.</td></tr>
+        <tr><td><b>Group</b></td><td>Factory: creational. Facade: structural.</td></tr>
+        <tr><td><b>Returns</b></td><td>Factory: an object. Facade: the result of a workflow.</td></tr>
+        <tr><td><b>Example</b></td><td><code>createCreditCardPayment()</code> vs <code>transferMoney()</code>.</td></tr>
+      </table>
+      <p class="tiny mt">"Factory decides which object to create. Facade decides what to do with several objects."</p>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Facade code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small">
+      <tr><th style="width:18%">Concept</th><th style="width:36%">Where</th><th>Effect</th></tr>
+      <tr><td><b>Encapsulation</b></td><td><code>private</code> service fields in <code>LibraryFacade</code>; <code>private Map accounts</code> and <code>find()</code> in <code>BankService</code></td><td>The subsystems and their call order are hidden; the client sees only the public methods.</td></tr>
+      <tr><td><b>Abstraction</b></td><td><code>borrowBook()</code>, <code>transferMoney()</code></td><td>One meaningful operation replaces several low-level calls.</td></tr>
+      <tr><td><b>Composition</b></td><td>the facade holds its services as fields</td><td>It reuses existing classes without inheriting from them.</td></tr>
+      <tr><td><b>Polymorphism</b></td><td><code>Map&lt;String, IAccount&gt;</code>, <code>find(accNo).deposit(amt)</code></td><td>The facade treats all account types the same through the interface.</td></tr>
+      <tr><td><b>Loose coupling</b></td><td>client depends only on <code>LibraryFacade</code> / <code>BankService</code></td><td>Changing a subsystem changes the facade, not every client.</td></tr>
+      <tr><td><b>SRP (watch it)</b></td><td>the facade only orders calls</td><td>Business rules stay in the subsystems; a facade that gains rules becomes a God class.</td></tr>
+      <tr><td><b>DIP (improve)</b></td><td>services created with <code>new</code> inside the facade</td><td>Pass them in through the constructor (as interfaces) so they can be swapped or mocked.</td></tr>
+    </table>
+  </div>
+      <div class="panel small">
+      <h2>Other lecture examples</h2>
+      <p><b>Netflix "Play"</b>: one click; behind it authentication, subscription check, recommendation, CDN selection, video decoder, subtitles, analytics. <b>Multi-agent systems</b>: the client talks to one facade that coordinates many agents (collector, preprocessor, analyser, predictor, reporter). <b>Wedding planner / waiter</b>: one person deals with all the suppliers.</p>
+    </div>
+</div>
+<div class="foot"><span>03 Facade · theory</span><span>page <b class="pnum"></b></span></div>
+</section>
+
 <script>
+DIAGRAMS['facade-bank'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:40, name:'Customer'},
+    {id:'f', k:'class', x:96, y:0, name:'BankService', stereo:'Facade',
+      attrs:['- accounts : Map<String,IAccount>'],
+      ops:['+ openAccount(type, accNo)', '+ deposit(accNo, amt)', '+ withdraw(accNo, amt)', '+ transferMoney(from, to, amt)', '+ getBalance(accNo) : double']},
+    {id:'i', k:'class', x:360, y:0, name:'IAccount', stereo:'interface', ops:['+ deposit(amount) : void', '+ withdraw(amount) : void', '+ getBalance() : double']},
+    {id:'ab', k:'class', x:368, y:96, name:'AbstractAccount', abstract:true, attrs:['# balance : double']},
+    {id:'s', k:'class', x:270, y:170, name:'SavingAccount'},
+    {id:'c', k:'class', x:385, y:170, name:'CheckingAccount'},
+    {id:'v', k:'class', x:505, y:170, name:'InvestmentAccount'},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'f', bs:'left', type:'assoc', label:'uses'},
+    {a:'f', as:'right', ao:.3, b:'i', bs:'left', type:'aggr', label:'0..*'},
+    {a:'ab', as:'top', b:'i', bs:'bottom', type:'realize'},
+    {a:'s', as:'top', b:'ab', bs:'bottom', type:'extend', mid:156},
+    {a:'c', as:'top', b:'ab', bs:'bottom', type:'extend', mid:156},
+    {a:'v', as:'top', b:'ab', bs:'bottom', type:'extend', mid:156},
+  ]
+};
 DIAGRAMS['facade'] = {
   items: [
     {id:'cl', k:'class', x:0, y:52, name:'LibraryApp'},

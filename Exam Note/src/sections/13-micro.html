@@ -4,7 +4,7 @@
   <header class="ph">
     <div class="code">11</div>
     <div><h1>Microservices reference</h1><div class="lede">A compact kit for an architecture question: diagram, scaling, architecture, consistency, security. Rename the services for the business in the question.</div></div>
-    <div class="meta">Architecture<br><b>25 marks</b></div>
+    <div class="meta">Architecture<br><b>Reference</b></div>
   </header>
 
   <div class="fig">
@@ -30,8 +30,8 @@
     <table class="small">
       <tr><td style="width:20%"><b>Scalability</b></td><td>Each service <b>scales on its own</b>: more copies (pods) of only the busy service, with auto-scaling on CPU or request load. Example: scale Content Delivery and Search at peak time, not Billing. Keep services <b>stateless</b>, and use a cache / CDN.</td></tr>
       <tr><td><b>Fault isolation</b></td><td>Each service runs in its <b>own process with its own database</b>, so one crash doesn't take down the rest. Use <b>circuit breakers</b>, timeouts, retries with back-off and bulkheads. <b>Degrade gracefully</b>: if Recommendations is down, show a "popular" list.</td></tr>
-      <tr><td><b>Continuous deployment</b></td><td>Each service has <b>its own repository and CI/CD pipeline</b>: automated tests, Docker image, then <b>blue-green or canary</b> release. APIs are versioned so one service can be updated without breaking others. One small team owns each service.</td></tr>
-      <tr><td><b>Manage it</b></td><td>Containers on <b>Kubernetes</b> (auto-scaling, self-healing), central <b>logging, metrics and tracing</b>, service registry and config server.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Each service has <b>its own CI/CD pipeline</b> (often its own repository, though a monorepo also works): automated tests, a build artefact such as a container image, then <b>blue-green or canary</b> release. APIs are versioned so one service can be updated without breaking others. One small team owns each service.</td></tr>
+      <tr><td><b>Manage it</b></td><td>An orchestration platform for auto-scaling and self-healing (<b>Kubernetes</b> is a common choice; a managed cloud platform also works), central <b>logging, metrics and tracing</b>, service registry and config server.</td></tr>
     </table>
   </div>
 </div>
@@ -44,7 +44,7 @@
   <header class="ph">
     <div class="code">11</div>
     <div><h1>Microservices: the other parts</h1><div class="lede">Architecture, data consistency and security. Each is worth 4–5 marks.</div></div>
-    <div class="meta">Architecture<br><b>25 marks</b></div>
+    <div class="meta">Architecture<br><b>Reference</b></div>
   </header>
 
   <div class="panel">
@@ -54,7 +54,7 @@
       <li><b>API Gateway</b> as the single entry point for web and mobile clients: routing, authentication, rate limiting.</li>
       <li><b>Service registry</b> so services can find each other; <b>config server</b> for settings.</li>
       <li>Services talk <b>synchronously</b> with REST or gRPC when they need an answer now, and <b>asynchronously</b> with events on a <b>message broker</b> (Kafka / RabbitMQ) for everything else (e.g. "BookBorrowed" → Notification).</li>
-      <li>Everything runs in <b>Docker containers on Kubernetes</b>, with central monitoring.</li>
+      <li>Services are usually packaged as <b>containers</b> and run on an orchestrator such as <b>Kubernetes</b>, with central monitoring. These are implementation choices, not part of the definition of microservices.</li>
     </ul>
   </div>
 
@@ -75,13 +75,13 @@
     <h2><span class="w">2.5</span> Security <span class="r">4–5m</span></h2>
     <table class="small">
       <tr><td style="width:24%"><b>Users</b></td><td>Login through <b>OAuth2 / OpenID Connect</b> at the gateway, which issues <b>JWT</b> tokens. <b>Role-based access</b> (RBAC): e.g. only librarians can add books.</td></tr>
-      <tr><td><b>Service to service</b></td><td><b>Mutual TLS</b> (a service mesh such as Istio), short-lived tokens, and each service only allowed to call what it needs.</td></tr>
+      <tr><td><b>Service to service</b></td><td><b>Mutual TLS</b> between services (configured directly, or through an optional service mesh such as Istio), short-lived tokens, and each service only allowed to call what it needs.</td></tr>
       <tr><td><b>Data</b></td><td>HTTPS everywhere, encryption at rest, card data handled to PCI-DSS, secrets in a vault, each service's DB user has least privilege.</td></tr>
       <tr><td><b>Attacks</b></td><td>Rate limiting, input validation, a web application firewall, audit logs and monitoring for unusual activity.</td></tr>
     </table>
   </div>
 
-  <div class="shade small"><b>2023 Q2.6: "Why give every microservice platform the same hardware and configuration?"</b> Identical environments (containers and infrastructure-as-code) make deployment, scaling and failover predictable: any node can run any service, performance is the same everywhere, capacity planning, automation and troubleshooting are simpler, and a failed node can be rebuilt exactly (DR). It avoids "works on my machine". Exception: GPU nodes for ML services.</div>
+  <div class="shade small"><b>2023 Q2.6: "Why give every microservice platform the same hardware and configuration?"</b> Say first that it is <b>not a requirement</b> of microservices: services are independent and can run on different hardware (e.g. GPU nodes for an ML service). What the question is getting at is <b>standardised environments</b> (same base images, runtime versions and infrastructure-as-code templates): deployment, scaling and failover become predictable, any node in a pool can run any service, capacity planning, automation and troubleshooting are simpler, a failed node can be rebuilt exactly (DR), and "works on my machine" problems disappear.</div>
 </div>
 <div class="foot"><span>11 Microservices</span><span>page <b class="pnum"></b></span></div>
 </section>
@@ -98,7 +98,7 @@ DIAGRAMS['micro'] = {
     {id:'n', k:'node', x:218, y:128, w:112, h:24, lines:['Notification   [DB]'], align:'left'},
     {id:'mb', k:'node', x:356, y:48, w:98, h:62, lines:['Message broker','Kafka / RabbitMQ','events · sagas'], dashed:true},
     {id:'r', k:'node', x:474, y:0, w:108, lines:['Service registry','+ config server'], shade:true},
-    {id:'k', k:'node', x:474, y:40, w:108, lines:['Docker + Kubernetes','auto-scale, self-heal'], shade:true},
+    {id:'k', k:'node', x:474, y:40, w:108, lines:['Containers + orchestrator','e.g. Kubernetes'], shade:true},
     {id:'ci', k:'node', x:474, y:80, w:108, lines:['CI/CD per service','blue-green, canary'], shade:true},
     {id:'mo', k:'node', x:474, y:120, w:108, lines:['Monitoring','logs, metrics, tracing'], shade:true},
   ],

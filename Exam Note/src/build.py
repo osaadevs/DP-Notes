@@ -34,6 +34,31 @@ DOCS = {
     },
 }
 
+KW = r'\b(public|private|protected|static|final|abstract|class|interface|extends|implements|return|new|void|if|else|throw|throws|synchronized|volatile|enum|null|this|super|for|while|try|catch|finally|boolean|int|double|long|default|switch|case|break|true|false|instanceof)\b'
+
+def _hl_line(line):
+    code, cmt = line, ''
+    for m in re.finditer(r'//|/\*', line):
+        if line[:m.start()].count('"') % 2 == 0:
+            code, cmt = line[:m.start()], line[m.start():]
+            break
+    out = []
+    for p in re.split(r'("(?:[^"\\]|\\.)*")', code):
+        if len(p) >= 2 and p.startswith('"') and p.endswith('"'):
+            out.append('<span class="s">%s</span>' % html.escape(p, quote=False))
+        else:
+            out.append(re.sub(KW, r'<span class="k">\1</span>', html.escape(p, quote=False)))
+    if cmt:
+        out.append('<span class="c">%s</span>' % html.escape(cmt, quote=False))
+    return ''.join(out)
+
+def java_blocks(text):
+    """<pre class="code" data-j>raw java</pre>  ->  escaped + highlighted like the hand-written blocks."""
+    def rep(m):
+        body = m.group(2).strip('\n')
+        return '<pre class="code"%s>%s</pre>' % (m.group(1), '\n'.join(_hl_line(l) for l in body.split('\n')))
+    return re.sub(r'<pre class="code"([^>]*?) data-j>(.*?)</pre>', rep, text, flags=re.S)
+
 def build(doc):
     css = (ROOT / "style.css").read_text()
     js = (ROOT / "uml.js").read_text()
@@ -44,7 +69,7 @@ def build(doc):
         parts = static + ['<div id="pages"></div><div id="stage">'] + flow + ['</div>']
         js = (ROOT / "paginate.js").read_text() + "\n" + js
     else:
-        parts = [p.read_text() for p in files]
+        parts = [java_blocks(p.read_text()) for p in files]
     secs = ",".join('{code:"%s",short:"%s"}' % s for s in doc["sections"])
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>{doc["title"]}</title>
@@ -59,15 +84,11 @@ def build(doc):
     (OUT / f'{doc["name"]}.html').write_text(page)
 
 def render(doc):
-    url = (OUT / f'{doc["name"]}.html').as_uri()
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-                    "--virtual-time-budget=15000", f'--print-to-pdf={OUT / (doc["name"] + ".pdf")}', url],
-                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    dom = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--virtual-time-budget=15000",
-                          "--window-size=1200,1600", "--dump-dom", url],
-                         capture_output=True, text=True).stdout
-    m = re.search(r'<pre id="report">(.*?)</pre>', dom, re.S)
-    report = html.unescape(m.group(1)) if m else "NO REPORT FOUND"
+    src = OUT / f'{doc["name"]}.html'
+    pdf = OUT / (doc["name"] + ".pdf")
+    rep = ROOT / "report.txt"
+    subprocess.run(["node", str(ROOT / "render.js"), str(src), str(pdf), str(rep)], check=True)
+    report = rep.read_text()
     marks = [l.split("|", 3) for l in report.splitlines() if l.startswith("BM|")]
     print("\n".join(l for l in report.splitlines() if not l.startswith("BM|")))
     if marks:
