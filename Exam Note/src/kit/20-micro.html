@@ -1,0 +1,206 @@
+<!-- ===================== M : microservices skeleton ===================== -->
+<section class="page" data-sec="M">
+<div class="body">
+  <header class="ph">
+    <div class="code">M</div>
+    <div><h1>Microservices diagram: fill-in kit</h1><div class="lede">"Draw a diagram to depict the microservices scenario" is the same picture every time. Only the service names change, and they are in the question's bullet list.</div></div>
+    <div class="meta">Kit<br><b>Microservices</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Slot table <span class="r">example: a hospital system (next page has a food delivery app drawn in full)</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example (hospital)</th></tr>
+      <tr><td><b>Clients</b></td><td>who uses the system: customers, staff, admins, devices ("web", "mobile", "kiosk", "portal")</td><td>Patient app · Doctor portal · Admin web</td></tr>
+      <tr><td><b>API Gateway</b></td><td>always there: the single entry point for every client</td><td>API Gateway</td></tr>
+      <tr><td><b>Services</b></td><td><b>one per bullet</b> in "key functional requirements" (one business capability each)</td><td>Patient · Appointment · Doctor · Pharmacy · Billing</td></tr>
+      <tr><td><b>Databases</b></td><td>one per service, named after it. <b>Never shared.</b></td><td>Patient DB · Appointment DB · …</td></tr>
+      <tr><td><b>Message broker</b></td><td>always there; label 1–2 real events from the scenario ("XxxCreated", "XxxPaid")</td><td><code>AppointmentBooked</code>, <code>BillPaid</code></td></tr>
+      <tr><td><b>Notification</b></td><td>any "notify / remind / alert / email / SMS" in the question → its own service, fed by events</td><td>Notification service</td></tr>
+      <tr><td><b>Shared infrastructure</b></td><td>always: auth / identity, service registry + config, monitoring, CI/CD</td><td>Identity (OAuth2 / JWT) · Registry · Monitoring</td></tr>
+      <tr><td><b>External systems</b></td><td>anything outside the company: payment gateway, CDN, maps, SMS provider. <b>Draw dashed.</b></td><td>Payment gateway · SMS provider</td></tr>
+    </table>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">solid arrow = request (REST / gRPC) · dashed arrow = event, or gateway checking a token · dashed box = outside the system</span></div>
+    <svg class="dg" data-d="km-skel"></svg>
+  </div>
+
+</div>
+<div class="foot"><span>M Microservices kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="M">
+<div class="body">
+  <header class="ph">
+    <div class="code">M</div>
+    <div><h1>Microservices: drawing rules and a worked scenario</h1><div class="lede">The rules that make the picture correct, then a new scenario sorted into the slot table. The next page draws it.</div></div>
+    <div class="meta">Kit<br><b>Microservices</b></div>
+  </header>
+  <div class="g2">
+    <div class="panel">
+      <h2>Drawing rules</h2>
+      <ol class="small">
+        <li><b>Draw top to bottom:</b> clients → gateway → services → databases → broker.</li>
+        <li>Every client arrow goes <b>into the gateway</b>, never straight to a service.</li>
+        <li><b>One database under each service.</b> No database is joined to two services.</li>
+        <li>Label the gateway with its jobs: <b>auth check, routing, rate limiting</b>.</li>
+        <li>Label at least one <b>event</b> on the broker with a real name from the scenario.</li>
+        <li>External systems in <b>dashed</b> boxes at the edge, joined to the one service that uses them.</li>
+        <li>Shared infrastructure as a row of small boxes with "used by every service".</li>
+      </ol>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h2>How much to draw <span class="r">by marks</span></h2>
+        <table class="tight small">
+          <tr><td style="width:22%"><b>4 m</b></td><td>Clients, gateway, the services with their own DBs, broker.</td></tr>
+          <tr><td><b>5 m</b></td><td>+ labelled event(s), auth service, the external systems, the infrastructure row.</td></tr>
+        </table>
+      </div>
+      <div class="shade small">
+        <h2>Check</h2>
+        <p>☐ one service per functional requirement ☐ a DB per service, none shared ☐ all clients enter through the gateway ☐ broker drawn with a named event ☐ external systems dashed ☐ every box labelled</p>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Worked scenario: sorting the question into slots</h2>
+  <div class="qbox"><span class="lab">SCENARIO (NOT FROM A PAST PAPER)</span>"A food delivery platform. Key requirements: <b>user accounts</b>; <b>restaurant and menu management</b>; <b>ordering</b>; <b>payments</b> through a card payment gateway; <b>live rider tracking</b> on a map; <b>notifications</b> about order status."</div>
+
+    <div class="g2" style="align-items:start">
+    <table class="tight small">
+      <tr><th style="width:36%">Role</th><th>My words</th></tr>
+      <tr><td>Clients</td><td>Customer app · Restaurant portal · Rider app</td></tr>
+      <tr><td>Services (one per bullet)</td><td>User · Restaurant &amp; Menu · Order · Payment · Delivery Tracking · Notification</td></tr>
+      <tr><td>Events</td><td><code>OrderPlaced</code>, <code>PaymentSucceeded</code>, <code>RiderLocationUpdated</code></td></tr>
+      <tr><td>External (dashed)</td><td>Card payment gateway · Maps API · SMS / email provider</td></tr>
+    </table>
+    <p class="small">Six bullets in the question gave six services. Notification gets no client arrow: it only <b>listens</b> to events on the broker and sends messages through the external SMS / email provider. The Maps API joins Delivery Tracking the same way the card gateway joins Payment (left off the drawing to keep it clear; add it in the exam if there's room).</p>
+  </div>
+  </div>
+</div>
+<div class="foot"><span>M Microservices kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== M : worked example ===================== -->
+<section class="page" data-sec="M">
+<div class="body">
+  <header class="ph">
+    <div class="code">M</div>
+    <div><h1>Microservices: the scenario drawn, then used for every part</h1><div class="lede">The food delivery slot table from the previous page, drawn with the skeleton. Each later part points back at boxes on this same diagram.</div></div>
+    <div class="meta">Kit<br><b>Worked</b></div>
+  </header>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">The diagram (2.1)</h2><span class="tiny">copy the skeleton, then rename</span></div>
+    <svg class="dg" data-d="km-food"></svg>
+  </div>
+
+  <div class="panel">
+    <h2>Use the same diagram to answer the other parts <span class="r">name the boxes in each answer</span></h2>
+    <table class="small">
+      <tr><td style="width:24%"><b>2.2 Scalability</b></td><td>Run more copies of only the busy boxes: <b>Order</b> and <b>Delivery Tracking</b> at dinner time, not User or Restaurant. Keep them stateless behind the gateway so any copy can take any request.</td></tr>
+      <tr><td><b>2.2 Fault isolation</b></td><td>If <b>Notification</b> fails, orders still go through: <b>Order</b> just publishes <code>OrderPlaced</code> to the broker and Notification catches up later. Timeouts and circuit breakers on the solid arrows.</td></tr>
+      <tr><td><b>2.2 Deployment</b></td><td>Each service box has its own pipeline, so <b>Payment</b> can be updated without redeploying Order (blue-green or canary).</td></tr>
+      <tr><td><b>2.3 Architecture</b></td><td>Read the diagram aloud: gateway, six services with their own databases, broker for events, identity service, registry and monitoring.</td></tr>
+      <tr><td><b>2.4 Consistency</b></td><td>Saga across <b>Order → Payment → Restaurant</b>: if payment fails, Order cancels the order (compensation). Each box writes only its own DB; others update from events (eventual consistency).</td></tr>
+      <tr><td><b>2.5 Security</b></td><td><b>Gateway + Identity</b> check every token (OAuth2 / JWT); roles for customer, restaurant, rider; encrypted traffic between services (mTLS); card data handled by the <b>external payment gateway</b> as tokens, never stored by Payment.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>M Microservices kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['km-skel'] = {
+  items: [
+    {id:'c1', k:'node', x:40, y:0, w:110, lines:['Client 1','e.g. web app'], shade:true},
+    {id:'c2', k:'node', x:200, y:0, w:110, lines:['Client 2','e.g. mobile app'], shade:true},
+    {id:'c3', k:'node', x:360, y:0, w:110, lines:['Client 3','e.g. admin portal'], shade:true},
+    {id:'gw', k:'node', x:0, y:62, w:520, h:34, lines:['API Gateway','auth check · routing · rate limiting'], dark:true},
+    {id:'au', k:'node', x:560, y:62, w:110, h:34, lines:['Identity service','OAuth2 / JWT']},
+    {id:'s1', k:'node', x:0, y:130, w:112, lines:['Service A','1st requirement']},
+    {id:'s2', k:'node', x:136, y:130, w:112, lines:['Service B','2nd requirement']},
+    {id:'s3', k:'node', x:272, y:130, w:112, lines:['Service C','3rd requirement']},
+    {id:'s4', k:'node', x:408, y:130, w:112, lines:['Service D','4th requirement']},
+    {id:'d1', k:'node', x:0, y:196, w:64, lines:['A DB'], shade:true, round:10},
+    {id:'d2', k:'node', x:136, y:196, w:64, lines:['B DB'], shade:true, round:10},
+    {id:'d3', k:'node', x:272, y:196, w:64, lines:['C DB'], shade:true, round:10},
+    {id:'d4', k:'node', x:408, y:196, w:64, lines:['D DB'], shade:true, round:10},
+    {id:'ex', k:'node', x:560, y:130, w:110, lines:['External system','payment gateway, CDN…'], dashed:true},
+    {id:'mb', k:'node', x:0, y:250, w:520, h:30, lines:['Message broker (e.g. Kafka / RabbitMQ)','events such as OrderPlaced, PaymentSucceeded'], dashed:true},
+    {id:'nt', k:'node', x:560, y:246, w:110, lines:['Notification','listens to events']},
+    {id:'i1', k:'node', x:0, y:308, w:160, lines:['Service registry + config'], shade:true},
+    {id:'i2', k:'node', x:180, y:308, w:160, lines:['Monitoring: logs, metrics'], shade:true},
+    {id:'i3', k:'node', x:360, y:308, w:160, lines:['CI/CD pipeline per service'], shade:true},
+    {k:'text', x:530, y:322, lines:['← used by every service'], size:8.5, italic:true},
+  ],
+  edges: [
+    {a:'c1', as:'bottom', b:'gw', bs:'top', bx:95, type:'flow'},
+    {a:'c2', as:'bottom', b:'gw', bs:'top', bx:255, type:'flow'},
+    {a:'c3', as:'bottom', b:'gw', bs:'top', bx:415, type:'flow'},
+    {a:'gw', as:'right', b:'au', bs:'left', type:'dflow'},
+    {a:'gw', as:'bottom', ax:56, b:'s1', bs:'top', bx:56, type:'flow'},
+    {a:'gw', as:'bottom', ax:192, b:'s2', bs:'top', bx:192, type:'flow'},
+    {a:'gw', as:'bottom', ax:328, b:'s3', bs:'top', bx:328, type:'flow'},
+    {a:'gw', as:'bottom', ax:464, b:'s4', bs:'top', bx:464, type:'flow'},
+    {a:'s1', as:'bottom', ax:32, b:'d1', bs:'top', bx:32, type:'line'},
+    {a:'s2', as:'bottom', ax:168, b:'d2', bs:'top', bx:168, type:'line'},
+    {a:'s3', as:'bottom', ax:304, b:'d3', bs:'top', bx:304, type:'line'},
+    {a:'s4', as:'bottom', ax:440, b:'d4', bs:'top', bx:440, type:'line'},
+    {a:'s1', as:'bottom', ax:96, b:'mb', bs:'top', bx:96, type:'dflow'},
+    {a:'s2', as:'bottom', ax:232, b:'mb', bs:'top', bx:232, type:'dflow'},
+    {a:'s3', as:'bottom', ax:368, b:'mb', bs:'top', bx:368, type:'dflow'},
+    {a:'s4', as:'bottom', ax:504, b:'mb', bs:'top', bx:504, type:'dflow'},
+    {a:'s4', as:'right', b:'ex', bs:'left', type:'flow'},
+    {a:'mb', as:'right', b:'nt', bs:'left', type:'dflow'},
+  ]
+};
+DIAGRAMS['km-food'] = {
+  items: [
+    {id:'c1', k:'node', x:60, y:0, w:110, lines:['Customer app'], shade:true},
+    {id:'c2', k:'node', x:240, y:0, w:110, lines:['Restaurant portal'], shade:true},
+    {id:'c3', k:'node', x:420, y:0, w:110, lines:['Rider app'], shade:true},
+    {id:'gw', k:'node', x:0, y:46, w:590, h:30, lines:['API Gateway','auth check · routing · rate limiting'], dark:true},
+    {id:'au', k:'node', x:612, y:46, w:96, h:30, lines:['Identity','OAuth2 / JWT']},
+    {id:'s1', k:'node', x:0, y:106, w:88, lines:['User']},
+    {id:'s2', k:'node', x:100, y:106, w:110, lines:['Restaurant','& Menu']},
+    {id:'s3', k:'node', x:222, y:106, w:88, lines:['Order']},
+    {id:'s4', k:'node', x:444, y:106, w:88, lines:['Payment']},
+    {id:'s5', k:'node', x:322, y:106, w:110, lines:['Delivery','Tracking']},
+    {id:'d1', k:'node', x:0, y:168, w:52, lines:['User DB'], shade:true, round:10, size:8},
+    {id:'d2', k:'node', x:100, y:168, w:60, lines:['Menu DB'], shade:true, round:10, size:8},
+    {id:'d3', k:'node', x:222, y:168, w:56, lines:['Order DB'], shade:true, round:10, size:8},
+    {id:'d4', k:'node', x:444, y:168, w:60, lines:['Payment DB'], shade:true, round:10, size:8},
+    {id:'d5', k:'node', x:322, y:168, w:60, lines:['Location DB'], shade:true, round:10, size:8},
+    {id:'x1', k:'node', x:612, y:96, w:96, lines:['Card payment','gateway'], dashed:true},
+    {id:'mb', k:'node', x:0, y:212, w:590, h:30, lines:['Message broker','OrderPlaced · PaymentSucceeded · RiderLocationUpdated'], dashed:true},
+    {id:'nt', k:'node', x:612, y:206, w:96, lines:['Notification','service']},
+    {id:'x3', k:'node', x:612, y:262, w:96, lines:['SMS / email','provider'], dashed:true},
+  ],
+  edges: [
+    {a:'c1', as:'bottom', b:'gw', bs:'top', bx:115, type:'flow'},
+    {a:'c2', as:'bottom', b:'gw', bs:'top', bx:295, type:'flow'},
+    {a:'c3', as:'bottom', b:'gw', bs:'top', bx:475, type:'flow'},
+    {a:'gw', as:'right', b:'au', bs:'left', type:'dflow'},
+    {a:'gw', as:'bottom', ax:44, b:'s1', bs:'top', bx:44, type:'flow'},
+    {a:'gw', as:'bottom', ax:155, b:'s2', bs:'top', bx:155, type:'flow'},
+    {a:'gw', as:'bottom', ax:266, b:'s3', bs:'top', bx:266, type:'flow'},
+    {a:'gw', as:'bottom', ax:488, b:'s4', bs:'top', bx:488, type:'flow'},
+    {a:'gw', as:'bottom', ax:377, b:'s5', bs:'top', bx:377, type:'flow'},
+    {a:'s1', as:'bottom', ax:26, b:'d1', bs:'top', bx:26, type:'line'},
+    {a:'s2', as:'bottom', ax:130, b:'d2', bs:'top', bx:130, type:'line'},
+    {a:'s3', as:'bottom', ax:250, b:'d3', bs:'top', bx:250, type:'line'},
+    {a:'s4', as:'bottom', ax:474, b:'d4', bs:'top', bx:474, type:'line'},
+    {a:'s5', as:'bottom', ax:352, b:'d5', bs:'top', bx:352, type:'line'},
+    {a:'s3', as:'bottom', ax:296, b:'mb', bs:'top', bx:296, type:'dflow'},
+    {a:'s4', as:'bottom', ax:518, b:'mb', bs:'top', bx:518, type:'dflow'},
+    {a:'s5', as:'bottom', ax:418, b:'mb', bs:'top', bx:418, type:'dflow'},
+    {a:'s4', as:'right', b:'x1', bs:'left', type:'flow', mid:572},
+    {a:'mb', as:'right', b:'nt', bs:'left', type:'dflow'},
+    {a:'nt', as:'bottom', b:'x3', bs:'top', type:'flow'},
+  ]
+};
+</script>

@@ -31,7 +31,7 @@ DOCS = {
     "kit": {
         "dir": "kit", "name": "DP UML and Code Kit", "title": "Design Patterns — UML and Code Kit",
         "sections": [("K", "Method"), ("01", "Singleton"), ("02", "Factory"), ("03", "Facade"), ("04", "Adapter"),
-                     ("05", "Proxy"), ("06", "Decorator"), ("07", "Template"), ("08", "Chain"), ("09", "State"), ("P", "Practice")],
+                     ("05", "Proxy"), ("06", "Decorator"), ("07", "Template"), ("08", "Chain"), ("09", "State"), ("M", "Micro"), ("P", "Practice")],
     },
     "papers": {
         "dir": "papers", "name": "DP Past Papers Answered", "title": "Design Patterns — Past Papers Answered",
