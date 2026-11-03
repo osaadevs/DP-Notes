@@ -28,6 +28,11 @@ DOCS = {
         "dir": "practice", "name": "DP Practice Papers - Answers", "title": "Design Patterns — Practice Papers with Answers",
         "sections": [("P1", "Paper 1"), ("P2", "Paper 2"), ("P3", "Paper 3")], "flow": True, "body": "aonly",
     },
+    "kit": {
+        "dir": "kit", "name": "DP UML and Code Kit", "title": "Design Patterns — UML and Code Kit",
+        "sections": [("K", "Method"), ("01", "Singleton"), ("02", "Factory"), ("03", "Facade"), ("04", "Adapter"),
+                     ("05", "Proxy"), ("06", "Decorator"), ("07", "Template"), ("08", "Chain"), ("09", "State"), ("P", "Practice")],
+    },
     "papers": {
         "dir": "papers", "name": "DP Past Papers Answered", "title": "Design Patterns — Past Papers Answered",
         "sections": [("22", "2022"), ("23", "2023"), ("24", "2024"), ("25", "2025")],

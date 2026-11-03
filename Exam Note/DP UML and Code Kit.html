@@ -1,0 +1,1604 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Design Patterns — UML and Code Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&display=block" rel="stylesheet">
+<style>:root{
+  --ink:#111; --ink2:#3d3d3d; --ink3:#6e6e6e; --rule:#b9b9b9; --hair:#d4d4d4; --fill:#f0f0f0; --fill2:#e1e1e1;
+}
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:"IBM Plex Sans",Arial,sans-serif;font-size:9.2pt;line-height:1.45;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;font-kerning:normal}
+@media screen{body{background:#8d8d8d;padding:6mm 0}.page{margin:0 auto 6mm;box-shadow:0 1px 8px rgba(0,0,0,.35)}}
+#report{display:none}
+
+/* ---------- page frame ---------- */
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;break-after:page;background:#fff}
+.page:last-of-type{break-after:auto}
+.body{position:absolute;top:15mm;bottom:16mm;left:16mm;right:22mm;display:flex;flex-direction:column;gap:4.2mm}
+.foot{position:absolute;left:16mm;right:22mm;bottom:8.5mm;display:flex;justify-content:space-between;font-size:7pt;color:var(--ink3);border-top:.5pt solid var(--hair);padding-top:1.4mm}
+.foot b{color:var(--ink);font-weight:600}
+
+/* thumb-index ladder on the right edge */
+.ladder{position:absolute;right:5.5mm;top:15mm;display:flex;flex-direction:column;gap:1.1mm}
+.rung{width:8.5mm;height:15.4mm;border:.6pt solid var(--rule);border-radius:1.2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono",monospace;font-size:6.6pt;color:var(--ink3)}
+.rung.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.rung b{font-weight:600}
+.rung.on b{font-size:8.6pt}
+.rung span{writing-mode:vertical-rl;font-family:"IBM Plex Sans";font-size:6.2pt;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:1mm}
+
+/* ---------- page header ---------- */
+.ph{display:grid;grid-template-columns:auto 1fr auto;column-gap:4.5mm;align-items:end;padding-bottom:2.6mm;border-bottom:1.3pt solid var(--ink)}
+.ph .code{font-family:"IBM Plex Mono",monospace;font-size:27pt;font-weight:600;line-height:.78;letter-spacing:-.04em}
+.ph h1{margin:0;font-size:19pt;line-height:1.05;font-weight:700;letter-spacing:-.012em}
+.ph .lede{font-size:9.6pt;color:var(--ink2);margin-top:1.1mm;line-height:1.35}
+.ph .meta{text-align:right;font-size:6.8pt;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3);line-height:1.6;white-space:nowrap}
+.ph .meta b{color:var(--ink);font-weight:600}
+
+/* ---------- headings & text ---------- */
+h2{margin:0 0 1.8mm;font-size:10.2pt;line-height:1.25;font-weight:700;display:flex;align-items:baseline;gap:2mm}
+h2 .w{font-family:"IBM Plex Mono",monospace;font-size:7.6pt;font-weight:600;background:var(--ink);color:#fff;border-radius:.9mm;padding:.2mm 1.3mm;position:relative;top:-.3mm}
+h2 .r{margin-left:auto;font-size:7.5pt;font-weight:400;color:var(--ink3);white-space:nowrap}
+h3{margin:2mm 0 .8mm;font-size:9pt;font-weight:700}
+h3:first-child{margin-top:0}
+p{margin:0 0 1.5mm}
+p:last-child{margin-bottom:0}
+ul,ol{margin:0;padding-left:4.2mm}
+li{margin:0 0 .9mm}
+li:last-child{margin-bottom:0}
+.small{font-size:8.4pt;line-height:1.42}
+.tiny{font-size:7.4pt;color:var(--ink3)}
+.muted{color:var(--ink2)}
+.nw{white-space:nowrap}
+.mt{margin-top:1.6mm}
+b,strong{font-weight:600}
+.mark{background:var(--fill2);padding:0 .7mm;border-radius:.6mm}
+code{overflow-wrap:anywhere;font-family:"IBM Plex Mono",monospace;font-size:8.1pt;background:var(--fill);padding:0 .6mm;border-radius:.5mm}
+
+/* ---------- blocks ---------- */
+.panel{border:.7pt solid var(--rule);border-radius:1.8mm;padding:3mm 3.4mm}
+.shade{background:var(--fill);border-radius:1.8mm;padding:3mm 3.4mm}
+.say{border-left:2.2pt solid var(--ink);padding:.6mm 0 .6mm 3mm;font-size:9.4pt;line-height:1.45;margin:0 0 2mm}
+.say:last-child{margin-bottom:0}
+.say em{font-style:normal;background:var(--fill2);padding:0 .6mm;border-radius:.5mm}
+.chips{display:flex;flex-wrap:wrap;gap:1.4mm}
+.chip{background:var(--fill2);border-radius:1mm;padding:.35mm 1.8mm;font-size:8.6pt}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4mm}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm}
+.gc{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr);gap:4mm;align-items:start}
+.stack{display:flex;flex-direction:column;gap:4mm}
+.y{font-family:"IBM Plex Mono",monospace;font-size:7pt;font-weight:600;background:var(--ink);color:#fff;border-radius:.8mm;padding:.1mm 1.1mm;white-space:nowrap}
+.y.q{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 .7pt var(--ink)}
+.go{font-family:"IBM Plex Mono",monospace;font-weight:600;white-space:nowrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:4.6mm;height:4.6mm;border-radius:50%;border:.8pt solid var(--ink);font-size:7.4pt;font-weight:700;flex:none}
+
+/* ---------- code ---------- */
+pre.code{margin:0;font-family:"IBM Plex Mono",monospace;font-size:7.55pt;line-height:1.43;white-space:pre;overflow:hidden;
+  border:.7pt solid var(--rule);border-radius:1.8mm;padding:2.6mm 3mm;background:#fff}
+pre.code .c{color:var(--ink3);font-style:italic}
+pre.code .k{font-weight:600}
+pre.code .h{background:var(--fill2)}
+.codecap{font-size:7.2pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 1mm;font-weight:600}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;font-size:8.5pt;line-height:1.38}
+th{text-align:left;font-size:6.9pt;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:0 1.6mm 1mm;border-bottom:.9pt solid var(--ink);vertical-align:bottom}
+td{padding:1.15mm 1.6mm;border-bottom:.5pt solid var(--hair);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child,th:first-child{padding-left:0}
+td:last-child,th:last-child{padding-right:0}
+table.tight td{padding-top:.8mm;padding-bottom:.8mm}
+
+/* steps row */
+.steps{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3mm}
+.step{border-top:1.6pt solid var(--ink);padding-top:1.6mm}
+.step .n{font-family:"IBM Plex Mono",monospace;font-size:7.2pt;color:var(--ink3);font-weight:600}
+.step > b{display:block;font-size:9pt;margin:.3mm 0 .5mm}
+
+/* diagram frame */
+.fig{border:.7pt solid var(--rule);border-radius:1.8mm;padding:3mm 3.4mm}
+.fig .cap{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.6mm}
+svg.dg{overflow:visible}
+.legend{display:flex;gap:5mm;flex-wrap:wrap;font-size:7.4pt;color:var(--ink3);margin-top:1.6mm}
+pre.code .s{color:var(--ink2)}
+td code{overflow-wrap:normal}
+.rung b{font-family:"IBM Plex Mono","Apple Symbols",monospace}
+
+/* ---------- past papers: question blocks ---------- */
+.qbox{background:var(--fill);border-radius:1.8mm;padding:2.6mm 3.2mm;font-size:8.7pt;line-height:1.45}
+.qbox .lab{font-family:"IBM Plex Mono",monospace;font-size:7pt;font-weight:600;letter-spacing:.1em;color:var(--ink3);display:block;margin-bottom:.8mm}
+.ql{display:flex;gap:2.2mm;align-items:baseline;margin:0 0 1.8mm;font-size:8.7pt;line-height:1.38;color:var(--ink2)}
+.ql .qt{font-style:italic}
+.ql .r{margin-left:auto;font-size:7.5pt;color:var(--ink3);white-space:nowrap;padding-left:2mm}
+.w{font-family:"IBM Plex Mono",monospace;font-size:7.6pt;font-weight:600;background:var(--ink);color:#fff;border-radius:.9mm;padding:.2mm 1.3mm;white-space:nowrap;flex:none}
+.ans{font-size:9pt}
+.ans p{margin:0 0 1.4mm}
+.tip{font-size:7.6pt;color:var(--ink3);margin-top:1.4mm}
+
+/* ---------- practice papers: one source, two documents ---------- */
+#stage{position:absolute;left:0;top:0;width:172mm;visibility:hidden}
+#stage .chunk{display:flex;flex-direction:column;gap:4.2mm}
+body.qonly .a, body.qonly .aonly{display:none}
+body.aonly .qonly-only{display:none}
+body.qonly .part{border:none;padding:0 1mm}
+body.qonly .part .ql{font-size:9.4pt;color:var(--ink);margin:0}
+body.qonly .part .ql .qt{font-style:normal}
+body.qonly .part .ql .r{font-size:8pt;color:var(--ink2)}
+.examhead{border:1.2pt solid var(--ink);border-radius:1.8mm;padding:3mm 4mm;text-align:center;font-size:8.8pt;line-height:1.5}
+.examhead b{font-size:10pt}
+.a{margin-top:1.6mm}
+.a p{margin:0 0 1.4mm}
+
+/* contents page */
+.toc{columns:2;column-gap:8mm;font-size:8.6pt;line-height:1.35}
+.toc .sec{break-inside:avoid;margin:0 0 2.2mm}
+.toc .sec b.h{display:flex;gap:2mm;font-size:9pt;border-bottom:.8pt solid var(--ink);padding-bottom:.4mm;margin-bottom:.6mm}
+.toc .row{display:flex;gap:1.5mm}
+.toc .row span:first-child{flex:1}
+.toc .row .dots{flex:1;border-bottom:.5pt dotted var(--rule);transform:translateY(-1mm)}
+.toc .row b{font-family:"IBM Plex Mono",monospace;font-weight:600;min-width:6mm;text-align:right}
+</style>
+<script>window.SECTIONS=[{code:"K",short:"Method"},{code:"01",short:"Singleton"},{code:"02",short:"Factory"},{code:"03",short:"Facade"},{code:"04",short:"Adapter"},{code:"05",short:"Proxy"},{code:"06",short:"Decorator"},{code:"07",short:"Template"},{code:"08",short:"Chain"},{code:"09",short:"State"},{code:"P",short:"Practice"}];window.DIAGRAMS={};</script>
+</head><body class="">
+<!-- ===================== K : contents ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>UML and Code Kit</h1><div class="lede">For the moment you know the pattern but freeze on the boxes, names, arrows and code. Use it alongside the main note.</div></div>
+    <div class="meta">Kit<br><b>Contents</b></div>
+  </header>
+  <div id="toc" class="toc"></div>
+  <div class="shade small"><b>How this kit is different from the note:</b> the note explains each pattern with one scenario. This kit gives you the <b>empty shape</b> of each pattern, with the role names on the boxes, and tells you <b>where in any question to find the word that goes in each box</b>. You fill in the shape; you never have to invent it.</div>
+  <div class="g2">
+    <div class="panel">
+      <h2>Where boxes go on the page</h2>
+      <ol class="small">
+        <li>Interface / abstract class: <b>top middle</b>.</li>
+        <li>Concrete classes: <b>one row underneath</b>, triangles pointing up into the parent.</li>
+        <li>The pattern's special box (decorator, adapter, proxy, context, factory): <b>to the side</b>, with its has-a arrow going sideways.</li>
+        <li>Client: <b>far left</b>, one arrow to what it uses.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>The one special link per pattern</h2>
+      <table class="tight small">
+        <tr><td style="width:34%">Singleton</td><td>class → itself (<code>instance</code>)</td></tr>
+        <tr><td>Factory</td><td>factory ⇢ each product «create»</td></tr>
+        <tr><td>Facade</td><td>facade → every subsystem</td></tr>
+        <tr><td>Adapter</td><td>adapter → adaptee</td></tr>
+        <tr><td>Proxy</td><td>proxy → real subject</td></tr>
+        <tr><td>Decorator</td><td>decorator ◇→ component</td></tr>
+        <tr><td>Template</td><td>none: just triangles</td></tr>
+        <tr><td>Chain</td><td>handler ◇→ itself (<code>next</code>)</td></tr>
+        <tr><td>State</td><td>context ◇→ state interface</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>Design Patterns · UML and Code Kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : the problem and the 4 steps ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Why you lose track, and the fix</h1><div class="lede">You already pick the right pattern. What breaks is doing four jobs in your head at the same time.</div></div>
+    <div class="meta">Method<br><b>Read first</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>The four jobs you are juggling</h2>
+    <div class="steps">
+      <div class="step"><span class="n">JOB 1</span><b>Naming</b><span class="small">What do I call each class, field and method?</span></div>
+      <div class="step"><span class="n">JOB 2</span><b>Shape</b><span class="small">Which boxes does this pattern have, and which one is on top?</span></div>
+      <div class="step"><span class="n">JOB 3</span><b>Symbols</b><span class="small">Which arrow, which end, dashed or solid, + or −?</span></div>
+      <div class="step"><span class="n">JOB 4</span><b>Amount</b><span class="small">How much code, which classes, where do I stop?</span></div>
+    </div>
+    <p class="small mt">Doing all four while drawing is what makes you lose the thread: you invent a name, forget the arrow, change the name in the code, and the diagram and code stop matching. <b>The fix is to do them one at a time, in a fixed order, and copy jobs 2 and 3 from this kit instead of remembering them.</b></p>
+  </div>
+
+  <div class="panel">
+    <h2>The routine for every diagram or code question <span class="r">same 4 steps, any pattern</span></h2>
+    <table class="small">
+      <tr><th style="width:15%">Step</th><th style="width:12%">Time</th><th>What you do</th></tr>
+      <tr><td><b>1 · Slot table</b></td><td>2 min</td><td>Open this kit at the pattern's page. In your rough-work space, copy the <b>Role</b> column. Next to each role, write the word from the question (the page tells you where to look). <b>This little table is now the only place names come from.</b></td></tr>
+      <tr><td><b>2 · Draw</b></td><td>4–6 min</td><td>Copy the pattern's skeleton diagram box by box, writing <b>your</b> name from the slot table instead of the role name. The arrows are already decided by the skeleton, so just copy them.</td></tr>
+      <tr><td><b>3 · Code</b></td><td>5–8 min</td><td>Write the classes in the order of the slot table, top to bottom. Use the code skeleton on the pattern page; change only the names.</td></tr>
+      <tr><td><b>4 · Check</b></td><td>1 min</td><td>Run the checklist at the bottom of the pattern page. Most lost marks are on that list.</td></tr>
+    </table>
+    <div class="say mt">The golden rule: <em>diagram and code copy their names from the same slot table</em>, so they always match, and you never have to remember a name halfway through.</div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>How much to draw <span class="r">by marks</span></h2>
+      <table class="tight small">
+        <tr><td style="width:24%"><b>3–4 m</b></td><td>The pattern's core boxes only (interface + 2 concrete + the special box). Names and arrows correct; 1–2 methods each.</td></tr>
+        <tr><td><b>5–6 m</b></td><td>Full skeleton from the pattern page, with fields and 2–3 methods in each box, plus the client.</td></tr>
+        <tr><td><b>8–10 m</b></td><td>Full skeleton + every concrete class the question lists + stereotypes («interface», «abstract») + multiplicities on has-a links + a 1–2 line note under the diagram saying which box plays which role.</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>How much code <span class="r">by marks</span></h2>
+      <table class="tight small">
+        <tr><td style="width:24%"><b>2–3 m</b></td><td>Exactly what is asked (often just the interface or one class). Nothing extra.</td></tr>
+        <tr><td><b>4–5 m</b></td><td>What is asked, in full (fields, constructor, methods), plus 3 lines of client code showing it used.</td></tr>
+        <tr><td><b>6+ m</b></td><td>Interface/abstract class + the pattern class + two concrete classes + client with a comment showing the output.</td></tr>
+      </table>
+      <p class="tiny mt">Never needed unless asked: imports, getters/setters, <code>main</code>, full error handling.</p>
+    </div>
+  </div>
+  <div class="panel">
+      <h2>Two methods are enough</h2>
+      <p class="small">For each interface, pick <b>the one or two actions the question is about</b>. A pricing question → <code>getCost()</code>, <code>getDescription()</code>. A states question → one method per event. An approval question → <code>handle(request)</code>. Don't list every possible method; examiners mark the pattern, not completeness.</p>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : step 1 naming ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Step 1: getting the names out of the question</h1><div class="lede">Every name you need is already in the question. You only have to sort the words into the right slots.</div></div>
+    <div class="meta">Method<br><b>Naming</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Six sorting rules</h2>
+    <table class="small">
+      <tr><th style="width:32%">Word in the question</th><th style="width:22%">Becomes</th><th>Example</th></tr>
+      <tr><td><b>1.</b> The <b>general word</b> for the thing ("a payment method", "a book", "an account", "a state")</td><td>the <b>interface</b> or <b>abstract class</b></td><td>"different payment methods" → <code>PaymentMethod</code></td></tr>
+      <tr><td><b>2.</b> The <b>listed kinds</b> ("credit card, PayPal, cash on delivery")</td><td><b>concrete classes</b>, one each</td><td><code>CreditCardPayment</code>, <code>PayPalPayment</code>, <code>CashOnDeliveryPayment</code></td></tr>
+      <tr><td><b>3.</b> <b>Actions</b> (verbs: validate, scan, approve, calculate)</td><td><b>methods</b>: verb + noun</td><td>"process the payment" → <code>processPayment()</code></td></tr>
+      <tr><td><b>4.</b> <b>Data</b> the thing has (price, name, balance, days)</td><td><b>fields</b></td><td><code>- price : double</code></td></tr>
+      <tr><td><b>5.</b> <b>Who uses it</b> (the system, the app, the kiosk, the desk)</td><td>the <b>client</b> class</td><td><code>CheckoutSystem</code>, <code>LibraryApp</code></td></tr>
+      <tr><td><b>6.</b> A name or method <b>written in the question</b></td><td><b>copy it exactly</b>, same letters and case</td><td>2024: "<code>getCost()</code> and <code>getDescription()</code>"</td></tr>
+    </table>
+    <p class="small mt"><b>No word for a pattern box?</b> Use the general word + the pattern's suffix: <code>…Decorator</code>, <code>…Adapter</code>, <code>…Proxy</code>, <code>…Factory</code>, <code>…Facade</code>, <code>…State</code>, <code>…Handler</code>. Example: the general word is Burger → <code>BurgerDecorator</code>.</p>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>How to write names</h2>
+      <table class="tight small">
+        <tr><td style="width:38%"><b>Class / interface</b></td><td>Noun, capital first, joined words: <code>GroceryItem</code></td></tr>
+        <tr><td><b>Method</b></td><td>verb first, small first letter: <code>getCost()</code>, <code>approveLeave()</code></td></tr>
+        <tr><td><b>Field</b></td><td>noun, small first letter: <code>price</code>, <code>nextHandler</code></td></tr>
+        <tr><td><b>Constant</b></td><td>capitals: <code>MAX_PLAYERS</code>, <code>TAX_RATE</code></td></tr>
+        <tr><td><b>Singular</b></td><td><code>Book</code>, not <code>Books</code>; one class = one thing</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Worked example: sorting a new paragraph</h2>
+    <div class="qbox"><span class="lab">QUESTION (NOT FROM A PAST PAPER)</span>"A burger shop lets customers order a <b>basic burger</b> and add optional <b>extras</b> such as <b>cheese</b>, <b>bacon</b> and <b>large size</b>. The <b>price</b> and the <b>order description</b> must be calculated for any combination without creating subclasses for every combination."</div>
+    <div class="g2 mt" style="align-items:start">
+      <div class="small">
+        <p><b>Pattern:</b> "optional extras… without subclasses for every combination" → Decorator (you can already do this part).</p>
+        <p><b>Sorting:</b> general word = burger → <code>Burger</code> interface · base = basic burger → <code>BasicBurger</code> · listed extras → <code>Cheese</code>, <code>Bacon</code>, <code>LargeSize</code> · no word for the decorator box → suffix rule → <code>BurgerDecorator</code> · actions = calculate price, describe order → <code>getCost()</code>, <code>getDescription()</code>.</p>
+      </div>
+      <table class="tight small">
+        <tr><th>Role (from the kit)</th><th>My word</th></tr>
+        <tr><td>Component</td><td><code>Burger</code></td></tr>
+        <tr><td>ConcreteComponent</td><td><code>BasicBurger</code></td></tr>
+        <tr><td>Decorator</td><td><code>BurgerDecorator</code></td></tr>
+        <tr><td>ConcreteDecorators</td><td><code>Cheese, Bacon, LargeSize</code></td></tr>
+        <tr><td>operations</td><td><code>getCost(), getDescription()</code></td></tr>
+      </table>
+    </div>
+    <p class="tiny mt">That five-line table is all you need. Now open the Decorator page and copy the shape with these words.</p>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : step 2 drawing ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Step 2: the box and the arrow, decided by questions</h1><div class="lede">You don't need to remember UML. Answer the yes/no questions and the symbol picks itself.</div></div>
+    <div class="meta">Method<br><b>Drawing</b></div>
+  </header>
+
+  <div class="gc">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">What goes inside one box</h2></div>
+      <svg class="dg" data-d="k-box"></svg>
+    </div>
+    <div class="panel">
+      <h2>Box rules</h2>
+      <ul class="small">
+        <li><b>Top:</b> the name. Write «interface» above it for an interface. Write the name in <i>italics</i> (or «abstract» above it) for an abstract class.</li>
+        <li><b>Middle:</b> fields, <code>- name : Type</code>. Only the 1–3 the pattern needs (the wrapped object, the next handler, the current state, the price).</li>
+        <li><b>Bottom:</b> methods, <code>+ name(param : Type) : ReturnType</code>. 2–3 is enough.</li>
+        <li><b>Interface:</b> leave the middle box empty (interfaces have no fields).</li>
+        <li><code>+</code> public · <code>−</code> private · <code>#</code> protected · <u>underline</u> = static · <i>italic method</i> = abstract</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Which arrow? Ask in this order and stop at the first "yes"</h2>
+    <table class="small">
+      <tr><th style="width:44%">Question about class A and class B</th><th style="width:26%">Draw</th><th>Example</th></tr>
+      <tr><td><b>1.</b> Does A say <code>implements B</code>? (B is an interface)</td><td><b>dashed line, hollow triangle at B</b></td><td><code>BasicBurger</code> → <code>Burger</code></td></tr>
+      <tr><td><b>2.</b> Does A say <code>extends B</code>? (B is a class / abstract class)</td><td><b>solid line, hollow triangle at B</b></td><td><code>Cheese</code> → <code>BurgerDecorator</code></td></tr>
+      <tr><td><b>3.</b> Does A have a <b>field</b> of type B? (A "has a" B)</td><td><b>solid line, open arrow at B</b>; add a hollow diamond at A if A wraps or collects B</td><td>decorator ◇→ component, context ◇→ state, proxy → real subject</td></tr>
+      <tr><td><b>4.</b> Does A only <b>use</b> or <b>create</b> B inside a method?</td><td><b>dashed line, open arrow at B</b>; label «create» for factories</td><td>factory ⇢ product; client ⇢ <code>getInstance()</code></td></tr>
+    </table>
+    <svg class="dg mt" data-d="k-arrows"></svg>
+    <p class="tiny mt"><b>Memory trick:</b> triangle = "is a" (it's a kind of that), and the triangle always touches the <b>parent</b>. Dashed triangle = interface parent, solid triangle = class parent. A plain arrow = "has a" or "uses". Note: a decorator has <b>both</b> a triangle (it is a Component) and a diamond arrow (it holds a Component). That's correct, not a mistake.</p>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : step 3 code ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Step 3: writing the code, in order</h1><div class="lede">Every pattern's code is built from the same seven small moves. Learn the moves once; the pattern pages just arrange them.</div></div>
+    <div class="meta">Method<br><b>Code</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Write the classes in this order <span class="r">same order as your slot table</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><b>Interface / abstract</b><span class="small">The general word. Method headers only (or the final template method).</span></div>
+      <div class="step"><span class="n">2</span><b>One concrete class</b><span class="small">Fields, constructor, every method. In full.</span></div>
+      <div class="step"><span class="n">3</span><b>The pattern class</b><span class="small">Decorator, adapter, proxy, factory, context, handler.</span></div>
+      <div class="step"><span class="n">4</span><b>More concretes</b><span class="small">Only if marks allow. Same shape as #2.</span></div>
+      <div class="step"><span class="n">5</span><b>Client</b><span class="small">3–5 lines that use it, with <code>// output</code>.</span></div>
+    </div>
+    <p class="small mt">Put a comment with the role above each class (<code>// COMPONENT</code>, <code>// ADAPTER</code>). It shows the examiner you know the parts, and it keeps <b>you</b> on track.</p>
+  </div>
+
+  <div class="panel">
+    <h2>The seven moves</h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// MOVE 1: an interface = method headers</span>
+<span class="k">public</span> <span class="k">interface</span> Burger {
+  <span class="k">double</span> getCost();
+  String getDescription();
+}
+
+<span class="c">// MOVE 2: implements = fill in every method</span>
+<span class="k">public</span> <span class="k">class</span> BasicBurger <span class="k">implements</span> Burger {
+  <span class="k">public</span> <span class="k">double</span> getCost() { <span class="k">return</span> 500; }
+  <span class="k">public</span> String getDescription() {
+    <span class="k">return</span> <span class="s">"Basic burger"</span>; }
+}
+
+<span class="c">// MOVE 3: has-a = field + constructor</span>
+<span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> BurgerDecorator
+    <span class="k">implements</span> Burger {
+  <span class="k">protected</span> <span class="k">final</span> Burger burger;   <span class="c">// field</span>
+  <span class="k">public</span> BurgerDecorator(Burger b) {
+    burger = b; }                  <span class="c">// set it</span>
+}
+
+<span class="c">// MOVE 4: delegate = call the field, add</span>
+<span class="k">public</span> <span class="k">double</span> getCost() {
+  <span class="k">return</span> burger.getCost() + 150; }</pre>
+<pre class="code"><span class="c">// MOVE 5: extends + super(...)</span>
+<span class="k">public</span> <span class="k">class</span> Cheese <span class="k">extends</span> BurgerDecorator {
+  <span class="k">public</span> Cheese(Burger b) { <span class="k">super</span>(b); }
+  <span class="c">// ... override getCost() with MOVE 4</span>
+}
+
+<span class="c">// MOVE 6: a fixed order you can't change</span>
+<span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> Process {
+  <span class="k">public</span> <span class="k">final</span> <span class="k">void</span> run() {   <span class="c">// final!</span>
+    stepOne(); stepTwo(); }
+  <span class="k">protected</span> <span class="k">abstract</span> <span class="k">void</span> stepTwo();
+  <span class="k">private</span> <span class="k">void</span> stepOne() { }
+}
+
+<span class="c">// MOVE 7: only one object</span>
+<span class="k">public</span> <span class="k">final</span> <span class="k">class</span> Logger {
+  <span class="k">private</span> <span class="k">static</span> Logger instance;
+  <span class="k">private</span> Logger() { }        <span class="c">// private!</span>
+  <span class="k">public</span> <span class="k">static</span> <span class="k">synchronized</span> Logger
+      getInstance() {
+    <span class="k">if</span> (instance == <span class="k">null</span>)
+      instance = <span class="k">new</span> Logger();
+    <span class="k">return</span> instance; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Which moves each pattern uses</h2>
+    <table class="tight small">
+      <tr><td style="width:20%"><b>Singleton</b></td><td>7</td><td style="width:20%"><b>Decorator</b></td><td>1, 2, 3, 4, 5</td></tr>
+      <tr><td><b>Factory</b></td><td>1, 2 + a <code>switch</code> that returns <code>new …</code></td><td><b>Template</b></td><td>6, 5</td></tr>
+      <tr><td><b>Facade</b></td><td>3 (several fields), 4 (call them in order)</td><td><b>Chain</b></td><td>3 (field <code>next</code>), 4 (pass to next), 5</td></tr>
+      <tr><td><b>Adapter</b></td><td>1, 2, 3, 4 (call the adaptee's method)</td><td><b>State</b></td><td>1, 2, 3 (field <code>state</code>), 4 (<code>state.event(this)</code>)</td></tr>
+      <tr><td><b>Proxy</b></td><td>1, 2, 3, 4 (check first, then call)</td><td></td><td></td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['k-box'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, w:200, name:'BurgerDecorator', stereo:'abstract', abstract:true,
+     attrs:['# burger : Burger'],
+     ops:['+ BurgerDecorator(b : Burger)', '+ getCost() : double', '/+ getDescription() : String']},
+    {k:'text', x:212, y:14, lines:['① name (italic = abstract)'], size:9, fill:'#111'},
+    {k:'text', x:212, y:44, lines:['② fields: − name : Type'], size:9, fill:'#111'},
+    {k:'text', x:212, y:74, lines:['③ methods: + name(p : Type) : Return'], size:9, fill:'#111'},
+  ]
+};
+(function(){
+  const rows = [['realize','BasicBurger','Burger','interface','implements'],['extend','Cheese','BurgerDecorator','abstract','extends'],
+                ['aggr','BurgerDecorator','Burger','interface','has a (wraps)'],['depend','BurgerFactory','BasicBurger',null,'creates']];
+  const items=[], edges=[];
+  rows.forEach((r,i)=>{ const x=i*150;
+    items.push({id:'a'+i,k:'class',x:x,y:0,w:118,name:r[1]});
+    items.push({id:'b'+i,k:'class',x:x,y:70,w:118,name:r[2],stereo:r[3]});
+    items.push({k:'text',x:x+60,y:130,lines:[r[4]],size:9,anchor:'middle',fill:'#111',bold:true});
+    edges.push({a:'a'+i,as:'bottom',b:'b'+i,bs:'top',type:r[0],label:r[0]==='depend'?'«create»':null});
+  });
+  DIAGRAMS['k-arrows']={items,edges};
+})();
+</script>
+<!-- ===================== 01 SINGLETON ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: fill-in kit</h1><div class="lede">One box. The hard part is only the three fixed ingredients, which never change names.</div></div>
+    <div class="meta">Kit<br><b>Singleton</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "the hospital must use a single appointment scheduler"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Singleton class</b></td><td>the thing there must be "only one" / "a single global" of</td><td><code>AppointmentScheduler</code></td></tr>
+      <tr><td><b>instance</b></td><td>fixed name, always <code>instance</code> (static)</td><td><code>instance</code></td></tr>
+      <tr><td><b>getInstance()</b></td><td>fixed name, always <code>getInstance()</code> (static)</td><td><code>getInstance()</code></td></tr>
+      <tr><td><b>shared data</b></td><td>what must be the same for everyone (queue, counter, rate, file)</td><td><code>bookings : Map&lt;String,String&gt;</code></td></tr>
+      <tr><td><b>operation()</b></td><td>what the one object does (verb in the question)</td><td><code>book(patient, time)</code></td></tr>
+      <tr><td><b>Clients</b></td><td>the parts that use it ("all counters", "every department")</td><td><code>ReceptionDesk</code>, <code>DoctorPortal</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">box names = roles; replace each with the word in the slot table's Example column</span></div>
+    <svg class="dg" data-d="kt-single"></svg>
+  </div>
+  <div class="gc">
+<pre class="code"><span class="c">// SINGLETON (rename: Singleton -&gt; your class)</span>
+<span class="k">public</span> <span class="k">final</span> <span class="k">class</span> Singleton {
+  <span class="k">private</span> <span class="k">static</span> Singleton instance;  <span class="c">// one copy</span>
+  <span class="k">private</span> <span class="k">final</span> Map&lt;String, String&gt; data =
+      <span class="k">new</span> HashMap&lt;&gt;();                <span class="c">// shared</span>
+
+  <span class="k">private</span> Singleton() { }             <span class="c">// no "new"</span>
+
+  <span class="k">public</span> <span class="k">static</span> <span class="k">synchronized</span> Singleton
+      getInstance() {
+    <span class="k">if</span> (instance == <span class="k">null</span>)
+      instance = <span class="k">new</span> Singleton();
+    <span class="k">return</span> instance;
+  }
+  <span class="k">public</span> <span class="k">synchronized</span> <span class="k">void</span> operation(String k,
+                                     String v) {
+    data.put(k, v); }
+}
+<span class="c">// CLIENT: never "new", always getInstance()</span>
+Singleton s = Singleton.getInstance();
+s.operation(<span class="s">"P01"</span>, <span class="s">"10:30"</span>);</pre>
+    <div class="stack">
+      <div class="panel small">
+        <h2>"Maximum N" instead of one?</h2>
+        <p>That's a <b>Multiton</b>: same three ingredients, but the static field is a <code>List</code> or <code>Map</code>, and the static method refuses (or reuses) once it holds N objects. Note tab 01 has the cricket version.</p>
+      </div>
+      <div class="shade small">
+        <h2>Check before moving on</h2>
+        <p>☐ constructor <b>private</b><br>☐ <code>instance</code> <b>static</b> and <u>underlined</u> in the diagram<br>☐ <code>getInstance()</code> <b>static</b>, <u>underlined</u><br>☐ clients call <code>getInstance()</code>, never <code>new</code><br>☐ said "thread-safe" (synchronized) in the text</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 02 FACTORY ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory: fill-in kit</h1><div class="lede">One interface, one class per listed kind, one factory with a switch. The listed kinds are always in the question.</div></div>
+    <div class="meta">Kit<br><b>Factory</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "alerts are sent as email, SMS or push depending on the user's choice"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Product</b> «interface»</td><td>the general word before the list ("types of X", "different X")</td><td><code>Notification</code></td></tr>
+      <tr><td><b>ConcreteProducts</b></td><td>the listed kinds, one class each</td><td><code>EmailNotification</code>, <code>SmsNotification</code>, <code>PushNotification</code></td></tr>
+      <tr><td><b>operation()</b></td><td>the action every kind does</td><td><code>send(message)</code></td></tr>
+      <tr><td><b>Factory</b></td><td>general word + <code>Factory</code></td><td><code>NotificationFactory</code></td></tr>
+      <tr><td><b>create(type)</b></td><td><code>create</code> + general word, or the name the question gives</td><td><code>create(type) : Notification</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">dashed triangles up to the interface; dashed «create» arrows from the factory</span></div>
+    <svg class="dg" data-d="kt-factory"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// PRODUCT</span>
+<span class="k">public</span> <span class="k">interface</span> Product {
+  <span class="k">void</span> operation(String msg);
+}
+<span class="c">// CONCRETE PRODUCT (one per listed kind)</span>
+<span class="k">public</span> <span class="k">class</span> ProductA <span class="k">implements</span> Product {
+  <span class="k">public</span> <span class="k">void</span> operation(String msg) {
+    System.out.println(<span class="s">"A: "</span> + msg); }
+}
+<span class="k">public</span> <span class="k">class</span> ProductB <span class="k">implements</span> Product {
+  <span class="k">public</span> <span class="k">void</span> operation(String msg) {
+    System.out.println(<span class="s">"B: "</span> + msg); }
+}</pre>
+<pre class="code"><span class="c">// FACTORY: the only place with "new"</span>
+<span class="k">public</span> <span class="k">class</span> ProductFactory {
+  <span class="k">public</span> <span class="k">static</span> Product create(String type) {
+    <span class="k">switch</span> (type) {
+      <span class="k">case</span> <span class="s">"A"</span>: <span class="k">return</span> <span class="k">new</span> ProductA();
+      <span class="k">case</span> <span class="s">"B"</span>: <span class="k">return</span> <span class="k">new</span> ProductB();
+      <span class="k">default</span>: <span class="k">throw</span> <span class="k">new</span>
+          IllegalArgumentException(type);
+    }
+  }
+}
+<span class="c">// CLIENT: only knows the interface</span>
+Product p = ProductFactory.create(<span class="s">"A"</span>);
+p.operation(<span class="s">"Hello"</span>);    <span class="c">// A: Hello</span></pre>
+  </div>
+  <div class="g2">
+    <div class="panel small">
+      <h2>Question says "Factory Method" / "subclasses decide"?</h2>
+      <p>Use the GoF form instead: an abstract <code>Creator</code> with <code>public abstract Product createProduct();</code> and one subclass per kind (<code>CreatorA</code> returns <code>new ProductA()</code>). Diagram: note tab 02, "The strict GoF version".</p>
+    </div>
+    <div class="shade small">
+      <h2>Check</h2>
+      <p>☐ factory <b>returns the interface type</b>, not a concrete class<br>☐ client has no <code>new ProductA()</code><br>☐ «create» arrows dashed, from the factory<br>☐ one concrete class per listed kind</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>02 Factory kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 03 FACADE ===================== -->
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade: fill-in kit</h1><div class="lede">One front class with one big method. Behind it, one box per service the question lists.</div></div>
+    <div class="meta">Kit<br><b>Facade</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "one check-in action that internally assigns a room, takes a deposit and issues a key card"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Facade</b></td><td>the name of the whole job + <code>Facade</code></td><td><code>CheckInFacade</code></td></tr>
+      <tr><td><b>facade method</b></td><td>the one action the user wants ("one simple interface for…")</td><td><code>checkIn(guest, roomType)</code></td></tr>
+      <tr><td><b>Subsystems</b></td><td>each service listed, usually after "internally calling" / "combine"</td><td><code>RoomService</code>, <code>BillingService</code>, <code>KeyCardService</code></td></tr>
+      <tr><td><b>their methods</b></td><td>what each service does, one verb each</td><td><code>assignRoom()</code>, <code>chargeDeposit()</code>, <code>issueKey()</code></td></tr>
+      <tr><td><b>Client</b></td><td>the screen / app the user touches</td><td><code>FrontDeskApp</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">arrows go from the facade to the subsystems, never back</span></div>
+    <svg class="dg" data-d="kt-facade"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// SUBSYSTEMS: do the real work</span>
+<span class="k">class</span> SubsystemA {
+  String doA(String x) {
+    <span class="k">return</span> <span class="s">"A done for "</span> + x; } }
+<span class="k">class</span> SubsystemB {
+  <span class="k">void</span> doB(String x) {
+    System.out.println(<span class="s">"B done"</span>); } }
+<span class="k">class</span> SubsystemC {
+  <span class="k">void</span> doC(String x) {
+    System.out.println(<span class="s">"C done"</span>); } }
+
+<span class="c">// CLIENT: one call</span>
+Facade f = <span class="k">new</span> Facade();
+f.bigAction(<span class="s">"Guest01"</span>);</pre>
+<pre class="code"><span class="c">// FACADE: calls them in the right order</span>
+<span class="k">public</span> <span class="k">class</span> Facade {
+  <span class="k">private</span> <span class="k">final</span> SubsystemA a = <span class="k">new</span> SubsystemA();
+  <span class="k">private</span> <span class="k">final</span> SubsystemB b = <span class="k">new</span> SubsystemB();
+  <span class="k">private</span> <span class="k">final</span> SubsystemC c = <span class="k">new</span> SubsystemC();
+
+  <span class="k">public</span> <span class="k">void</span> bigAction(String x) {
+    String r = a.doA(x);   <span class="c">// 1st</span>
+    b.doB(r);              <span class="c">// 2nd</span>
+    c.doC(r);              <span class="c">// 3rd</span>
+  }
+}</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ one facade method that does the whole job ☐ one field per subsystem ☐ arrows only facade → subsystems ☐ no business rules inside the facade (it only calls) ☐ client talks only to the facade</p>
+  </div>
+</div>
+<div class="foot"><span>03 Facade kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 04 ADAPTER ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: fill-in kit</h1><div class="lede">Two method names are in the question: the old one your system calls, and the new one the vendor class has. The adapter joins them.</div></div>
+    <div class="meta">Kit<br><b>Adapter</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "the app calls getTemperature(); the new vendor sensor only has readCelsius()"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Target</b> «interface»</td><td>what your system <b>already calls</b> (the old method) → make it an interface</td><td><code>Thermometer</code> with <code>getTemperature()</code></td></tr>
+      <tr><td><b>Adaptee</b></td><td>the <b>new / legacy / vendor</b> class you can't change, with its <b>different</b> method</td><td><code>VendorSensor</code> with <code>readCelsius()</code></td></tr>
+      <tr><td><b>Adapter</b></td><td>adaptee name + <code>Adapter</code></td><td><code>VendorSensorAdapter</code></td></tr>
+      <tr><td><b>Client</b></td><td>the existing system with the "hundreds of calls"</td><td><code>WeatherApp</code></td></tr>
+    </table>
+    <p class="tiny mt">Test: <b>Target method = old name. Adaptee method = new name.</b> Inside the adapter, the old name calls the new name.</p>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">adapter implements the target and holds the adaptee</span></div>
+    <svg class="dg" data-d="kt-adapter"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// TARGET: what the client already uses</span>
+<span class="k">public</span> <span class="k">interface</span> Target {
+  <span class="k">double</span> oldMethod();
+}
+<span class="c">// ADAPTEE: vendor class, can't change it</span>
+<span class="k">public</span> <span class="k">class</span> Adaptee {
+  <span class="k">public</span> <span class="k">double</span> newMethod() {
+    <span class="k">return</span> 24.5; }
+}
+<span class="c">// CLIENT: only the creation line changes</span>
+Target t = <span class="k">new</span> Adapter(<span class="k">new</span> Adaptee());
+<span class="k">double</span> v = t.oldMethod(); <span class="c">// old calls stay</span></pre>
+<pre class="code"><span class="c">// ADAPTER: is a Target, has an Adaptee</span>
+<span class="k">public</span> <span class="k">class</span> Adapter <span class="k">implements</span> Target {
+  <span class="k">private</span> <span class="k">final</span> Adaptee adaptee;
+  <span class="k">public</span> Adapter(Adaptee a) {
+    <span class="k">this</span>.adaptee = a; }
+
+  <span class="k">public</span> <span class="k">double</span> oldMethod() {
+    <span class="c">// translate: old call -&gt; new call</span>
+    <span class="c">// (convert units / format here too)</span>
+    <span class="k">return</span> adaptee.newMethod();
+  }
+}</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ adapter <b>implements Target</b> (dashed triangle) ☐ adapter <b>has an Adaptee field</b> (solid arrow) ☐ adaptee untouched ☐ the old method's body calls the new method ☐ named all four participants in words</p>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 05 PROXY ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: fill-in kit</h1><div class="lede">Two classes with the same interface. The proxy checks or delays first, then calls the real one.</div></div>
+    <div class="meta">Kit<br><b>Proxy</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "only enrolled students may watch recorded lectures; videos load only when played"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Subject</b> «interface»</td><td>the thing the user asks for</td><td><code>VideoLecture</code> with <code>play(student)</code></td></tr>
+      <tr><td><b>RealSubject</b></td><td><code>Real</code> + subject name: the expensive / protected one</td><td><code>RealVideoLecture</code></td></tr>
+      <tr><td><b>Proxy</b></td><td>subject name + <code>Proxy</code></td><td><code>VideoLectureProxy</code></td></tr>
+      <tr><td><b>the check</b></td><td>"permission / authorised / restricted" → protection; "load only when / large" → virtual (lazy)</td><td><code>isEnrolled(student)</code> + create on first play</td></tr>
+      <tr><td><b>Client</b></td><td>who asks for the thing</td><td><code>LmsPlayer</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">both implement the subject; the proxy points to the real one</span></div>
+    <svg class="dg" data-d="kt-proxy"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// SUBJECT</span>
+<span class="k">public</span> <span class="k">interface</span> Subject {
+  <span class="k">void</span> request(String user);
+}
+<span class="c">// REAL SUBJECT: the real / costly work</span>
+<span class="k">public</span> <span class="k">class</span> RealSubject <span class="k">implements</span> Subject {
+  <span class="k">public</span> RealSubject() {
+    System.out.println(<span class="s">"Loading..."</span>); }
+  <span class="k">public</span> <span class="k">void</span> request(String user) {
+    System.out.println(<span class="s">"Serving "</span> + user); }
+}
+<span class="c">// CLIENT: can't tell it's a proxy</span>
+Subject s = <span class="k">new</span> Proxy();
+s.request(<span class="s">"S001"</span>);</pre>
+<pre class="code"><span class="c">// PROXY: same interface, check first</span>
+<span class="k">public</span> <span class="k">class</span> Proxy <span class="k">implements</span> Subject {
+  <span class="k">private</span> RealSubject real;    <span class="c">// null at first</span>
+
+  <span class="k">public</span> <span class="k">void</span> request(String user) {
+    <span class="k">if</span> (!allowed(user)) {      <span class="c">// protection</span>
+      System.out.println(<span class="s">"Denied"</span>);
+      <span class="k">return</span>; }
+    <span class="k">if</span> (real == <span class="k">null</span>)          <span class="c">// virtual (lazy)</span>
+      real = <span class="k">new</span> RealSubject();
+    real.request(user);        <span class="c">// forward</span>
+  }
+  <span class="k">private</span> <span class="k">boolean</span> allowed(String user) {
+    <span class="k">return</span> user.startsWith(<span class="s">"S"</span>); } <span class="c">// STUB</span>
+}</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ proxy and real both <b>implement the same interface</b> ☐ arrow proxy → real (never the other way) ☐ client holds the <b>interface</b> type ☐ named the proxy type (protection / virtual / logging) ☐ check happens <b>before</b> the forward</p>
+  </div>
+</div>
+<div class="foot"><span>05 Proxy kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 06 DECORATOR ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: fill-in kit</h1><div class="lede">Four roles: the general thing, the plain base, the abstract wrapper, and one class per extra.</div></div>
+    <div class="meta">Kit<br><b>Decorator</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: the burger shop from "Step 1"</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Component</b> «interface»</td><td>the general thing being priced / extended</td><td><code>Burger</code></td></tr>
+      <tr><td><b>operations</b></td><td>what must be calculated ("price", "description", "delivery time"), or the names given</td><td><code>getCost()</code>, <code>getDescription()</code></td></tr>
+      <tr><td><b>ConcreteComponent</b></td><td>the plain / base one ("basic", "base", "standard")</td><td><code>BasicBurger</code></td></tr>
+      <tr><td><b>Decorator</b> «abstract»</td><td>general word + <code>Decorator</code></td><td><code>BurgerDecorator</code></td></tr>
+      <tr><td><b>ConcreteDecorators</b></td><td>the listed extras / add-ons / toppings / services</td><td><code>Cheese</code>, <code>Bacon</code>, <code>LargeSize</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">the decorator both implements AND holds a Component: triangle up + diamond arrow</span></div>
+    <svg class="dg" data-d="kt-deco"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// COMPONENT</span>
+<span class="k">public</span> <span class="k">interface</span> Component {
+  <span class="k">double</span> getCost();
+  String getDescription();
+}
+<span class="c">// CONCRETE COMPONENT: the plain base</span>
+<span class="k">public</span> <span class="k">class</span> ConcreteComponent
+    <span class="k">implements</span> Component {
+  <span class="k">public</span> <span class="k">double</span> getCost() { <span class="k">return</span> 500; }
+  <span class="k">public</span> String getDescription() {
+    <span class="k">return</span> <span class="s">"Basic"</span>; }
+}
+<span class="c">// CLIENT: wrap in any order, any number</span>
+Component c = <span class="k">new</span> ConcreteComponent();
+c = <span class="k">new</span> ExtraA(c);
+c = <span class="k">new</span> ExtraB(c);
+c.getCost();   <span class="c">// 500 + 150 + 100 = 750</span></pre>
+<pre class="code"><span class="c">// DECORATOR: is-a Component + has-a Component</span>
+<span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> Decorator
+    <span class="k">implements</span> Component {
+  <span class="k">protected</span> <span class="k">final</span> Component inner;
+  <span class="k">public</span> Decorator(Component c) { inner = c; }
+}
+<span class="c">// CONCRETE DECORATOR: ask inner, add own part</span>
+<span class="k">public</span> <span class="k">class</span> ExtraA <span class="k">extends</span> Decorator {
+  <span class="k">public</span> ExtraA(Component c) { <span class="k">super</span>(c); }
+  <span class="k">public</span> <span class="k">double</span> getCost() {
+    <span class="k">return</span> inner.getCost() + 150; }
+  <span class="k">public</span> String getDescription() {
+    <span class="k">return</span> inner.getDescription() + <span class="s">", A"</span>; }
+}
+<span class="c">// ExtraB: same shape, + 100 and ", B"</span></pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ decorator <b>implements</b> Component (dashed triangle) <b>and</b> has a Component field (diamond at the decorator) ☐ extras <b>extend</b> the decorator (solid triangle) ☐ every method calls <code>inner.…</code> then adds ☐ constructor takes the Component ☐ one class per listed extra</p>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 07 TEMPLATE ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: fill-in kit</h1><div class="lede">Write the list of steps from the question. Same-for-everyone steps are written once; "differs" steps are abstract.</div></div>
+    <div class="meta">Kit<br><b>Template</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: loans: verify → assess risk → approve → notify; risk differs per loan type</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>AbstractClass</b></td><td>the general process / thing all types share</td><td><code>LoanApplication</code></td></tr>
+      <tr><td><b>templateMethod()</b> final</td><td>the whole process as one verb, or the name given</td><td><code>processApplication()</code></td></tr>
+      <tr><td><b>common steps</b></td><td>listed steps that are the <b>same</b> for every type</td><td><code>verifyDocuments()</code>, <code>approve()</code>, <code>notifyCustomer()</code></td></tr>
+      <tr><td><b>varying steps</b> (abstract)</td><td>steps the question says "differ / vary / are specific"</td><td><code>assessRisk()</code></td></tr>
+      <tr><td><b>ConcreteClasses</b></td><td>the listed types, one subclass each</td><td><code>HomeLoan</code>, <code>VehicleLoan</code></td></tr>
+    </table>
+    <p class="tiny mt">Trick: write the question's steps as a numbered list. Circle the ones that "differ". Circled = <code>protected abstract</code>. The rest = written once. The list order = the order inside the final method.</p>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">solid triangles (extends); {final} on the template; italic = abstract</span></div>
+    <svg class="dg" data-d="kt-template"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// ABSTRACT CLASS: owns the order</span>
+<span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> AbstractClass {
+  <span class="k">public</span> <span class="k">final</span> <span class="k">void</span> templateMethod() {
+    commonStep1();      <span class="c">// same for all</span>
+    varyingStep();      <span class="c">// each type</span>
+    commonStep2();      <span class="c">// same for all</span>
+  }
+  <span class="k">private</span> <span class="k">void</span> commonStep1() {
+    System.out.println(<span class="s">"Step 1"</span>); }
+  <span class="k">protected</span> <span class="k">abstract</span> <span class="k">void</span> varyingStep();
+  <span class="k">private</span> <span class="k">void</span> commonStep2() {
+    System.out.println(<span class="s">"Step 3"</span>); }
+}</pre>
+<pre class="code"><span class="c">// CONCRETE CLASS: only the varying step</span>
+<span class="k">public</span> <span class="k">class</span> TypeA <span class="k">extends</span> AbstractClass {
+  <span class="k">protected</span> <span class="k">void</span> varyingStep() {
+    System.out.println(<span class="s">"A's way"</span>); }
+}
+<span class="k">public</span> <span class="k">class</span> TypeB <span class="k">extends</span> AbstractClass {
+  <span class="k">protected</span> <span class="k">void</span> varyingStep() {
+    System.out.println(<span class="s">"B's way"</span>); }
+}
+<span class="c">// CLIENT: calls only the template method</span>
+AbstractClass x = <span class="k">new</span> TypeA();
+x.templateMethod();  <span class="c">// Step 1, A's way, Step 3</span></pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ template method <b>public final</b> ☐ varying steps <b>protected abstract</b> (italic in UML) ☐ subclasses <b>extend</b> (solid line), they don't implement ☐ subclasses write only the varying steps ☐ client calls only the template method</p>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 08 CHAIN ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain of Responsibility: fill-in kit</h1><div class="lede">One abstract handler with a "next" link to itself. The levels or checks listed in the question become the handlers, in that order.</div></div>
+    <div class="meta">Kit<br><b>Chain</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: leave ≤ 2 days supervisor, ≤ 7 manager, longer HR director</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Request</b></td><td>the thing being passed along (and the value that decides who handles it)</td><td><code>LeaveRequest</code> with <code>days</code></td></tr>
+      <tr><td><b>Handler</b> «abstract»</td><td>the general word for who deals with it (+ <code>Handler</code> if none)</td><td><code>Approver</code></td></tr>
+      <tr><td><b>next / setNext()</b></td><td>fixed names</td><td><code>next</code>, <code>setNext()</code></td></tr>
+      <tr><td><b>ConcreteHandlers</b></td><td>the listed levels / checks / filters, <b>in the order given</b></td><td><code>Supervisor</code>, <code>Manager</code>, <code>HRDirector</code></td></tr>
+      <tr><td><b>handle()</b></td><td><code>handle</code>, or the verb ("approve", "validate", "filter")</td><td><code>approve(request)</code></td></tr>
+      <tr><td><b>Client</b></td><td>who sends the request in</td><td><code>LeavePortal</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">the "next" link is ONE loop on the abstract handler, not arrows between concrete handlers</span></div>
+    <svg class="dg" data-d="kt-chain"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// HANDLER</span>
+<span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> Handler {
+  <span class="k">private</span> Handler next;
+  <span class="k">public</span> Handler setNext(Handler n) {
+    next = n; <span class="k">return</span> n; } <span class="c">// lets you chain</span>
+
+  <span class="k">public</span> <span class="k">void</span> handle(Request r) {
+    <span class="k">if</span> (canHandle(r)) process(r);      <span class="c">// me</span>
+    <span class="k">else</span> <span class="k">if</span> (next != <span class="k">null</span>) next.handle(r);
+  }
+  <span class="k">protected</span> <span class="k">abstract</span> <span class="k">boolean</span>
+      canHandle(Request r);
+  <span class="k">protected</span> <span class="k">abstract</span> <span class="k">void</span> process(Request r);
+}
+<span class="c">// Request: a class with the deciding value,</span>
+<span class="c">// e.g. LeaveRequest with an int days field</span></pre>
+<pre class="code"><span class="c">// CONCRETE HANDLER (one per level)</span>
+<span class="k">public</span> <span class="k">class</span> LevelOne <span class="k">extends</span> Handler {
+  <span class="k">protected</span> <span class="k">boolean</span> canHandle(Request r) {
+    <span class="k">return</span> r.getValue() &lt;= 2; }
+  <span class="k">protected</span> <span class="k">void</span> process(Request r) {
+    System.out.println(<span class="s">"Level one"</span>); }
+}
+<span class="c">// LevelTwo: value &lt;= 7 · LevelThree: true</span>
+
+<span class="c">// CLIENT: build once, send to the first</span>
+Handler h = <span class="k">new</span> LevelOne();
+h.setNext(<span class="k">new</span> LevelTwo())
+ .setNext(<span class="k">new</span> LevelThree());
+h.handle(<span class="k">new</span> Request(5));  <span class="c">// Level two</span></pre>
+  </div>
+  <p class="small"><b>"Checks in order" questions</b> (validation, filters: every check must pass): make <code>handle()</code> return <code>boolean</code>: <code>if (!check(r)) return false; return next == null || next.handle(r);</code> with one abstract <code>check(r)</code>. Levels / approvals / priorities: use the code above.</p>
+  <div class="shade small">
+    <p><b>Check:</b> ☐ <code>next</code> field on the abstract handler (self-loop in UML) ☐ <code>next != null</code> check ☐ last handler is a fallback ☐ client only calls the first handler ☐ concretes extend (solid triangle)</p>
+  </div>
+</div>
+<div class="foot"><span>08 Chain kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: fill-in kit</h1><div class="lede">Draw the state diagram first. Its arrows give you the methods; its boxes give you the classes.</div></div>
+    <div class="meta">Kit<br><b>State</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: order Placed → Packed → Shipped → Delivered; cancel before shipping</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Context</b></td><td>the thing that "moves through states"</td><td><code>Order</code></td></tr>
+      <tr><td><b>State</b> «interface»</td><td>context name + <code>State</code></td><td><code>OrderState</code></td></tr>
+      <tr><td><b>events = methods</b></td><td>the <b>label on each arrow</b> of your state diagram (actions that cause a move)</td><td><code>pack()</code>, <code>ship()</code>, <code>deliver()</code>, <code>cancel()</code></td></tr>
+      <tr><td><b>ConcreteStates</b></td><td>each state named in the question + <code>State</code></td><td><code>PlacedState</code>, <code>PackedState</code>, <code>ShippedState</code>, <code>DeliveredState</code>, <code>CancelledState</code></td></tr>
+      <tr><td><b>setState()</b></td><td>fixed name, on the context</td><td><code>setState(s)</code></td></tr>
+    </table>
+  </div>
+  <div class="g2">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">1 · State diagram first</h2></div>
+      <svg class="dg" data-d="kt-statediag"></svg>
+      <p class="tiny mt">Dot = start. Rounded box per state. Every arrow labelled with its event. Bullseye only on a real end state.</p>
+    </div>
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">2 · Class skeleton</h2></div>
+      <svg class="dg" data-d="kt-state"></svg>
+    </div>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// STATE: one method per arrow label</span>
+<span class="k">public</span> <span class="k">interface</span> State {
+  <span class="k">void</span> eventOne(Context c);
+  <span class="k">void</span> eventTwo(Context c);
+}
+<span class="c">// CONTEXT: holds the current state, delegates</span>
+<span class="k">public</span> <span class="k">class</span> Context {
+  <span class="k">private</span> State state = <span class="k">new</span> StateA(); <span class="c">// start</span>
+  <span class="k">public</span> <span class="k">void</span> setState(State s) { state = s; }
+  <span class="k">public</span> <span class="k">void</span> eventOne() {
+    state.eventOne(<span class="k">this</span>); }
+  <span class="k">public</span> <span class="k">void</span> eventTwo() {
+    state.eventTwo(<span class="k">this</span>); }
+}</pre>
+<pre class="code"><span class="c">// CONCRETE STATE: allowed events move,</span>
+<span class="c">// the rest are refused</span>
+<span class="k">public</span> <span class="k">class</span> StateA <span class="k">implements</span> State {
+  <span class="k">public</span> <span class="k">void</span> eventOne(Context c) {
+    c.setState(<span class="k">new</span> StateB()); }   <span class="c">// A -&gt; B</span>
+  <span class="k">public</span> <span class="k">void</span> eventTwo(Context c) {
+    System.out.println(<span class="s">"Not allowed in A"</span>); }
+}
+<span class="c">// StateB, StateC: same shape, following</span>
+<span class="c">// the arrows of your state diagram</span>
+<span class="c">// CLIENT</span>
+Context c = <span class="k">new</span> Context();
+c.eventOne();   <span class="c">// now in StateB</span></pre>
+  </div>
+  <div class="shade small">
+    <p><b>Check:</b> ☐ every arrow in the state diagram = a method in the interface ☐ every state box = a class ☐ events not on the diagram for that state print "not allowed" ☐ context has <code>setState()</code> and <b>no</b> <code>if (state == …)</code> ☐ diamond at the context, dashed triangles from states to the interface</p>
+  </div>
+</div>
+<div class="foot"><span>09 State kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['kt-single'] = {
+  items: [
+    {id:'a', k:'class', x:0, y:16, w:96, name:'ClientA'},
+    {id:'b', k:'class', x:0, y:78, w:96, name:'ClientB'},
+    {id:'s', k:'class', x:200, y:0, name:'Singleton', stereo:'Singleton',
+      attrs:['_- instance : Singleton', '- data : Map<String,String>'],
+      ops:['- Singleton()', '_+ getInstance() : Singleton', '+ operation(k, v) : void']},
+  ],
+  edges: [
+    {a:'a', as:'right', b:'s', bs:'left', bx:28, type:'depend', label:'getInstance()'},
+    {a:'b', as:'right', b:'s', bs:'left', bx:90, type:'depend', label:'getInstance()'},
+    {a:'s', as:'right', ao:.14, b:'s', bs:'right', bo:.42, type:'assoc', loop:24, label:'instance  1'},
+  ]
+};
+DIAGRAMS['kt-factory'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:6, name:'Client'},
+    {id:'p', k:'class', cx:330, y:0, name:'Product', stereo:'interface', ops:['+ operation(msg) : void']},
+    {id:'a', k:'class', cx:230, y:90, w:100, name:'ProductA', ops:['+ operation(msg)']},
+    {id:'b', k:'class', cx:430, y:90, w:100, name:'ProductB', ops:['+ operation(msg)']},
+    {id:'f', k:'class', cx:330, y:170, name:'ProductFactory', ops:['_+ create(type : String) : Product']},
+  ],
+  edges: [
+    {a:'a', as:'top', b:'p', bs:'bottom', bo:.3, type:'realize', mid:72},
+    {a:'b', as:'top', b:'p', bs:'bottom', bo:.7, type:'realize', mid:72},
+    {a:'f', as:'top', ao:.3, b:'a', bs:'bottom', type:'depend', mid:156},
+    {a:'f', as:'top', ao:.7, b:'b', bs:'bottom', type:'depend', mid:156, label:'«create»', lx:395, ly:152},
+    {a:'cl', as:'right', b:'p', bs:'left', type:'assoc', label:'uses'},
+    {a:'cl', as:'bottom', b:'f', bs:'left', type:'depend', label:'asks', lx:30, ly:150, lanchor:'start'},
+  ],
+  scale: 0.85
+};
+DIAGRAMS['kt-facade'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:40, name:'Client'},
+    {id:'f', k:'class', x:120, y:20, name:'Facade', stereo:'Facade', attrs:['- a : SubsystemA', '- b : SubsystemB', '- c : SubsystemC'], ops:['+ bigAction(x) : void']},
+    {id:'s1', k:'class', x:360, y:0, w:130, name:'SubsystemA', ops:['+ doA(x) : String']},
+    {id:'s2', k:'class', x:360, y:52, w:130, name:'SubsystemB', ops:['+ doB(x) : void']},
+    {id:'s3', k:'class', x:360, y:104, w:130, name:'SubsystemC', ops:['+ doC(x) : void']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'f', bs:'left', type:'assoc', label:'uses'},
+    {a:'f', as:'right', ao:.2, b:'s1', bs:'left', type:'assoc', mid:336},
+    {a:'f', as:'right', ao:.5, b:'s2', bs:'left', type:'assoc', mid:336},
+    {a:'f', as:'right', ao:.8, b:'s3', bs:'left', type:'assoc', mid:336},
+  ]
+};
+DIAGRAMS['kt-adapter'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:20, name:'Client'},
+    {id:'t', k:'class', x:150, y:6, name:'Target', stereo:'interface', ops:['+ oldMethod() : double']},
+    {id:'a', k:'class', x:150, y:90, name:'Adapter', attrs:['- adaptee : Adaptee'], ops:['+ oldMethod() : double']},
+    {id:'ad', k:'class', x:400, y:98, name:'Adaptee', ops:['+ newMethod() : double']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'t', bs:'left', bx:29, type:'assoc', label:'uses'},
+    {a:'a', as:'top', b:'t', bs:'bottom', type:'realize'},
+    {a:'a', as:'right', ax:120, b:'ad', bs:'left', bx:120, type:'assoc', label:'calls newMethod()'},
+  ]
+};
+DIAGRAMS['kt-proxy'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:12, name:'Client'},
+    {id:'s', k:'class', cx:300, y:0, name:'Subject', stereo:'interface', ops:['+ request(user) : void']},
+    {id:'r', k:'class', cx:150, y:96, name:'RealSubject', ops:['+ request(user) : void']},
+    {id:'p', k:'class', cx:450, y:96, name:'Proxy', attrs:['- real : RealSubject'], ops:['+ request(user) : void', '- allowed(user) : boolean']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'s', bs:'left', bx:24, type:'assoc', label:'uses'},
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:76},
+    {a:'p', as:'left', ao:.3, b:'r', bs:'right', type:'assoc', label:'real'},
+  ]
+};
+DIAGRAMS['kt-deco'] = {
+  items: [
+    {id:'c', k:'class', cx:270, y:0, name:'Component', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'b', k:'class', cx:90, y:98, name:'ConcreteComponent', ops:['+ getCost()', '+ getDescription()']},
+    {id:'d', k:'class', cx:400, y:98, name:'Decorator', stereo:'abstract', abstract:true, attrs:['# inner : Component'], ops:['+ Decorator(c : Component)']},
+    {id:'m', k:'class', cx:320, y:190, w:90, name:'ExtraA', ops:['+ getCost()']},
+    {id:'s', k:'class', cx:440, y:190, w:90, name:'ExtraB', ops:['+ getCost()']},
+  ],
+  edges: [
+    {a:'b', as:'top', b:'c', bs:'bottom', bo:.3, type:'realize', mid:78},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.7, type:'realize', mid:78},
+    {a:'d', as:'right', ao:.2, b:'c', bs:'right', bo:.5, type:'aggr', via:[[520,112],[520,30]], label:'inner  1', lx:526, ly:70, lanchor:'start'},
+    {a:'m', as:'top', b:'d', bs:'bottom', type:'extend', mid:176},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:176},
+  ],
+  scale: 0.85
+};
+DIAGRAMS['kt-template'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:30, name:'Client'},
+    {id:'a', k:'class', cx:290, y:0, name:'AbstractClass', stereo:'abstract', abstract:true,
+      ops:['+ templateMethod() : void {final}', '- commonStep1() : void', '/# varyingStep() : void', '- commonStep2() : void']},
+    {id:'x', k:'class', cx:200, y:120, w:120, name:'TypeA', ops:['# varyingStep()']},
+    {id:'y', k:'class', cx:380, y:120, w:120, name:'TypeB', ops:['# varyingStep()']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'a', bs:'left', bx:39, type:'assoc', label:'calls'},
+    {a:'x', as:'top', b:'a', bs:'bottom', type:'extend', mid:104},
+    {a:'y', as:'top', b:'a', bs:'bottom', type:'extend', mid:104},
+  ]
+};
+DIAGRAMS['kt-chain'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:22, name:'Client'},
+    {id:'rq', k:'class', x:0, y:84, name:'Request', attrs:['- value : int'], ops:['+ getValue() : int']},
+    {id:'h', k:'class', cx:300, y:0, name:'Handler', stereo:'abstract', abstract:true,
+      attrs:['- next : Handler'], ops:['+ setNext(h) : Handler', '+ handle(r) : void', '/# canHandle(r) : boolean', '/# process(r) : void']},
+    {id:'l1', k:'class', cx:190, y:150, w:100, name:'LevelOne'},
+    {id:'l2', k:'class', cx:300, y:150, w:100, name:'LevelTwo'},
+    {id:'l3', k:'class', cx:410, y:150, w:100, name:'LevelThree'},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'h', bs:'left', bx:30, type:'assoc', label:'sends to first'},
+    {a:'h', as:'left', ao:.75, b:'rq', bs:'right', type:'depend', label:'handles'},
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.8, type:'aggr', loop:30, label:'next  0..1'},
+    {a:'l1', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l2', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l3', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+  ],
+  scale: 0.85
+};
+DIAGRAMS['kt-statediag'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:16},
+    {id:'p', k:'state', x:26, y:4, w:62, label:'Placed'},
+    {id:'k', k:'state', x:130, y:4, w:62, label:'Packed'},
+    {id:'s', k:'state', x:234, y:4, w:66, label:'Shipped'},
+    {id:'d', k:'state', x:234, y:70, w:72, label:'Delivered'},
+    {id:'c', k:'state', x:78, y:70, w:76, label:'Cancelled'},
+    {id:'f', k:'final', cx:340, cy:82},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'p', bs:'left', type:'trans'},
+    {a:'p', as:'right', b:'k', bs:'left', type:'trans', label:'pack()'},
+    {a:'k', as:'right', b:'s', bs:'left', type:'trans', label:'ship()'},
+    {a:'s', as:'bottom', b:'d', bs:'top', bx:268, type:'trans', label:'deliver()'},
+    {a:'p', as:'bottom', b:'c', bs:'top', bx:57, ax:57, type:'trans', label:'cancel()', lx:30, ly:56},
+    {a:'k', as:'bottom', b:'c', bs:'top', bx:140, ax:150, type:'trans', label:'cancel()', lx:156, ly:56, lanchor:'start'},
+    {a:'d', as:'right', b:'f', bs:'left', type:'trans'},
+  ]
+};
+DIAGRAMS['kt-state'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, name:'Context', attrs:['- state : State'], ops:['+ setState(s : State)', '+ eventOne()', '+ eventTwo()']},
+    {id:'s', k:'class', x:180, y:6, name:'State', stereo:'interface', ops:['+ eventOne(c : Context)', '+ eventTwo(c : Context)']},
+    {id:'a', k:'class', cx:170, y:120, w:76, name:'StateA'},
+    {id:'b', k:'class', cx:255, y:120, w:76, name:'StateB'},
+    {id:'d', k:'class', cx:340, y:120, w:76, name:'StateC'},
+  ],
+  edges: [
+    {a:'c', as:'right', ao:.3, b:'s', bs:'left', type:'aggr', label:'current'},
+    {a:'a', as:'top', b:'s', bs:'bottom', type:'realize', mid:104},
+    {a:'b', as:'top', b:'s', bs:'bottom', type:'realize', mid:104},
+    {a:'d', as:'top', b:'s', bs:'bottom', type:'realize', mid:104},
+  ]
+};
+</script>
+<!-- ===================== P : joining + emergency ===================== -->
+<section class="page" data-sec="P">
+<div class="body">
+  <header class="ph">
+    <div class="code">P</div>
+    <div><h1>Two patterns in one question, and if you freeze</h1><div class="lede">Recent papers put 3–4 patterns into one scenario. Keep each pattern as its own small group, then join them with one line.</div></div>
+    <div class="meta">Practice<br><b>Joining</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Joining patterns: three rules</h2>
+    <ol class="small">
+      <li><b>One slot table per pattern.</b> Don't mix them. Two patterns = two little tables on your rough page.</li>
+      <li><b>Draw each pattern as its own group</b> (its own skeleton), side by side.</li>
+      <li><b>Join with one arrow where one class uses the other</b>, and say in one line <b>which method calls which</b>. In code, the call sits inside the method that needs it.</li>
+    </ol>
+    <table class="small mt">
+      <tr><th style="width:30%">Combination</th><th style="width:30%">The joining arrow</th><th>The joining line of code</th></tr>
+      <tr><td>State + Decorator + Singleton <span class="y">2025 Q1</span></td><td>Kiosk (context) ◇→ CheckoutItem; ScanningState ⇢ TaxCalculator</td><td>inside <code>checkout()</code>: <code>TaxCalculator.getInstance().calculateTax(k.subtotal())</code></td></tr>
+      <tr><td>Chain + Factory + Template + Singleton <span class="y">2025 Q4</span></td><td>OrderService → Validator, → PaymentFactory, ⇢ OrderIdGenerator</td><td><code>if (chain.validate(o)) PaymentFactory.create(m).handlePayment(o);</code></td></tr>
+      <tr><td>Facade + Adapter <span class="y">2022 Q1</span></td><td>a subsystem → its adapter (Target)</td><td>inside the subsystem: <code>provider.search(...)</code> where <code>provider</code> is an adapter</td></tr>
+      <tr><td>State + Adapter <span class="y q">Quiz 1</span></td><td>PaymentDueState ⇢ PaymentProcessor (Target)</td><td>inside <code>pay()</code>: <code>if (processor.pay(amt)) s.setState(new ClosedState());</code></td></tr>
+      <tr><td>Factory + Singleton <span class="y q">Quiz 2</span></td><td>Factory ⇢ product; product uses the Singleton connection</td><td><code>DatabaseFactory.getDatabase(t)</code>; inside it <code>ConnectionManager.getInstance()</code></td></tr>
+      <tr><td>Chain + Template <span class="y q">Quiz 7</span></td><td>none extra: the handler's <code>handle()</code> is the final template method</td><td><code>public final void handle(r) { log(); attemptToSolve(r); log(); … }</code></td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>If you freeze: the minimum that still gets most of the marks</h2>
+    <table class="small">
+      <tr><td style="width:30%"><b>Diagram, short on time</b></td><td>Draw only the pattern's core: the interface/abstract box on top, two concrete boxes under it with triangles, the special box with its special link. Correct names and arrows on 4 boxes beat 9 boxes with wrong arrows.</td></tr>
+      <tr><td><b>Code, short on time</b></td><td>Write the interface and the pattern class (decorator / adapter / proxy / context / handler). That's where the pattern lives. Then one line: "Other concrete classes follow the same structure."</td></tr>
+      <tr><td><b>Can't think of a name</b></td><td>Use the role name + the general word: <code>BookFactory</code>, <code>ScannerAdapter</code>, <code>OrderState</code>. A clear role name is always acceptable.</td></tr>
+      <tr><td><b>Lost which box is which</b></td><td>Look at your slot table, not the question. That's why you wrote it first.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>P Practice</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== P : self test ===================== -->
+<section class="page" data-sec="P">
+<div class="body">
+  <header class="ph">
+    <div class="code">P</div>
+    <div><h1>Practice: three new scenarios</h1><div class="lede">Tonight: cover the answers, fill the slot table yourself, then check. Every name comes from the scenario's words or a role suffix.</div></div>
+    <div class="meta">Practice<br><b>Self-test</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>A · Gym membership</h2>
+    <div class="qbox"><span class="lab">SCENARIO</span>"A gym sells a basic membership. Members can add optional services: personal trainer, locker, and sauna access. The monthly fee must be calculated for any combination without creating a subclass for each combination."</div>
+    <table class="small tight mt">
+      <tr><th style="width:24%">Role</th><th>Answer</th></tr>
+      <tr><td>Pattern</td><td>Decorator ("optional services", "any combination without subclasses")</td></tr>
+      <tr><td>Component · operation</td><td><code>Membership</code> · <code>getMonthlyFee()</code>, <code>getDescription()</code></td></tr>
+      <tr><td>ConcreteComponent</td><td><code>BasicMembership</code></td></tr>
+      <tr><td>Decorator · extras</td><td><code>MembershipDecorator</code> · <code>PersonalTrainer</code>, <code>Locker</code>, <code>SaunaAccess</code></td></tr>
+      <tr><td>Key code line</td><td><code>return inner.getMonthlyFee() + 3000;</code> (in <code>PersonalTrainer</code>)</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>B · Traffic light</h2>
+    <div class="qbox"><span class="lab">SCENARIO</span>"A smart traffic light can be Red, Green or Yellow, and Flashing when it has a fault. A timer event moves Red → Green → Yellow → Red. A fault event from any colour moves it to Flashing; a repair event moves Flashing back to Red."</div>
+    <table class="small tight mt">
+      <tr><th style="width:24%">Role</th><th>Answer</th></tr>
+      <tr><td>Pattern</td><td>State ("can be Red, Green…", "moves to")</td></tr>
+      <tr><td>Context · State interface</td><td><code>TrafficLight</code> · <code>LightState</code></td></tr>
+      <tr><td>Events = methods</td><td><code>timer(TrafficLight t)</code>, <code>fault(TrafficLight t)</code>, <code>repair(TrafficLight t)</code></td></tr>
+      <tr><td>Concrete states</td><td><code>RedState</code>, <code>GreenState</code>, <code>YellowState</code>, <code>FlashingState</code></td></tr>
+      <tr><td>Key code line</td><td>in <code>GreenState.timer(t)</code>: <code>t.setState(new YellowState());</code> · in <code>FlashingState.timer(t)</code>: print "not allowed"</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>C · Insurance claims</h2>
+    <div class="qbox"><span class="lab">SCENARIO</span>"Every insurance claim goes through the same process: register the claim, assess the damage, calculate the payout, and notify the customer. Damage assessment and payout calculation differ for vehicle, health and property claims. Claims above Rs 1,000,000 must be approved by a senior officer, smaller ones by a junior officer."</div>
+    <table class="small tight mt">
+      <tr><th style="width:24%">Role</th><th>Answer</th></tr>
+      <tr><td>Patterns</td><td>Template Method (same process, two steps differ) + Chain of Responsibility (approval levels by amount)</td></tr>
+      <tr><td>Template slots</td><td><code>InsuranceClaim</code> · final <code>processClaim()</code> · common <code>registerClaim()</code>, <code>notifyCustomer()</code> · abstract <code>assessDamage()</code>, <code>calculatePayout()</code> · <code>VehicleClaim</code>, <code>HealthClaim</code>, <code>PropertyClaim</code></td></tr>
+      <tr><td>Chain slots</td><td>request = the claim's payout amount · <code>ClaimApprover</code> with <code>next</code> · <code>JuniorOfficer</code> (≤ 1,000,000) → <code>SeniorOfficer</code> (fallback)</td></tr>
+      <tr><td>Joining line</td><td>inside <code>processClaim()</code>, after <code>calculatePayout()</code>: <code>approverChain.handle(this);</code></td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>P Practice</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== P : blank slot sheet ===================== -->
+<section class="page" data-sec="P">
+<div class="body">
+  <header class="ph">
+    <div class="code">P</div>
+    <div><h1>Blank slot sheet</h1><div class="lede">Photocopy or print extra copies for practice tonight. In the exam, draw the same little table in your rough-work space.</div></div>
+    <div class="meta">Practice<br><b>Worksheet</b></div>
+  </header>
+  <div class="panel">
+    <h2>Question: ______ &nbsp;&nbsp; Pattern: ____________________ &nbsp;&nbsp; Marks (diagram / code): ____ / ____</h2>
+    <table class="small" style="margin-top:3mm">
+      <tr><th style="width:30%">Role (copy from the kit page)</th><th style="width:40%">My word from the question</th><th>Field / method names</th></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+    </table>
+  </div>
+  <div class="panel">
+    <h2>Question: ______ &nbsp;&nbsp; Pattern: ____________________ &nbsp;&nbsp; Marks (diagram / code): ____ / ____</h2>
+    <table class="small" style="margin-top:3mm">
+      <tr><th style="width:30%">Role (copy from the kit page)</th><th style="width:40%">My word from the question</th><th>Field / method names</th></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+    </table>
+  </div>
+  <div class="shade small"><b>Then:</b> ① copy the skeleton diagram with these words · ② write code in table order (interface → one concrete → pattern class → more concretes → client) · ③ tick the checklist on the pattern page.</div>
+</div>
+<div class="foot"><span>P Practice</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>/* Tiny UML / diagram renderer for the exam note.
+   Diagrams are declared in DIAGRAMS[name] = {items:[...], edges:[...]}
+   and drawn into <svg class="dg" data-d="name"></svg>.
+   All sizes are in px of the viewBox; SCALE converts px -> mm on paper. */
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const INK = '#111', GREY = '#555';
+  const SANS = '"IBM Plex Sans", Arial, sans-serif';
+  const MONO = '"IBM Plex Mono", Menlo, monospace';
+  const SCALE = 0.3;            // mm per px
+  const REPORT = [];
+  const ctx = document.createElement('canvas').getContext('2d');
+  const tw = (s, font) => { ctx.font = font; return ctx.measureText(s).width; };
+
+  function E(tag, a, p) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in a) if (a[k] !== undefined && a[k] !== null) e.setAttribute(k, a[k]);
+    if (p) p.appendChild(e);
+    return e;
+  }
+  function T(p, x, y, s, o = {}) {
+    const t = E('text', {
+      x, y, 'font-family': o.mono ? MONO : SANS, 'font-size': o.size || 9,
+      'font-weight': o.bold ? 700 : (o.semi ? 600 : 400), 'font-style': o.italic ? 'italic' : 'normal',
+      'text-anchor': o.anchor || 'start', fill: o.fill || INK,
+      'text-decoration': o.underline ? 'underline' : null
+    }, p);
+    if (o.halo) { t.setAttribute('stroke', '#fff'); t.setAttribute('stroke-width', 3.2); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke-linejoin', 'round'); }
+    t.textContent = s;
+    return t;
+  }
+
+  function defs(svg, id) {
+    const d = E('defs', {}, svg);
+    const mk = (n, w, h, rx, ry, path, fill) => {
+      const m = E('marker', { id: id + n, viewBox: `0 0 ${w} ${h}`, refX: rx, refY: ry, markerWidth: w, markerHeight: h, markerUnits: 'userSpaceOnUse', orient: 'auto' }, d);
+      E('path', { d: path, fill, stroke: INK, 'stroke-width': 1, 'stroke-linejoin': 'miter' }, m);
+    };
+    mk('tri', 14, 13, 13.4, 6.5, 'M0.6,0.6 L13.4,6.5 L0.6,12.4 Z', '#fff');   // generalisation / realisation
+    mk('open', 11, 10, 10.4, 5, 'M0.6,0.6 L10.4,5 L0.6,9.4', 'none');          // association / dependency
+    mk('fill', 10, 8, 10, 4, 'M0,0 L10,4 L0,8 Z', INK);                          // state transition / flow
+    mk('dia', 18, 10, 0.6, 5, 'M0.6,5 L9,0.6 L17.4,5 L9,9.4 Z', '#fff');      // aggregation (at the whole)
+    mk('fdia', 18, 10, 0.6, 5, 'M0.6,5 L9,0.6 L17.4,5 L9,9.4 Z', INK);         // composition (at the whole)
+  }
+
+  /* ---------- items ---------- */
+  const LH = 11.6, PAD = 7;
+  const F_NAME = `700 10px ${SANS}`, F_STEREO = `italic 8px ${SANS}`, F_MEM = `8.4px ${MONO}`;
+
+  function mem(s) { // '_' prefix = static (underlined), '/' prefix = abstract (italic)
+    let underline = false, italic = false;
+    while (s[0] === '_' || s[0] === '/') { if (s[0] === '_') underline = true; else italic = true; s = s.slice(1); }
+    return { s, underline, italic };
+  }
+
+  function drawClass(g, c, name) {
+    const ws = [tw(c.name, F_NAME)];
+    if (c.stereo) ws.push(tw('«' + c.stereo + '»', F_STEREO));
+    [...(c.attrs || []), ...(c.ops || [])].forEach(m => ws.push(tw(mem(m).s, F_MEM)));
+    const need = Math.ceil(Math.max(...ws) + PAD * 2);
+    const w = Math.max(c.w || 0, need);
+    if (c.w && need > c.w + 0.5) REPORT.push(`diagram ${name}: class ${c.name} grew ${c.w}->${need}`);
+    const headH = (c.stereo ? 11 : 0) + 18;
+    const sec = arr => arr ? (arr.length ? arr.length * LH + 5 : 7) : 0;
+    const h = headH + sec(c.attrs) + sec(c.ops);
+    const x = c.cx !== undefined ? c.cx - w / 2 : c.x, y = c.y;
+    E('rect', { x, y, width: w, height: h, fill: c.shade ? '#ececec' : '#fff', stroke: INK, 'stroke-width': 1 }, g);
+    let ty = y + 13;
+    if (c.stereo) { T(g, x + w / 2, ty - 1, '«' + c.stereo + '»', { size: 8, italic: true, anchor: 'middle', fill: GREY }); ty += 11; }
+    T(g, x + w / 2, ty, c.name, { size: 10, bold: true, anchor: 'middle', italic: !!c.abstract });
+    let yy = y + headH;
+    for (const arr of [c.attrs, c.ops]) {
+      if (!arr) continue;
+      E('line', { x1: x, y1: yy, x2: x + w, y2: yy, stroke: INK, 'stroke-width': 1 }, g);
+      let ly = yy + 2;
+      arr.forEach(m => { const o = mem(m); ly += LH; T(g, x + PAD, ly - 2, o.s, { mono: true, size: 8.4, underline: o.underline, italic: o.italic }); });
+      yy += sec(arr);
+    }
+    return { x, y, w, h };
+  }
+
+  function drawNode(g, n) { // generic box with lines; first line bold
+    const lines = n.lines || [n.label];
+    const fonts = lines.map((_, i) => i === 0 ? `700 ${n.size || 9.5}px ${SANS}` : `${n.small || 8}px ${SANS}`);
+    const need = Math.ceil(Math.max(...lines.map((l, i) => tw(l, fonts[i]))) + 16);
+    const w = Math.max(n.w || 0, need);
+    const h = n.h || (10 + lines.length * 11.5);
+    const x = n.cx !== undefined ? n.cx - w / 2 : n.x, y = n.y;
+    E('rect', { x, y, width: w, height: h, rx: n.round === undefined ? 4 : n.round, fill: n.dark ? INK : (n.shade ? '#ececec' : '#fff'), stroke: INK, 'stroke-width': n.dark ? 1 : 1, 'stroke-dasharray': n.dashed ? '4 3' : null }, g);
+    const top = n.top ? y + 13 : y + h / 2 - (lines.length * 11.5) / 2 + 9;
+    lines.forEach((l, i) => T(g, n.align === 'left' ? x + 8 : x + w / 2, top + i * 11.5, l, { size: i === 0 ? (n.size || 9.5) : (n.small || 8), bold: i === 0, anchor: n.align === 'left' ? 'start' : 'middle', fill: n.dark ? '#fff' : (i === 0 ? INK : GREY) }));
+    return { x, y, w, h };
+  }
+
+  function drawState(g, s) {
+    const w = Math.max(s.w || 0, Math.ceil(tw(s.label, `600 9.5px ${SANS}`) + 22));
+    const h = s.h || 24;
+    const x = s.cx !== undefined ? s.cx - w / 2 : s.x, y = s.y;
+    E('rect', { x, y, width: w, height: h, rx: 10, fill: s.shade ? '#ececec' : '#fff', stroke: INK, 'stroke-width': 1.1 }, g);
+    T(g, x + w / 2, y + h / 2 + 3.4, s.label, { size: 9.5, semi: true, anchor: 'middle' });
+    return { x, y, w, h };
+  }
+
+  function drawInit(g, s) { E('circle', { cx: s.cx, cy: s.cy, r: 5, fill: INK }, g); return { x: s.cx - 5, y: s.cy - 5, w: 10, h: 10 }; }
+  function drawFinal(g, s) {
+    E('circle', { cx: s.cx, cy: s.cy, r: 7.5, fill: '#fff', stroke: INK, 'stroke-width': 1.1 }, g);
+    E('circle', { cx: s.cx, cy: s.cy, r: 4.3, fill: INK }, g);
+    return { x: s.cx - 7.5, y: s.cy - 7.5, w: 15, h: 15 };
+  }
+  function drawText(g, t) {
+    (t.lines || [t.text]).forEach((l, i) => T(g, t.x, t.y + i * (t.lh || 11), l, { size: t.size || 8.5, italic: t.italic, bold: t.bold && i === 0, anchor: t.anchor, fill: t.fill || GREY, mono: t.mono }));
+    return null;
+  }
+
+  /* ---------- edges ---------- */
+  function anchor(b, side, o, abs) {
+    o = o === undefined ? 0.5 : o;
+    if (side === 'top') return { x: abs !== undefined ? abs : b.x + b.w * o, y: b.y };
+    if (side === 'bottom') return { x: abs !== undefined ? abs : b.x + b.w * o, y: b.y + b.h };
+    if (side === 'left') return { x: b.x, y: abs !== undefined ? abs : b.y + b.h * o };
+    return { x: b.x + b.w, y: abs !== undefined ? abs : b.y + b.h * o };
+  }
+  const vert = s => s === 'top' || s === 'bottom';
+
+  function route(p1, s1, p2, s2, e) {
+    if (e.loop) { // self-association: out and back on the same side
+      const d = e.loop;
+      if (vert(s1)) { const y = s1 === 'top' ? Math.min(p1.y, p2.y) - d : Math.max(p1.y, p2.y) + d; return [p1, { x: p1.x, y }, { x: p2.x, y }, p2]; }
+      const x = s1 === 'left' ? Math.min(p1.x, p2.x) - d : Math.max(p1.x, p2.x) + d;
+      return [p1, { x, y: p1.y }, { x, y: p2.y }, p2];
+    }
+    if (e.via) return [p1, ...e.via.map(([x, y]) => ({ x, y })), p2];
+    if (vert(s1) && vert(s2)) {
+      if (Math.abs(p1.x - p2.x) < 0.5) return [p1, p2];
+      const my = e.mid !== undefined ? e.mid : (p1.y + p2.y) / 2;
+      return [p1, { x: p1.x, y: my }, { x: p2.x, y: my }, p2];
+    }
+    if (!vert(s1) && !vert(s2)) {
+      if (Math.abs(p1.y - p2.y) < 0.5) return [p1, p2];
+      const mx = e.mid !== undefined ? e.mid : (p1.x + p2.x) / 2;
+      return [p1, { x: mx, y: p1.y }, { x: mx, y: p2.y }, p2];
+    }
+    if (vert(s1)) return [p1, { x: p1.x, y: p2.y }, p2];
+    return [p1, { x: p2.x, y: p1.y }, p2];
+  }
+
+  const STYLE = {
+    realize: { dash: '5 3', end: 'tri' },
+    extend: { end: 'tri' },
+    assoc: { end: 'open' },
+    line: {},
+    depend: { dash: '5 3', end: 'open' },
+    aggr: { start: 'dia' },
+    comp: { start: 'fdia' },
+    trans: { end: 'fill' },
+    flow: { end: 'fill' },
+    dflow: { end: 'fill', dash: '4 3' }
+  };
+
+  function drawEdge(g, e, boxes, id, name) {
+    const A = boxes[e.a], B = boxes[e.b];
+    if (!A || !B) { REPORT.push(`diagram ${name}: missing item ${e.a} or ${e.b}`); return; }
+    const p1 = anchor(A, e.as || 'bottom', e.ao, e.ax), p2 = anchor(B, e.bs || 'top', e.bo, e.bx);
+    const pts = route(p1, e.as || 'bottom', p2, e.bs || 'top', e);
+    const st = STYLE[e.type || 'assoc'];
+    E('path', {
+      d: 'M' + pts.map(p => `${p.x},${p.y}`).join(' L'), fill: 'none', stroke: INK, 'stroke-width': 1.05,
+      'stroke-dasharray': st.dash || null, 'marker-start': st.start ? `url(#${id}${st.start})` : null,
+      'marker-end': st.end ? `url(#${id}${st.end})` : null, 'stroke-linejoin': 'round'
+    }, g);
+    if (e.label) {
+      let lx = e.lx, ly = e.ly, anchorTxt = e.lanchor || 'middle';
+      if (lx === undefined) {
+        let best = 0, seg = [pts[0], pts[1]];
+        for (let i = 0; i < pts.length - 1; i++) { const L = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); if (L > best) { best = L; seg = [pts[i], pts[i + 1]]; } }
+        lx = (seg[0].x + seg[1].x) / 2; ly = (seg[0].y + seg[1].y) / 2;
+        if (Math.abs(seg[0].y - seg[1].y) < 0.5) ly -= 4; else { lx += 5; ly += 3; anchorTxt = 'start'; }
+      }
+      T(g, lx, ly, e.label, { size: e.lsize || 8.2, italic: !!e.litalic, anchor: anchorTxt, fill: e.lfill || INK, halo: true, semi: !e.litalic });
+    }
+    if (e.m1) T(g, p1.x + (e.m1x || 4), p1.y + (e.m1y || 10), e.m1, { size: 8, fill: GREY });
+    if (e.m2) T(g, p2.x + (e.m2x || 4), p2.y + (e.m2y || -4), e.m2, { size: 8, fill: GREY });
+  }
+
+  function render(svg, name, spec, idx) {
+    const id = 'd' + idx + '_';
+    defs(svg, id);
+    const g = E('g', {}, svg);
+    const ge = E('g', {}, g);           // edges below boxes
+    const gi = E('g', {}, g);
+    const boxes = {};
+    for (const it of spec.items) {
+      const k = it.k || 'class';
+      const b = k === 'class' ? drawClass(gi, it, name) : k === 'node' ? drawNode(gi, it) : k === 'state' ? drawState(gi, it)
+        : k === 'init' ? drawInit(gi, it) : k === 'final' ? drawFinal(gi, it) : drawText(gi, it);
+      if (it.id) boxes[it.id] = b;
+    }
+    for (const e of spec.edges || []) drawEdge(ge, e, boxes, id, name);
+    // overlap check between boxes
+    const ids = Object.keys(boxes);
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+      const a = boxes[ids[i]], b = boxes[ids[j]];
+      if (a.x < b.x + b.w - 0.5 && b.x < a.x + a.w - 0.5 && a.y < b.y + b.h - 0.5 && b.y < a.y + a.h - 0.5) REPORT.push(`diagram ${name}: ${ids[i]} overlaps ${ids[j]}`);
+    }
+    const bb = g.getBBox(), m = 4;
+    svg.setAttribute('viewBox', `${bb.x - m} ${bb.y - m} ${bb.width + 2 * m} ${bb.height + 2 * m}`);
+    const wmm = (bb.width + 2 * m) * SCALE * (spec.scale || 1);
+    svg.style.width = wmm + 'mm';
+    svg.style.maxWidth = '100%';
+    svg.style.display = 'block';
+    if (spec.center !== false) { svg.style.marginLeft = 'auto'; svg.style.marginRight = 'auto'; }
+    svg._check = () => {
+      const real = svg.getBoundingClientRect().width / 3.7795;
+      if (real < wmm - 1) REPORT.push(`diagram ${name}: scaled down ${wmm.toFixed(0)}mm -> ${real.toFixed(0)}mm`);
+    };
+  }
+
+
+  function buildToc() {
+    const secs = window.SECTIONS || [];
+    const label = c => { const s = secs.find(x => x.code === c); return s ? (c + '  ' + s.short) : c; };
+    const pages = [...document.querySelectorAll('.page')];
+    const groups = [];
+    pages.forEach((p, i) => {
+      const h = p.querySelector('.ph h1');
+      const title = h ? h.textContent.trim() : '';
+      const sec = p.dataset.sec;
+      if (!groups.length || groups[groups.length - 1].sec !== sec) groups.push({ sec, rows: [] });
+      groups[groups.length - 1].rows.push({ title, page: i + 1 });
+    });
+    groups.forEach(g => {
+      REPORT.push(`BM|1|${label(g.sec)}|${g.rows[0].page}`);
+      g.rows.forEach(r => REPORT.push(`BM|2|${r.title}|${r.page}`));
+    });
+    const toc = document.getElementById('toc');
+    if (!toc) return;
+    toc.innerHTML = groups.map(g => `<div class="sec"><b class="h"><span>${label(g.sec)}</span></b>` +
+      g.rows.filter(r => r.title !== 'Contents').map(r => `<div class="row"><span>${r.title}</span><b>${r.page}</b></div>`).join('') + '</div>').join('');
+  }
+
+  function checkPages() {
+    const pages = [...document.querySelectorAll('.page')];
+    pages.forEach((p, i) => {
+      const pn = i + 1;
+      const f = p.querySelector('.pnum'); if (f) f.textContent = pn;
+      const b = p.querySelector('.body');
+      if (!b) return;
+      const br = b.getBoundingClientRect();
+      let bottom = br.top;
+      [...b.children].forEach(c => { bottom = Math.max(bottom, c.getBoundingClientRect().bottom); });
+      const free = (br.bottom - bottom) / 3.7795;
+      if (free < -0.5) REPORT.push(`PAGE ${pn} OVERFLOW by ${(-free).toFixed(1)}mm`);
+      else REPORT.push(`page ${pn} free ${free.toFixed(1)}mm`);
+      b.querySelectorAll('*').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.width && r.right > br.right + 1) REPORT.push(`PAGE ${pn} H-OVERFLOW ${el.tagName}.${el.className} +${((r.right - br.right) / 3.78).toFixed(1)}mm`);
+      });
+      b.querySelectorAll('pre').forEach(el => { if (el.scrollWidth > el.clientWidth + 1) REPORT.push(`PAGE ${pn} CODE TOO WIDE by ${((el.scrollWidth - el.clientWidth) / 3.78).toFixed(1)}mm: ${el.textContent.slice(0, 40).replace(/\n/g, ' ')}`); });
+      b.querySelectorAll('td, th, .cell').forEach(el => { if (el.scrollWidth > el.clientWidth + 1) REPORT.push(`PAGE ${pn} CELL OVERFLOW: ${el.textContent.slice(0, 40)}`); });
+    });
+    const pre = document.createElement('pre'); pre.id = 'report'; pre.textContent = REPORT.join('\n');
+    document.body.appendChild(pre);
+    console.log(REPORT.join('\n'));
+  }
+
+  function buildTabs() {
+    const secs = window.SECTIONS || [];
+    document.querySelectorAll('.page').forEach(p => {
+      const cur = p.dataset.sec;
+      const lad = document.createElement('div'); lad.className = 'ladder';
+      secs.forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'rung' + (s.code === cur ? ' on' : '');
+        d.innerHTML = `<b>${s.code}</b>`;
+        lad.appendChild(d);
+      });
+      p.appendChild(lad);
+    });
+  }
+
+  window.addEventListener('load', () => {
+    document.fonts.ready.then(() => {
+      const hideAns = document.body.classList.contains('qonly');
+      document.querySelectorAll('svg.dg').forEach((svg, i) => {
+        if (hideAns && svg.closest('.a, .aonly')) return;   // answers hidden in the question paper
+        const name = svg.dataset.d, spec = (window.DIAGRAMS || {})[name];
+        if (!spec) { REPORT.push('missing diagram ' + name); return; }
+        render(svg, name, spec, i);
+      });
+      if (window.paginate) window.paginate();
+      buildTabs();
+      buildToc();
+      setTimeout(() => {
+        document.querySelectorAll('svg.dg').forEach(s => s._check && s._check());
+        checkPages();
+      }, 300);
+    });
+  });
+})();
+</script>
+</body></html>

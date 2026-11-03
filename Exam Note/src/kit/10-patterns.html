@@ -1,0 +1,738 @@
+<!-- ===================== 01 SINGLETON ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: fill-in kit</h1><div class="lede">One box. The hard part is only the three fixed ingredients, which never change names.</div></div>
+    <div class="meta">Kit<br><b>Singleton</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "the hospital must use a single appointment scheduler"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Singleton class</b></td><td>the thing there must be "only one" / "a single global" of</td><td><code>AppointmentScheduler</code></td></tr>
+      <tr><td><b>instance</b></td><td>fixed name, always <code>instance</code> (static)</td><td><code>instance</code></td></tr>
+      <tr><td><b>getInstance()</b></td><td>fixed name, always <code>getInstance()</code> (static)</td><td><code>getInstance()</code></td></tr>
+      <tr><td><b>shared data</b></td><td>what must be the same for everyone (queue, counter, rate, file)</td><td><code>bookings : Map&lt;String,String&gt;</code></td></tr>
+      <tr><td><b>operation()</b></td><td>what the one object does (verb in the question)</td><td><code>book(patient, time)</code></td></tr>
+      <tr><td><b>Clients</b></td><td>the parts that use it ("all counters", "every department")</td><td><code>ReceptionDesk</code>, <code>DoctorPortal</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">box names = roles; replace each with the word in the slot table's Example column</span></div>
+    <svg class="dg" data-d="kt-single"></svg>
+  </div>
+  <div class="gc">
+<pre class="code" data-j>
+// SINGLETON (rename: Singleton -> your class)
+public final class Singleton {
+  private static Singleton instance;  // one copy
+  private final Map<String, String> data =
+      new HashMap<>();                // shared
+
+  private Singleton() { }             // no "new"
+
+  public static synchronized Singleton
+      getInstance() {
+    if (instance == null)
+      instance = new Singleton();
+    return instance;
+  }
+  public synchronized void operation(String k,
+                                     String v) {
+    data.put(k, v); }
+}
+// CLIENT: never "new", always getInstance()
+Singleton s = Singleton.getInstance();
+s.operation("P01", "10:30");</pre>
+    <div class="stack">
+      <div class="panel small">
+        <h2>"Maximum N" instead of one?</h2>
+        <p>That's a <b>Multiton</b>: same three ingredients, but the static field is a <code>List</code> or <code>Map</code>, and the static method refuses (or reuses) once it holds N objects. Note tab 01 has the cricket version.</p>
+      </div>
+      <div class="shade small">
+        <h2>Check before moving on</h2>
+        <p>☐ constructor <b>private</b><br>☐ <code>instance</code> <b>static</b> and <u>underlined</u> in the diagram<br>☐ <code>getInstance()</code> <b>static</b>, <u>underlined</u><br>☐ clients call <code>getInstance()</code>, never <code>new</code><br>☐ said "thread-safe" (synchronized) in the text</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 02 FACTORY ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory: fill-in kit</h1><div class="lede">One interface, one class per listed kind, one factory with a switch. The listed kinds are always in the question.</div></div>
+    <div class="meta">Kit<br><b>Factory</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "alerts are sent as email, SMS or push depending on the user's choice"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Product</b> «interface»</td><td>the general word before the list ("types of X", "different X")</td><td><code>Notification</code></td></tr>
+      <tr><td><b>ConcreteProducts</b></td><td>the listed kinds, one class each</td><td><code>EmailNotification</code>, <code>SmsNotification</code>, <code>PushNotification</code></td></tr>
+      <tr><td><b>operation()</b></td><td>the action every kind does</td><td><code>send(message)</code></td></tr>
+      <tr><td><b>Factory</b></td><td>general word + <code>Factory</code></td><td><code>NotificationFactory</code></td></tr>
+      <tr><td><b>create(type)</b></td><td><code>create</code> + general word, or the name the question gives</td><td><code>create(type) : Notification</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">dashed triangles up to the interface; dashed «create» arrows from the factory</span></div>
+    <svg class="dg" data-d="kt-factory"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// PRODUCT
+public interface Product {
+  void operation(String msg);
+}
+// CONCRETE PRODUCT (one per listed kind)
+public class ProductA implements Product {
+  public void operation(String msg) {
+    System.out.println("A: " + msg); }
+}
+public class ProductB implements Product {
+  public void operation(String msg) {
+    System.out.println("B: " + msg); }
+}</pre>
+<pre class="code" data-j>
+// FACTORY: the only place with "new"
+public class ProductFactory {
+  public static Product create(String type) {
+    switch (type) {
+      case "A": return new ProductA();
+      case "B": return new ProductB();
+      default: throw new
+          IllegalArgumentException(type);
+    }
+  }
+}
+// CLIENT: only knows the interface
+Product p = ProductFactory.create("A");
+p.operation("Hello");    // A: Hello</pre>
+  </div>
+  <div class="g2">
+    <div class="panel small">
+      <h2>Question says "Factory Method" / "subclasses decide"?</h2>
+      <p>Use the GoF form instead: an abstract <code>Creator</code> with <code>public abstract Product createProduct();</code> and one subclass per kind (<code>CreatorA</code> returns <code>new ProductA()</code>). Diagram: note tab 02, "The strict GoF version".</p>
+    </div>
+    <div class="shade small">
+      <h2>Check</h2>
+      <p>☐ factory <b>returns the interface type</b>, not a concrete class<br>☐ client has no <code>new ProductA()</code><br>☐ «create» arrows dashed, from the factory<br>☐ one concrete class per listed kind</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>02 Factory kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 03 FACADE ===================== -->
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade: fill-in kit</h1><div class="lede">One front class with one big method. Behind it, one box per service the question lists.</div></div>
+    <div class="meta">Kit<br><b>Facade</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "one check-in action that internally assigns a room, takes a deposit and issues a key card"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Facade</b></td><td>the name of the whole job + <code>Facade</code></td><td><code>CheckInFacade</code></td></tr>
+      <tr><td><b>facade method</b></td><td>the one action the user wants ("one simple interface for…")</td><td><code>checkIn(guest, roomType)</code></td></tr>
+      <tr><td><b>Subsystems</b></td><td>each service listed, usually after "internally calling" / "combine"</td><td><code>RoomService</code>, <code>BillingService</code>, <code>KeyCardService</code></td></tr>
+      <tr><td><b>their methods</b></td><td>what each service does, one verb each</td><td><code>assignRoom()</code>, <code>chargeDeposit()</code>, <code>issueKey()</code></td></tr>
+      <tr><td><b>Client</b></td><td>the screen / app the user touches</td><td><code>FrontDeskApp</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">arrows go from the facade to the subsystems, never back</span></div>
+    <svg class="dg" data-d="kt-facade"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// SUBSYSTEMS: do the real work
+class SubsystemA {
+  String doA(String x) {
+    return "A done for " + x; } }
+class SubsystemB {
+  void doB(String x) {
+    System.out.println("B done"); } }
+class SubsystemC {
+  void doC(String x) {
+    System.out.println("C done"); } }
+
+// CLIENT: one call
+Facade f = new Facade();
+f.bigAction("Guest01");</pre>
+<pre class="code" data-j>
+// FACADE: calls them in the right order
+public class Facade {
+  private final SubsystemA a = new SubsystemA();
+  private final SubsystemB b = new SubsystemB();
+  private final SubsystemC c = new SubsystemC();
+
+  public void bigAction(String x) {
+    String r = a.doA(x);   // 1st
+    b.doB(r);              // 2nd
+    c.doC(r);              // 3rd
+  }
+}</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ one facade method that does the whole job ☐ one field per subsystem ☐ arrows only facade → subsystems ☐ no business rules inside the facade (it only calls) ☐ client talks only to the facade</p>
+  </div>
+</div>
+<div class="foot"><span>03 Facade kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 04 ADAPTER ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: fill-in kit</h1><div class="lede">Two method names are in the question: the old one your system calls, and the new one the vendor class has. The adapter joins them.</div></div>
+    <div class="meta">Kit<br><b>Adapter</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "the app calls getTemperature(); the new vendor sensor only has readCelsius()"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Target</b> «interface»</td><td>what your system <b>already calls</b> (the old method) → make it an interface</td><td><code>Thermometer</code> with <code>getTemperature()</code></td></tr>
+      <tr><td><b>Adaptee</b></td><td>the <b>new / legacy / vendor</b> class you can't change, with its <b>different</b> method</td><td><code>VendorSensor</code> with <code>readCelsius()</code></td></tr>
+      <tr><td><b>Adapter</b></td><td>adaptee name + <code>Adapter</code></td><td><code>VendorSensorAdapter</code></td></tr>
+      <tr><td><b>Client</b></td><td>the existing system with the "hundreds of calls"</td><td><code>WeatherApp</code></td></tr>
+    </table>
+    <p class="tiny mt">Test: <b>Target method = old name. Adaptee method = new name.</b> Inside the adapter, the old name calls the new name.</p>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">adapter implements the target and holds the adaptee</span></div>
+    <svg class="dg" data-d="kt-adapter"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// TARGET: what the client already uses
+public interface Target {
+  double oldMethod();
+}
+// ADAPTEE: vendor class, can't change it
+public class Adaptee {
+  public double newMethod() {
+    return 24.5; }
+}
+// CLIENT: only the creation line changes
+Target t = new Adapter(new Adaptee());
+double v = t.oldMethod(); // old calls stay</pre>
+<pre class="code" data-j>
+// ADAPTER: is a Target, has an Adaptee
+public class Adapter implements Target {
+  private final Adaptee adaptee;
+  public Adapter(Adaptee a) {
+    this.adaptee = a; }
+
+  public double oldMethod() {
+    // translate: old call -> new call
+    // (convert units / format here too)
+    return adaptee.newMethod();
+  }
+}</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ adapter <b>implements Target</b> (dashed triangle) ☐ adapter <b>has an Adaptee field</b> (solid arrow) ☐ adaptee untouched ☐ the old method's body calls the new method ☐ named all four participants in words</p>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 05 PROXY ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: fill-in kit</h1><div class="lede">Two classes with the same interface. The proxy checks or delays first, then calls the real one.</div></div>
+    <div class="meta">Kit<br><b>Proxy</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: "only enrolled students may watch recorded lectures; videos load only when played"</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Role</th><th style="width:44%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Subject</b> «interface»</td><td>the thing the user asks for</td><td><code>VideoLecture</code> with <code>play(student)</code></td></tr>
+      <tr><td><b>RealSubject</b></td><td><code>Real</code> + subject name: the expensive / protected one</td><td><code>RealVideoLecture</code></td></tr>
+      <tr><td><b>Proxy</b></td><td>subject name + <code>Proxy</code></td><td><code>VideoLectureProxy</code></td></tr>
+      <tr><td><b>the check</b></td><td>"permission / authorised / restricted" → protection; "load only when / large" → virtual (lazy)</td><td><code>isEnrolled(student)</code> + create on first play</td></tr>
+      <tr><td><b>Client</b></td><td>who asks for the thing</td><td><code>LmsPlayer</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">both implement the subject; the proxy points to the real one</span></div>
+    <svg class="dg" data-d="kt-proxy"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// SUBJECT
+public interface Subject {
+  void request(String user);
+}
+// REAL SUBJECT: the real / costly work
+public class RealSubject implements Subject {
+  public RealSubject() {
+    System.out.println("Loading..."); }
+  public void request(String user) {
+    System.out.println("Serving " + user); }
+}
+// CLIENT: can't tell it's a proxy
+Subject s = new Proxy();
+s.request("S001");</pre>
+<pre class="code" data-j>
+// PROXY: same interface, check first
+public class Proxy implements Subject {
+  private RealSubject real;    // null at first
+
+  public void request(String user) {
+    if (!allowed(user)) {      // protection
+      System.out.println("Denied");
+      return; }
+    if (real == null)          // virtual (lazy)
+      real = new RealSubject();
+    real.request(user);        // forward
+  }
+  private boolean allowed(String user) {
+    return user.startsWith("S"); } // STUB
+}</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ proxy and real both <b>implement the same interface</b> ☐ arrow proxy → real (never the other way) ☐ client holds the <b>interface</b> type ☐ named the proxy type (protection / virtual / logging) ☐ check happens <b>before</b> the forward</p>
+  </div>
+</div>
+<div class="foot"><span>05 Proxy kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 06 DECORATOR ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: fill-in kit</h1><div class="lede">Four roles: the general thing, the plain base, the abstract wrapper, and one class per extra.</div></div>
+    <div class="meta">Kit<br><b>Decorator</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: the burger shop from "Step 1"</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Component</b> «interface»</td><td>the general thing being priced / extended</td><td><code>Burger</code></td></tr>
+      <tr><td><b>operations</b></td><td>what must be calculated ("price", "description", "delivery time"), or the names given</td><td><code>getCost()</code>, <code>getDescription()</code></td></tr>
+      <tr><td><b>ConcreteComponent</b></td><td>the plain / base one ("basic", "base", "standard")</td><td><code>BasicBurger</code></td></tr>
+      <tr><td><b>Decorator</b> «abstract»</td><td>general word + <code>Decorator</code></td><td><code>BurgerDecorator</code></td></tr>
+      <tr><td><b>ConcreteDecorators</b></td><td>the listed extras / add-ons / toppings / services</td><td><code>Cheese</code>, <code>Bacon</code>, <code>LargeSize</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">the decorator both implements AND holds a Component: triangle up + diamond arrow</span></div>
+    <svg class="dg" data-d="kt-deco"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// COMPONENT
+public interface Component {
+  double getCost();
+  String getDescription();
+}
+// CONCRETE COMPONENT: the plain base
+public class ConcreteComponent
+    implements Component {
+  public double getCost() { return 500; }
+  public String getDescription() {
+    return "Basic"; }
+}
+// CLIENT: wrap in any order, any number
+Component c = new ConcreteComponent();
+c = new ExtraA(c);
+c = new ExtraB(c);
+c.getCost();   // 500 + 150 + 100 = 750</pre>
+<pre class="code" data-j>
+// DECORATOR: is-a Component + has-a Component
+public abstract class Decorator
+    implements Component {
+  protected final Component inner;
+  public Decorator(Component c) { inner = c; }
+}
+// CONCRETE DECORATOR: ask inner, add own part
+public class ExtraA extends Decorator {
+  public ExtraA(Component c) { super(c); }
+  public double getCost() {
+    return inner.getCost() + 150; }
+  public String getDescription() {
+    return inner.getDescription() + ", A"; }
+}
+// ExtraB: same shape, + 100 and ", B"</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ decorator <b>implements</b> Component (dashed triangle) <b>and</b> has a Component field (diamond at the decorator) ☐ extras <b>extend</b> the decorator (solid triangle) ☐ every method calls <code>inner.…</code> then adds ☐ constructor takes the Component ☐ one class per listed extra</p>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 07 TEMPLATE ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: fill-in kit</h1><div class="lede">Write the list of steps from the question. Same-for-everyone steps are written once; "differs" steps are abstract.</div></div>
+    <div class="meta">Kit<br><b>Template</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: loans: verify → assess risk → approve → notify; risk differs per loan type</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>AbstractClass</b></td><td>the general process / thing all types share</td><td><code>LoanApplication</code></td></tr>
+      <tr><td><b>templateMethod()</b> final</td><td>the whole process as one verb, or the name given</td><td><code>processApplication()</code></td></tr>
+      <tr><td><b>common steps</b></td><td>listed steps that are the <b>same</b> for every type</td><td><code>verifyDocuments()</code>, <code>approve()</code>, <code>notifyCustomer()</code></td></tr>
+      <tr><td><b>varying steps</b> (abstract)</td><td>steps the question says "differ / vary / are specific"</td><td><code>assessRisk()</code></td></tr>
+      <tr><td><b>ConcreteClasses</b></td><td>the listed types, one subclass each</td><td><code>HomeLoan</code>, <code>VehicleLoan</code></td></tr>
+    </table>
+    <p class="tiny mt">Trick: write the question's steps as a numbered list. Circle the ones that "differ". Circled = <code>protected abstract</code>. The rest = written once. The list order = the order inside the final method.</p>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">solid triangles (extends); {final} on the template; italic = abstract</span></div>
+    <svg class="dg" data-d="kt-template"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// ABSTRACT CLASS: owns the order
+public abstract class AbstractClass {
+  public final void templateMethod() {
+    commonStep1();      // same for all
+    varyingStep();      // each type
+    commonStep2();      // same for all
+  }
+  private void commonStep1() {
+    System.out.println("Step 1"); }
+  protected abstract void varyingStep();
+  private void commonStep2() {
+    System.out.println("Step 3"); }
+}</pre>
+<pre class="code" data-j>
+// CONCRETE CLASS: only the varying step
+public class TypeA extends AbstractClass {
+  protected void varyingStep() {
+    System.out.println("A's way"); }
+}
+public class TypeB extends AbstractClass {
+  protected void varyingStep() {
+    System.out.println("B's way"); }
+}
+// CLIENT: calls only the template method
+AbstractClass x = new TypeA();
+x.templateMethod();  // Step 1, A's way, Step 3</pre>
+  </div>
+  <div class="shade small">
+    <h2>Check</h2>
+    <p>☐ template method <b>public final</b> ☐ varying steps <b>protected abstract</b> (italic in UML) ☐ subclasses <b>extend</b> (solid line), they don't implement ☐ subclasses write only the varying steps ☐ client calls only the template method</p>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 08 CHAIN ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain of Responsibility: fill-in kit</h1><div class="lede">One abstract handler with a "next" link to itself. The levels or checks listed in the question become the handlers, in that order.</div></div>
+    <div class="meta">Kit<br><b>Chain</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: leave ≤ 2 days supervisor, ≤ 7 manager, longer HR director</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Request</b></td><td>the thing being passed along (and the value that decides who handles it)</td><td><code>LeaveRequest</code> with <code>days</code></td></tr>
+      <tr><td><b>Handler</b> «abstract»</td><td>the general word for who deals with it (+ <code>Handler</code> if none)</td><td><code>Approver</code></td></tr>
+      <tr><td><b>next / setNext()</b></td><td>fixed names</td><td><code>next</code>, <code>setNext()</code></td></tr>
+      <tr><td><b>ConcreteHandlers</b></td><td>the listed levels / checks / filters, <b>in the order given</b></td><td><code>Supervisor</code>, <code>Manager</code>, <code>HRDirector</code></td></tr>
+      <tr><td><b>handle()</b></td><td><code>handle</code>, or the verb ("approve", "validate", "filter")</td><td><code>approve(request)</code></td></tr>
+      <tr><td><b>Client</b></td><td>who sends the request in</td><td><code>LeavePortal</code></td></tr>
+    </table>
+  </div>
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Skeleton diagram</h2><span class="tiny">the "next" link is ONE loop on the abstract handler, not arrows between concrete handlers</span></div>
+    <svg class="dg" data-d="kt-chain"></svg>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// HANDLER
+public abstract class Handler {
+  private Handler next;
+  public Handler setNext(Handler n) {
+    next = n; return n; } // lets you chain
+
+  public void handle(Request r) {
+    if (canHandle(r)) process(r);      // me
+    else if (next != null) next.handle(r);
+  }
+  protected abstract boolean
+      canHandle(Request r);
+  protected abstract void process(Request r);
+}
+// Request: a class with the deciding value,
+// e.g. LeaveRequest with an int days field</pre>
+<pre class="code" data-j>
+// CONCRETE HANDLER (one per level)
+public class LevelOne extends Handler {
+  protected boolean canHandle(Request r) {
+    return r.getValue() <= 2; }
+  protected void process(Request r) {
+    System.out.println("Level one"); }
+}
+// LevelTwo: value <= 7 · LevelThree: true
+
+// CLIENT: build once, send to the first
+Handler h = new LevelOne();
+h.setNext(new LevelTwo())
+ .setNext(new LevelThree());
+h.handle(new Request(5));  // Level two</pre>
+  </div>
+  <p class="small"><b>"Checks in order" questions</b> (validation, filters: every check must pass): make <code>handle()</code> return <code>boolean</code>: <code>if (!check(r)) return false; return next == null || next.handle(r);</code> with one abstract <code>check(r)</code>. Levels / approvals / priorities: use the code above.</p>
+  <div class="shade small">
+    <p><b>Check:</b> ☐ <code>next</code> field on the abstract handler (self-loop in UML) ☐ <code>next != null</code> check ☐ last handler is a fallback ☐ client only calls the first handler ☐ concretes extend (solid triangle)</p>
+  </div>
+</div>
+<div class="foot"><span>08 Chain kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: fill-in kit</h1><div class="lede">Draw the state diagram first. Its arrows give you the methods; its boxes give you the classes.</div></div>
+    <div class="meta">Kit<br><b>State</b></div>
+  </header>
+  <div class="panel">
+    <h2>Slot table <span class="r">example: order Placed → Packed → Shipped → Delivered; cancel before shipping</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Role</th><th style="width:43%">Find it in the question by…</th><th>Example</th></tr>
+      <tr><td><b>Context</b></td><td>the thing that "moves through states"</td><td><code>Order</code></td></tr>
+      <tr><td><b>State</b> «interface»</td><td>context name + <code>State</code></td><td><code>OrderState</code></td></tr>
+      <tr><td><b>events = methods</b></td><td>the <b>label on each arrow</b> of your state diagram (actions that cause a move)</td><td><code>pack()</code>, <code>ship()</code>, <code>deliver()</code>, <code>cancel()</code></td></tr>
+      <tr><td><b>ConcreteStates</b></td><td>each state named in the question + <code>State</code></td><td><code>PlacedState</code>, <code>PackedState</code>, <code>ShippedState</code>, <code>DeliveredState</code>, <code>CancelledState</code></td></tr>
+      <tr><td><b>setState()</b></td><td>fixed name, on the context</td><td><code>setState(s)</code></td></tr>
+    </table>
+  </div>
+  <div class="g2">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">1 · State diagram first</h2></div>
+      <svg class="dg" data-d="kt-statediag"></svg>
+      <p class="tiny mt">Dot = start. Rounded box per state. Every arrow labelled with its event. Bullseye only on a real end state.</p>
+    </div>
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">2 · Class skeleton</h2></div>
+      <svg class="dg" data-d="kt-state"></svg>
+    </div>
+  </div>
+  <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// STATE: one method per arrow label
+public interface State {
+  void eventOne(Context c);
+  void eventTwo(Context c);
+}
+// CONTEXT: holds the current state, delegates
+public class Context {
+  private State state = new StateA(); // start
+  public void setState(State s) { state = s; }
+  public void eventOne() {
+    state.eventOne(this); }
+  public void eventTwo() {
+    state.eventTwo(this); }
+}</pre>
+<pre class="code" data-j>
+// CONCRETE STATE: allowed events move,
+// the rest are refused
+public class StateA implements State {
+  public void eventOne(Context c) {
+    c.setState(new StateB()); }   // A -> B
+  public void eventTwo(Context c) {
+    System.out.println("Not allowed in A"); }
+}
+// StateB, StateC: same shape, following
+// the arrows of your state diagram
+// CLIENT
+Context c = new Context();
+c.eventOne();   // now in StateB</pre>
+  </div>
+  <div class="shade small">
+    <p><b>Check:</b> ☐ every arrow in the state diagram = a method in the interface ☐ every state box = a class ☐ events not on the diagram for that state print "not allowed" ☐ context has <code>setState()</code> and <b>no</b> <code>if (state == …)</code> ☐ diamond at the context, dashed triangles from states to the interface</p>
+  </div>
+</div>
+<div class="foot"><span>09 State kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['kt-single'] = {
+  items: [
+    {id:'a', k:'class', x:0, y:16, w:96, name:'ClientA'},
+    {id:'b', k:'class', x:0, y:78, w:96, name:'ClientB'},
+    {id:'s', k:'class', x:200, y:0, name:'Singleton', stereo:'Singleton',
+      attrs:['_- instance : Singleton', '- data : Map<String,String>'],
+      ops:['- Singleton()', '_+ getInstance() : Singleton', '+ operation(k, v) : void']},
+  ],
+  edges: [
+    {a:'a', as:'right', b:'s', bs:'left', bx:28, type:'depend', label:'getInstance()'},
+    {a:'b', as:'right', b:'s', bs:'left', bx:90, type:'depend', label:'getInstance()'},
+    {a:'s', as:'right', ao:.14, b:'s', bs:'right', bo:.42, type:'assoc', loop:24, label:'instance  1'},
+  ]
+};
+DIAGRAMS['kt-factory'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:6, name:'Client'},
+    {id:'p', k:'class', cx:330, y:0, name:'Product', stereo:'interface', ops:['+ operation(msg) : void']},
+    {id:'a', k:'class', cx:230, y:90, w:100, name:'ProductA', ops:['+ operation(msg)']},
+    {id:'b', k:'class', cx:430, y:90, w:100, name:'ProductB', ops:['+ operation(msg)']},
+    {id:'f', k:'class', cx:330, y:170, name:'ProductFactory', ops:['_+ create(type : String) : Product']},
+  ],
+  edges: [
+    {a:'a', as:'top', b:'p', bs:'bottom', bo:.3, type:'realize', mid:72},
+    {a:'b', as:'top', b:'p', bs:'bottom', bo:.7, type:'realize', mid:72},
+    {a:'f', as:'top', ao:.3, b:'a', bs:'bottom', type:'depend', mid:156},
+    {a:'f', as:'top', ao:.7, b:'b', bs:'bottom', type:'depend', mid:156, label:'«create»', lx:395, ly:152},
+    {a:'cl', as:'right', b:'p', bs:'left', type:'assoc', label:'uses'},
+    {a:'cl', as:'bottom', b:'f', bs:'left', type:'depend', label:'asks', lx:30, ly:150, lanchor:'start'},
+  ],
+  scale: 0.85
+};
+DIAGRAMS['kt-facade'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:40, name:'Client'},
+    {id:'f', k:'class', x:120, y:20, name:'Facade', stereo:'Facade', attrs:['- a : SubsystemA', '- b : SubsystemB', '- c : SubsystemC'], ops:['+ bigAction(x) : void']},
+    {id:'s1', k:'class', x:360, y:0, w:130, name:'SubsystemA', ops:['+ doA(x) : String']},
+    {id:'s2', k:'class', x:360, y:52, w:130, name:'SubsystemB', ops:['+ doB(x) : void']},
+    {id:'s3', k:'class', x:360, y:104, w:130, name:'SubsystemC', ops:['+ doC(x) : void']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'f', bs:'left', type:'assoc', label:'uses'},
+    {a:'f', as:'right', ao:.2, b:'s1', bs:'left', type:'assoc', mid:336},
+    {a:'f', as:'right', ao:.5, b:'s2', bs:'left', type:'assoc', mid:336},
+    {a:'f', as:'right', ao:.8, b:'s3', bs:'left', type:'assoc', mid:336},
+  ]
+};
+DIAGRAMS['kt-adapter'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:20, name:'Client'},
+    {id:'t', k:'class', x:150, y:6, name:'Target', stereo:'interface', ops:['+ oldMethod() : double']},
+    {id:'a', k:'class', x:150, y:90, name:'Adapter', attrs:['- adaptee : Adaptee'], ops:['+ oldMethod() : double']},
+    {id:'ad', k:'class', x:400, y:98, name:'Adaptee', ops:['+ newMethod() : double']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'t', bs:'left', bx:29, type:'assoc', label:'uses'},
+    {a:'a', as:'top', b:'t', bs:'bottom', type:'realize'},
+    {a:'a', as:'right', ax:120, b:'ad', bs:'left', bx:120, type:'assoc', label:'calls newMethod()'},
+  ]
+};
+DIAGRAMS['kt-proxy'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:12, name:'Client'},
+    {id:'s', k:'class', cx:300, y:0, name:'Subject', stereo:'interface', ops:['+ request(user) : void']},
+    {id:'r', k:'class', cx:150, y:96, name:'RealSubject', ops:['+ request(user) : void']},
+    {id:'p', k:'class', cx:450, y:96, name:'Proxy', attrs:['- real : RealSubject'], ops:['+ request(user) : void', '- allowed(user) : boolean']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'s', bs:'left', bx:24, type:'assoc', label:'uses'},
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:76},
+    {a:'p', as:'left', ao:.3, b:'r', bs:'right', type:'assoc', label:'real'},
+  ]
+};
+DIAGRAMS['kt-deco'] = {
+  items: [
+    {id:'c', k:'class', cx:270, y:0, name:'Component', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'b', k:'class', cx:90, y:98, name:'ConcreteComponent', ops:['+ getCost()', '+ getDescription()']},
+    {id:'d', k:'class', cx:400, y:98, name:'Decorator', stereo:'abstract', abstract:true, attrs:['# inner : Component'], ops:['+ Decorator(c : Component)']},
+    {id:'m', k:'class', cx:320, y:190, w:90, name:'ExtraA', ops:['+ getCost()']},
+    {id:'s', k:'class', cx:440, y:190, w:90, name:'ExtraB', ops:['+ getCost()']},
+  ],
+  edges: [
+    {a:'b', as:'top', b:'c', bs:'bottom', bo:.3, type:'realize', mid:78},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.7, type:'realize', mid:78},
+    {a:'d', as:'right', ao:.2, b:'c', bs:'right', bo:.5, type:'aggr', via:[[520,112],[520,30]], label:'inner  1', lx:526, ly:70, lanchor:'start'},
+    {a:'m', as:'top', b:'d', bs:'bottom', type:'extend', mid:176},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:176},
+  ],
+  scale: 0.85
+};
+DIAGRAMS['kt-template'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:30, name:'Client'},
+    {id:'a', k:'class', cx:290, y:0, name:'AbstractClass', stereo:'abstract', abstract:true,
+      ops:['+ templateMethod() : void {final}', '- commonStep1() : void', '/# varyingStep() : void', '- commonStep2() : void']},
+    {id:'x', k:'class', cx:200, y:120, w:120, name:'TypeA', ops:['# varyingStep()']},
+    {id:'y', k:'class', cx:380, y:120, w:120, name:'TypeB', ops:['# varyingStep()']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'a', bs:'left', bx:39, type:'assoc', label:'calls'},
+    {a:'x', as:'top', b:'a', bs:'bottom', type:'extend', mid:104},
+    {a:'y', as:'top', b:'a', bs:'bottom', type:'extend', mid:104},
+  ]
+};
+DIAGRAMS['kt-chain'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:22, name:'Client'},
+    {id:'rq', k:'class', x:0, y:84, name:'Request', attrs:['- value : int'], ops:['+ getValue() : int']},
+    {id:'h', k:'class', cx:300, y:0, name:'Handler', stereo:'abstract', abstract:true,
+      attrs:['- next : Handler'], ops:['+ setNext(h) : Handler', '+ handle(r) : void', '/# canHandle(r) : boolean', '/# process(r) : void']},
+    {id:'l1', k:'class', cx:190, y:150, w:100, name:'LevelOne'},
+    {id:'l2', k:'class', cx:300, y:150, w:100, name:'LevelTwo'},
+    {id:'l3', k:'class', cx:410, y:150, w:100, name:'LevelThree'},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'h', bs:'left', bx:30, type:'assoc', label:'sends to first'},
+    {a:'h', as:'left', ao:.75, b:'rq', bs:'right', type:'depend', label:'handles'},
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.8, type:'aggr', loop:30, label:'next  0..1'},
+    {a:'l1', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l2', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l3', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+  ],
+  scale: 0.85
+};
+DIAGRAMS['kt-statediag'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:16},
+    {id:'p', k:'state', x:26, y:4, w:62, label:'Placed'},
+    {id:'k', k:'state', x:130, y:4, w:62, label:'Packed'},
+    {id:'s', k:'state', x:234, y:4, w:66, label:'Shipped'},
+    {id:'d', k:'state', x:234, y:70, w:72, label:'Delivered'},
+    {id:'c', k:'state', x:78, y:70, w:76, label:'Cancelled'},
+    {id:'f', k:'final', cx:340, cy:82},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'p', bs:'left', type:'trans'},
+    {a:'p', as:'right', b:'k', bs:'left', type:'trans', label:'pack()'},
+    {a:'k', as:'right', b:'s', bs:'left', type:'trans', label:'ship()'},
+    {a:'s', as:'bottom', b:'d', bs:'top', bx:268, type:'trans', label:'deliver()'},
+    {a:'p', as:'bottom', b:'c', bs:'top', bx:57, ax:57, type:'trans', label:'cancel()', lx:30, ly:56},
+    {a:'k', as:'bottom', b:'c', bs:'top', bx:140, ax:150, type:'trans', label:'cancel()', lx:156, ly:56, lanchor:'start'},
+    {a:'d', as:'right', b:'f', bs:'left', type:'trans'},
+  ]
+};
+DIAGRAMS['kt-state'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, name:'Context', attrs:['- state : State'], ops:['+ setState(s : State)', '+ eventOne()', '+ eventTwo()']},
+    {id:'s', k:'class', x:180, y:6, name:'State', stereo:'interface', ops:['+ eventOne(c : Context)', '+ eventTwo(c : Context)']},
+    {id:'a', k:'class', cx:170, y:120, w:76, name:'StateA'},
+    {id:'b', k:'class', cx:255, y:120, w:76, name:'StateB'},
+    {id:'d', k:'class', cx:340, y:120, w:76, name:'StateC'},
+  ],
+  edges: [
+    {a:'c', as:'right', ao:.3, b:'s', bs:'left', type:'aggr', label:'current'},
+    {a:'a', as:'top', b:'s', bs:'bottom', type:'realize', mid:104},
+    {a:'b', as:'top', b:'s', bs:'bottom', type:'realize', mid:104},
+    {a:'d', as:'top', b:'s', bs:'bottom', type:'realize', mid:104},
+  ]
+};
+</script>

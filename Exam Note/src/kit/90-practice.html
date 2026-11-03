@@ -1,0 +1,126 @@
+<!-- ===================== P : joining + emergency ===================== -->
+<section class="page" data-sec="P">
+<div class="body">
+  <header class="ph">
+    <div class="code">P</div>
+    <div><h1>Two patterns in one question, and if you freeze</h1><div class="lede">Recent papers put 3–4 patterns into one scenario. Keep each pattern as its own small group, then join them with one line.</div></div>
+    <div class="meta">Practice<br><b>Joining</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Joining patterns: three rules</h2>
+    <ol class="small">
+      <li><b>One slot table per pattern.</b> Don't mix them. Two patterns = two little tables on your rough page.</li>
+      <li><b>Draw each pattern as its own group</b> (its own skeleton), side by side.</li>
+      <li><b>Join with one arrow where one class uses the other</b>, and say in one line <b>which method calls which</b>. In code, the call sits inside the method that needs it.</li>
+    </ol>
+    <table class="small mt">
+      <tr><th style="width:30%">Combination</th><th style="width:30%">The joining arrow</th><th>The joining line of code</th></tr>
+      <tr><td>State + Decorator + Singleton <span class="y">2025 Q1</span></td><td>Kiosk (context) ◇→ CheckoutItem; ScanningState ⇢ TaxCalculator</td><td>inside <code>checkout()</code>: <code>TaxCalculator.getInstance().calculateTax(k.subtotal())</code></td></tr>
+      <tr><td>Chain + Factory + Template + Singleton <span class="y">2025 Q4</span></td><td>OrderService → Validator, → PaymentFactory, ⇢ OrderIdGenerator</td><td><code>if (chain.validate(o)) PaymentFactory.create(m).handlePayment(o);</code></td></tr>
+      <tr><td>Facade + Adapter <span class="y">2022 Q1</span></td><td>a subsystem → its adapter (Target)</td><td>inside the subsystem: <code>provider.search(...)</code> where <code>provider</code> is an adapter</td></tr>
+      <tr><td>State + Adapter <span class="y q">Quiz 1</span></td><td>PaymentDueState ⇢ PaymentProcessor (Target)</td><td>inside <code>pay()</code>: <code>if (processor.pay(amt)) s.setState(new ClosedState());</code></td></tr>
+      <tr><td>Factory + Singleton <span class="y q">Quiz 2</span></td><td>Factory ⇢ product; product uses the Singleton connection</td><td><code>DatabaseFactory.getDatabase(t)</code>; inside it <code>ConnectionManager.getInstance()</code></td></tr>
+      <tr><td>Chain + Template <span class="y q">Quiz 7</span></td><td>none extra: the handler's <code>handle()</code> is the final template method</td><td><code>public final void handle(r) { log(); attemptToSolve(r); log(); … }</code></td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>If you freeze: the minimum that still gets most of the marks</h2>
+    <table class="small">
+      <tr><td style="width:30%"><b>Diagram, short on time</b></td><td>Draw only the pattern's core: the interface/abstract box on top, two concrete boxes under it with triangles, the special box with its special link. Correct names and arrows on 4 boxes beat 9 boxes with wrong arrows.</td></tr>
+      <tr><td><b>Code, short on time</b></td><td>Write the interface and the pattern class (decorator / adapter / proxy / context / handler). That's where the pattern lives. Then one line: "Other concrete classes follow the same structure."</td></tr>
+      <tr><td><b>Can't think of a name</b></td><td>Use the role name + the general word: <code>BookFactory</code>, <code>ScannerAdapter</code>, <code>OrderState</code>. A clear role name is always acceptable.</td></tr>
+      <tr><td><b>Lost which box is which</b></td><td>Look at your slot table, not the question. That's why you wrote it first.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>P Practice</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== P : self test ===================== -->
+<section class="page" data-sec="P">
+<div class="body">
+  <header class="ph">
+    <div class="code">P</div>
+    <div><h1>Practice: three new scenarios</h1><div class="lede">Tonight: cover the answers, fill the slot table yourself, then check. Every name comes from the scenario's words or a role suffix.</div></div>
+    <div class="meta">Practice<br><b>Self-test</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>A · Gym membership</h2>
+    <div class="qbox"><span class="lab">SCENARIO</span>"A gym sells a basic membership. Members can add optional services: personal trainer, locker, and sauna access. The monthly fee must be calculated for any combination without creating a subclass for each combination."</div>
+    <table class="small tight mt">
+      <tr><th style="width:24%">Role</th><th>Answer</th></tr>
+      <tr><td>Pattern</td><td>Decorator ("optional services", "any combination without subclasses")</td></tr>
+      <tr><td>Component · operation</td><td><code>Membership</code> · <code>getMonthlyFee()</code>, <code>getDescription()</code></td></tr>
+      <tr><td>ConcreteComponent</td><td><code>BasicMembership</code></td></tr>
+      <tr><td>Decorator · extras</td><td><code>MembershipDecorator</code> · <code>PersonalTrainer</code>, <code>Locker</code>, <code>SaunaAccess</code></td></tr>
+      <tr><td>Key code line</td><td><code>return inner.getMonthlyFee() + 3000;</code> (in <code>PersonalTrainer</code>)</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>B · Traffic light</h2>
+    <div class="qbox"><span class="lab">SCENARIO</span>"A smart traffic light can be Red, Green or Yellow, and Flashing when it has a fault. A timer event moves Red → Green → Yellow → Red. A fault event from any colour moves it to Flashing; a repair event moves Flashing back to Red."</div>
+    <table class="small tight mt">
+      <tr><th style="width:24%">Role</th><th>Answer</th></tr>
+      <tr><td>Pattern</td><td>State ("can be Red, Green…", "moves to")</td></tr>
+      <tr><td>Context · State interface</td><td><code>TrafficLight</code> · <code>LightState</code></td></tr>
+      <tr><td>Events = methods</td><td><code>timer(TrafficLight t)</code>, <code>fault(TrafficLight t)</code>, <code>repair(TrafficLight t)</code></td></tr>
+      <tr><td>Concrete states</td><td><code>RedState</code>, <code>GreenState</code>, <code>YellowState</code>, <code>FlashingState</code></td></tr>
+      <tr><td>Key code line</td><td>in <code>GreenState.timer(t)</code>: <code>t.setState(new YellowState());</code> · in <code>FlashingState.timer(t)</code>: print "not allowed"</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>C · Insurance claims</h2>
+    <div class="qbox"><span class="lab">SCENARIO</span>"Every insurance claim goes through the same process: register the claim, assess the damage, calculate the payout, and notify the customer. Damage assessment and payout calculation differ for vehicle, health and property claims. Claims above Rs 1,000,000 must be approved by a senior officer, smaller ones by a junior officer."</div>
+    <table class="small tight mt">
+      <tr><th style="width:24%">Role</th><th>Answer</th></tr>
+      <tr><td>Patterns</td><td>Template Method (same process, two steps differ) + Chain of Responsibility (approval levels by amount)</td></tr>
+      <tr><td>Template slots</td><td><code>InsuranceClaim</code> · final <code>processClaim()</code> · common <code>registerClaim()</code>, <code>notifyCustomer()</code> · abstract <code>assessDamage()</code>, <code>calculatePayout()</code> · <code>VehicleClaim</code>, <code>HealthClaim</code>, <code>PropertyClaim</code></td></tr>
+      <tr><td>Chain slots</td><td>request = the claim's payout amount · <code>ClaimApprover</code> with <code>next</code> · <code>JuniorOfficer</code> (≤ 1,000,000) → <code>SeniorOfficer</code> (fallback)</td></tr>
+      <tr><td>Joining line</td><td>inside <code>processClaim()</code>, after <code>calculatePayout()</code>: <code>approverChain.handle(this);</code></td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>P Practice</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== P : blank slot sheet ===================== -->
+<section class="page" data-sec="P">
+<div class="body">
+  <header class="ph">
+    <div class="code">P</div>
+    <div><h1>Blank slot sheet</h1><div class="lede">Photocopy or print extra copies for practice tonight. In the exam, draw the same little table in your rough-work space.</div></div>
+    <div class="meta">Practice<br><b>Worksheet</b></div>
+  </header>
+  <div class="panel">
+    <h2>Question: ______ &nbsp;&nbsp; Pattern: ____________________ &nbsp;&nbsp; Marks (diagram / code): ____ / ____</h2>
+    <table class="small" style="margin-top:3mm">
+      <tr><th style="width:30%">Role (copy from the kit page)</th><th style="width:40%">My word from the question</th><th>Field / method names</th></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+    </table>
+  </div>
+  <div class="panel">
+    <h2>Question: ______ &nbsp;&nbsp; Pattern: ____________________ &nbsp;&nbsp; Marks (diagram / code): ____ / ____</h2>
+    <table class="small" style="margin-top:3mm">
+      <tr><th style="width:30%">Role (copy from the kit page)</th><th style="width:40%">My word from the question</th><th>Field / method names</th></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+      <tr><td style="height:12mm"></td><td></td><td></td></tr>
+    </table>
+  </div>
+  <div class="shade small"><b>Then:</b> ① copy the skeleton diagram with these words · ② write code in table order (interface → one concrete → pattern class → more concretes → client) · ③ tick the checklist on the pattern page.</div>
+</div>
+<div class="foot"><span>P Practice</span><span>page <b class="pnum"></b></span></div>
+</section>

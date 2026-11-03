@@ -1,0 +1,314 @@
+<!-- ===================== K : contents ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>UML and Code Kit</h1><div class="lede">For the moment you know the pattern but freeze on the boxes, names, arrows and code. Use it alongside the main note.</div></div>
+    <div class="meta">Kit<br><b>Contents</b></div>
+  </header>
+  <div id="toc" class="toc"></div>
+  <div class="shade small"><b>How this kit is different from the note:</b> the note explains each pattern with one scenario. This kit gives you the <b>empty shape</b> of each pattern, with the role names on the boxes, and tells you <b>where in any question to find the word that goes in each box</b>. You fill in the shape; you never have to invent it.</div>
+  <div class="g2">
+    <div class="panel">
+      <h2>Where boxes go on the page</h2>
+      <ol class="small">
+        <li>Interface / abstract class: <b>top middle</b>.</li>
+        <li>Concrete classes: <b>one row underneath</b>, triangles pointing up into the parent.</li>
+        <li>The pattern's special box (decorator, adapter, proxy, context, factory): <b>to the side</b>, with its has-a arrow going sideways.</li>
+        <li>Client: <b>far left</b>, one arrow to what it uses.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>The one special link per pattern</h2>
+      <table class="tight small">
+        <tr><td style="width:34%">Singleton</td><td>class → itself (<code>instance</code>)</td></tr>
+        <tr><td>Factory</td><td>factory ⇢ each product «create»</td></tr>
+        <tr><td>Facade</td><td>facade → every subsystem</td></tr>
+        <tr><td>Adapter</td><td>adapter → adaptee</td></tr>
+        <tr><td>Proxy</td><td>proxy → real subject</td></tr>
+        <tr><td>Decorator</td><td>decorator ◇→ component</td></tr>
+        <tr><td>Template</td><td>none: just triangles</td></tr>
+        <tr><td>Chain</td><td>handler ◇→ itself (<code>next</code>)</td></tr>
+        <tr><td>State</td><td>context ◇→ state interface</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>Design Patterns · UML and Code Kit</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : the problem and the 4 steps ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Why you lose track, and the fix</h1><div class="lede">You already pick the right pattern. What breaks is doing four jobs in your head at the same time.</div></div>
+    <div class="meta">Method<br><b>Read first</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>The four jobs you are juggling</h2>
+    <div class="steps">
+      <div class="step"><span class="n">JOB 1</span><b>Naming</b><span class="small">What do I call each class, field and method?</span></div>
+      <div class="step"><span class="n">JOB 2</span><b>Shape</b><span class="small">Which boxes does this pattern have, and which one is on top?</span></div>
+      <div class="step"><span class="n">JOB 3</span><b>Symbols</b><span class="small">Which arrow, which end, dashed or solid, + or −?</span></div>
+      <div class="step"><span class="n">JOB 4</span><b>Amount</b><span class="small">How much code, which classes, where do I stop?</span></div>
+    </div>
+    <p class="small mt">Doing all four while drawing is what makes you lose the thread: you invent a name, forget the arrow, change the name in the code, and the diagram and code stop matching. <b>The fix is to do them one at a time, in a fixed order, and copy jobs 2 and 3 from this kit instead of remembering them.</b></p>
+  </div>
+
+  <div class="panel">
+    <h2>The routine for every diagram or code question <span class="r">same 4 steps, any pattern</span></h2>
+    <table class="small">
+      <tr><th style="width:15%">Step</th><th style="width:12%">Time</th><th>What you do</th></tr>
+      <tr><td><b>1 · Slot table</b></td><td>2 min</td><td>Open this kit at the pattern's page. In your rough-work space, copy the <b>Role</b> column. Next to each role, write the word from the question (the page tells you where to look). <b>This little table is now the only place names come from.</b></td></tr>
+      <tr><td><b>2 · Draw</b></td><td>4–6 min</td><td>Copy the pattern's skeleton diagram box by box, writing <b>your</b> name from the slot table instead of the role name. The arrows are already decided by the skeleton, so just copy them.</td></tr>
+      <tr><td><b>3 · Code</b></td><td>5–8 min</td><td>Write the classes in the order of the slot table, top to bottom. Use the code skeleton on the pattern page; change only the names.</td></tr>
+      <tr><td><b>4 · Check</b></td><td>1 min</td><td>Run the checklist at the bottom of the pattern page. Most lost marks are on that list.</td></tr>
+    </table>
+    <div class="say mt">The golden rule: <em>diagram and code copy their names from the same slot table</em>, so they always match, and you never have to remember a name halfway through.</div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>How much to draw <span class="r">by marks</span></h2>
+      <table class="tight small">
+        <tr><td style="width:24%"><b>3–4 m</b></td><td>The pattern's core boxes only (interface + 2 concrete + the special box). Names and arrows correct; 1–2 methods each.</td></tr>
+        <tr><td><b>5–6 m</b></td><td>Full skeleton from the pattern page, with fields and 2–3 methods in each box, plus the client.</td></tr>
+        <tr><td><b>8–10 m</b></td><td>Full skeleton + every concrete class the question lists + stereotypes («interface», «abstract») + multiplicities on has-a links + a 1–2 line note under the diagram saying which box plays which role.</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>How much code <span class="r">by marks</span></h2>
+      <table class="tight small">
+        <tr><td style="width:24%"><b>2–3 m</b></td><td>Exactly what is asked (often just the interface or one class). Nothing extra.</td></tr>
+        <tr><td><b>4–5 m</b></td><td>What is asked, in full (fields, constructor, methods), plus 3 lines of client code showing it used.</td></tr>
+        <tr><td><b>6+ m</b></td><td>Interface/abstract class + the pattern class + two concrete classes + client with a comment showing the output.</td></tr>
+      </table>
+      <p class="tiny mt">Never needed unless asked: imports, getters/setters, <code>main</code>, full error handling.</p>
+    </div>
+  </div>
+  <div class="panel">
+      <h2>Two methods are enough</h2>
+      <p class="small">For each interface, pick <b>the one or two actions the question is about</b>. A pricing question → <code>getCost()</code>, <code>getDescription()</code>. A states question → one method per event. An approval question → <code>handle(request)</code>. Don't list every possible method; examiners mark the pattern, not completeness.</p>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : step 1 naming ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Step 1: getting the names out of the question</h1><div class="lede">Every name you need is already in the question. You only have to sort the words into the right slots.</div></div>
+    <div class="meta">Method<br><b>Naming</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Six sorting rules</h2>
+    <table class="small">
+      <tr><th style="width:32%">Word in the question</th><th style="width:22%">Becomes</th><th>Example</th></tr>
+      <tr><td><b>1.</b> The <b>general word</b> for the thing ("a payment method", "a book", "an account", "a state")</td><td>the <b>interface</b> or <b>abstract class</b></td><td>"different payment methods" → <code>PaymentMethod</code></td></tr>
+      <tr><td><b>2.</b> The <b>listed kinds</b> ("credit card, PayPal, cash on delivery")</td><td><b>concrete classes</b>, one each</td><td><code>CreditCardPayment</code>, <code>PayPalPayment</code>, <code>CashOnDeliveryPayment</code></td></tr>
+      <tr><td><b>3.</b> <b>Actions</b> (verbs: validate, scan, approve, calculate)</td><td><b>methods</b>: verb + noun</td><td>"process the payment" → <code>processPayment()</code></td></tr>
+      <tr><td><b>4.</b> <b>Data</b> the thing has (price, name, balance, days)</td><td><b>fields</b></td><td><code>- price : double</code></td></tr>
+      <tr><td><b>5.</b> <b>Who uses it</b> (the system, the app, the kiosk, the desk)</td><td>the <b>client</b> class</td><td><code>CheckoutSystem</code>, <code>LibraryApp</code></td></tr>
+      <tr><td><b>6.</b> A name or method <b>written in the question</b></td><td><b>copy it exactly</b>, same letters and case</td><td>2024: "<code>getCost()</code> and <code>getDescription()</code>"</td></tr>
+    </table>
+    <p class="small mt"><b>No word for a pattern box?</b> Use the general word + the pattern's suffix: <code>…Decorator</code>, <code>…Adapter</code>, <code>…Proxy</code>, <code>…Factory</code>, <code>…Facade</code>, <code>…State</code>, <code>…Handler</code>. Example: the general word is Burger → <code>BurgerDecorator</code>.</p>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>How to write names</h2>
+      <table class="tight small">
+        <tr><td style="width:38%"><b>Class / interface</b></td><td>Noun, capital first, joined words: <code>GroceryItem</code></td></tr>
+        <tr><td><b>Method</b></td><td>verb first, small first letter: <code>getCost()</code>, <code>approveLeave()</code></td></tr>
+        <tr><td><b>Field</b></td><td>noun, small first letter: <code>price</code>, <code>nextHandler</code></td></tr>
+        <tr><td><b>Constant</b></td><td>capitals: <code>MAX_PLAYERS</code>, <code>TAX_RATE</code></td></tr>
+        <tr><td><b>Singular</b></td><td><code>Book</code>, not <code>Books</code>; one class = one thing</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Worked example: sorting a new paragraph</h2>
+    <div class="qbox"><span class="lab">QUESTION (NOT FROM A PAST PAPER)</span>"A burger shop lets customers order a <b>basic burger</b> and add optional <b>extras</b> such as <b>cheese</b>, <b>bacon</b> and <b>large size</b>. The <b>price</b> and the <b>order description</b> must be calculated for any combination without creating subclasses for every combination."</div>
+    <div class="g2 mt" style="align-items:start">
+      <div class="small">
+        <p><b>Pattern:</b> "optional extras… without subclasses for every combination" → Decorator (you can already do this part).</p>
+        <p><b>Sorting:</b> general word = burger → <code>Burger</code> interface · base = basic burger → <code>BasicBurger</code> · listed extras → <code>Cheese</code>, <code>Bacon</code>, <code>LargeSize</code> · no word for the decorator box → suffix rule → <code>BurgerDecorator</code> · actions = calculate price, describe order → <code>getCost()</code>, <code>getDescription()</code>.</p>
+      </div>
+      <table class="tight small">
+        <tr><th>Role (from the kit)</th><th>My word</th></tr>
+        <tr><td>Component</td><td><code>Burger</code></td></tr>
+        <tr><td>ConcreteComponent</td><td><code>BasicBurger</code></td></tr>
+        <tr><td>Decorator</td><td><code>BurgerDecorator</code></td></tr>
+        <tr><td>ConcreteDecorators</td><td><code>Cheese, Bacon, LargeSize</code></td></tr>
+        <tr><td>operations</td><td><code>getCost(), getDescription()</code></td></tr>
+      </table>
+    </div>
+    <p class="tiny mt">That five-line table is all you need. Now open the Decorator page and copy the shape with these words.</p>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : step 2 drawing ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Step 2: the box and the arrow, decided by questions</h1><div class="lede">You don't need to remember UML. Answer the yes/no questions and the symbol picks itself.</div></div>
+    <div class="meta">Method<br><b>Drawing</b></div>
+  </header>
+
+  <div class="gc">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">What goes inside one box</h2></div>
+      <svg class="dg" data-d="k-box"></svg>
+    </div>
+    <div class="panel">
+      <h2>Box rules</h2>
+      <ul class="small">
+        <li><b>Top:</b> the name. Write «interface» above it for an interface. Write the name in <i>italics</i> (or «abstract» above it) for an abstract class.</li>
+        <li><b>Middle:</b> fields, <code>- name : Type</code>. Only the 1–3 the pattern needs (the wrapped object, the next handler, the current state, the price).</li>
+        <li><b>Bottom:</b> methods, <code>+ name(param : Type) : ReturnType</code>. 2–3 is enough.</li>
+        <li><b>Interface:</b> leave the middle box empty (interfaces have no fields).</li>
+        <li><code>+</code> public · <code>−</code> private · <code>#</code> protected · <u>underline</u> = static · <i>italic method</i> = abstract</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Which arrow? Ask in this order and stop at the first "yes"</h2>
+    <table class="small">
+      <tr><th style="width:44%">Question about class A and class B</th><th style="width:26%">Draw</th><th>Example</th></tr>
+      <tr><td><b>1.</b> Does A say <code>implements B</code>? (B is an interface)</td><td><b>dashed line, hollow triangle at B</b></td><td><code>BasicBurger</code> → <code>Burger</code></td></tr>
+      <tr><td><b>2.</b> Does A say <code>extends B</code>? (B is a class / abstract class)</td><td><b>solid line, hollow triangle at B</b></td><td><code>Cheese</code> → <code>BurgerDecorator</code></td></tr>
+      <tr><td><b>3.</b> Does A have a <b>field</b> of type B? (A "has a" B)</td><td><b>solid line, open arrow at B</b>; add a hollow diamond at A if A wraps or collects B</td><td>decorator ◇→ component, context ◇→ state, proxy → real subject</td></tr>
+      <tr><td><b>4.</b> Does A only <b>use</b> or <b>create</b> B inside a method?</td><td><b>dashed line, open arrow at B</b>; label «create» for factories</td><td>factory ⇢ product; client ⇢ <code>getInstance()</code></td></tr>
+    </table>
+    <svg class="dg mt" data-d="k-arrows"></svg>
+    <p class="tiny mt"><b>Memory trick:</b> triangle = "is a" (it's a kind of that), and the triangle always touches the <b>parent</b>. Dashed triangle = interface parent, solid triangle = class parent. A plain arrow = "has a" or "uses". Note: a decorator has <b>both</b> a triangle (it is a Component) and a diamond arrow (it holds a Component). That's correct, not a mistake.</p>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== K : step 3 code ===================== -->
+<section class="page" data-sec="K">
+<div class="body">
+  <header class="ph">
+    <div class="code">K</div>
+    <div><h1>Step 3: writing the code, in order</h1><div class="lede">Every pattern's code is built from the same seven small moves. Learn the moves once; the pattern pages just arrange them.</div></div>
+    <div class="meta">Method<br><b>Code</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Write the classes in this order <span class="r">same order as your slot table</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><b>Interface / abstract</b><span class="small">The general word. Method headers only (or the final template method).</span></div>
+      <div class="step"><span class="n">2</span><b>One concrete class</b><span class="small">Fields, constructor, every method. In full.</span></div>
+      <div class="step"><span class="n">3</span><b>The pattern class</b><span class="small">Decorator, adapter, proxy, factory, context, handler.</span></div>
+      <div class="step"><span class="n">4</span><b>More concretes</b><span class="small">Only if marks allow. Same shape as #2.</span></div>
+      <div class="step"><span class="n">5</span><b>Client</b><span class="small">3–5 lines that use it, with <code>// output</code>.</span></div>
+    </div>
+    <p class="small mt">Put a comment with the role above each class (<code>// COMPONENT</code>, <code>// ADAPTER</code>). It shows the examiner you know the parts, and it keeps <b>you</b> on track.</p>
+  </div>
+
+  <div class="panel">
+    <h2>The seven moves</h2>
+    <div class="g2" style="align-items:start">
+<pre class="code" data-j>
+// MOVE 1: an interface = method headers
+public interface Burger {
+  double getCost();
+  String getDescription();
+}
+
+// MOVE 2: implements = fill in every method
+public class BasicBurger implements Burger {
+  public double getCost() { return 500; }
+  public String getDescription() {
+    return "Basic burger"; }
+}
+
+// MOVE 3: has-a = field + constructor
+public abstract class BurgerDecorator
+    implements Burger {
+  protected final Burger burger;   // field
+  public BurgerDecorator(Burger b) {
+    burger = b; }                  // set it
+}
+
+// MOVE 4: delegate = call the field, add
+public double getCost() {
+  return burger.getCost() + 150; }</pre>
+<pre class="code" data-j>
+// MOVE 5: extends + super(...)
+public class Cheese extends BurgerDecorator {
+  public Cheese(Burger b) { super(b); }
+  // ... override getCost() with MOVE 4
+}
+
+// MOVE 6: a fixed order you can't change
+public abstract class Process {
+  public final void run() {   // final!
+    stepOne(); stepTwo(); }
+  protected abstract void stepTwo();
+  private void stepOne() { }
+}
+
+// MOVE 7: only one object
+public final class Logger {
+  private static Logger instance;
+  private Logger() { }        // private!
+  public static synchronized Logger
+      getInstance() {
+    if (instance == null)
+      instance = new Logger();
+    return instance; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Which moves each pattern uses</h2>
+    <table class="tight small">
+      <tr><td style="width:20%"><b>Singleton</b></td><td>7</td><td style="width:20%"><b>Decorator</b></td><td>1, 2, 3, 4, 5</td></tr>
+      <tr><td><b>Factory</b></td><td>1, 2 + a <code>switch</code> that returns <code>new …</code></td><td><b>Template</b></td><td>6, 5</td></tr>
+      <tr><td><b>Facade</b></td><td>3 (several fields), 4 (call them in order)</td><td><b>Chain</b></td><td>3 (field <code>next</code>), 4 (pass to next), 5</td></tr>
+      <tr><td><b>Adapter</b></td><td>1, 2, 3, 4 (call the adaptee's method)</td><td><b>State</b></td><td>1, 2, 3 (field <code>state</code>), 4 (<code>state.event(this)</code>)</td></tr>
+      <tr><td><b>Proxy</b></td><td>1, 2, 3, 4 (check first, then call)</td><td></td><td></td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>K Method</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['k-box'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, w:200, name:'BurgerDecorator', stereo:'abstract', abstract:true,
+     attrs:['# burger : Burger'],
+     ops:['+ BurgerDecorator(b : Burger)', '+ getCost() : double', '/+ getDescription() : String']},
+    {k:'text', x:212, y:14, lines:['① name (italic = abstract)'], size:9, fill:'#111'},
+    {k:'text', x:212, y:44, lines:['② fields: − name : Type'], size:9, fill:'#111'},
+    {k:'text', x:212, y:74, lines:['③ methods: + name(p : Type) : Return'], size:9, fill:'#111'},
+  ]
+};
+(function(){
+  const rows = [['realize','BasicBurger','Burger','interface','implements'],['extend','Cheese','BurgerDecorator','abstract','extends'],
+                ['aggr','BurgerDecorator','Burger','interface','has a (wraps)'],['depend','BurgerFactory','BasicBurger',null,'creates']];
+  const items=[], edges=[];
+  rows.forEach((r,i)=>{ const x=i*150;
+    items.push({id:'a'+i,k:'class',x:x,y:0,w:118,name:r[1]});
+    items.push({id:'b'+i,k:'class',x:x,y:70,w:118,name:r[2],stereo:r[3]});
+    items.push({k:'text',x:x+60,y:130,lines:[r[4]],size:9,anchor:'middle',fill:'#111',bold:true});
+    edges.push({a:'a'+i,as:'bottom',b:'b'+i,bs:'top',type:r[0],label:r[0]==='depend'?'«create»':null});
+  });
+  DIAGRAMS['k-arrows']={items,edges};
+})();
+</script>
