@@ -1,0 +1,212 @@
+<!-- ===================== 03 FACADE : understand ===================== -->
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade</h1><div class="lede">One simple front door to a group of complicated classes. The client talks to the front door only.</div></div>
+    <div class="meta">Structural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">one simple interface for borrowing books by internally calling inventory, payment, notification and login</span>
+      <span class="chip">combine air tickets, hotels and taxis</span><span class="chip">single entry point</span>
+      <span class="chip">hide the complexity of the subsystems</span><span class="chip">complex subsystem calls scattered everywhere</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Some jobs need many classes called in the right order: log in, check stock, charge a fee, send a message. If every client does that itself, each one depends on all those classes, and any change breaks them all.</p>
+      <p class="small">A facade puts one method in front, like <code>borrowBook()</code>, which makes the calls in the right order. Like a waiter: you order from them and never deal with the chef, the cashier and the kitchen staff yourself.</p>
+    </div>
+    <div class="panel">
+      <h2>Without vs with</h2>
+      <table class="tight small">
+        <tr><th></th><th>Without facade</th><th>With facade</th></tr>
+        <tr><td><b>Client talks to</b></td><td>Login, Inventory, Payment, Notification…</td><td>one class</td></tr>
+        <tr><td><b>Coupling</b></td><td>high, many dependencies</td><td>low</td></tr>
+        <tr><td><b>A service changes</b></td><td>every client breaks</td><td>only the facade changes</td></tr>
+        <tr><td><b>Call order</b></td><td>repeated in each client</td><td>written once</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The parts</h2>
+    <table class="small">
+      <tr><th style="width:22%">Part</th><th style="width:44%">Job</th><th>Library example</th></tr>
+      <tr><td><b>Facade</b></td><td>Knows which subsystem does what, calls them in order. Only delegates.</td><td><code>LibraryFacade.borrowBook()</code></td></tr>
+      <tr><td><b>Subsystem classes</b></td><td>Do the real work. They don't know the facade exists.</td><td><code>LoginService</code>, <code>InventoryService</code>, <code>PaymentService</code>, <code>NotificationService</code></td></tr>
+      <tr><td><b>Client</b></td><td>Calls only the facade.</td><td>librarian screen / mobile app</td></tr>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Rules from the slides</h2>
+      <ul class="small">
+        <li>A facade <b>doesn't add new functionality</b>. It only gives a simpler way in.</li>
+        <li>Clients <b>can still use the subsystems directly</b> if they need something advanced.</li>
+        <li>A big system <b>can have more than one facade</b>, one per area (BookingFacade, PaymentFacade).</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs Adapter</b>: Adapter converts one interface into another so the client can use it. Facade makes a new, simpler interface over many classes. Adapter = translator, Facade = simplifier.</li>
+        <li><b>vs Factory</b>: Factory creates objects. Facade coordinates objects that already exist.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y">2022</span> Q1 travel booking (diagram, which pattern, challenges and how to overcome them, 15m) · <span class="y q">Quiz 3</span> Q5 one interface for borrowing books. <b>Answered on the answers page.</b> Forecast: Facade hasn't been in a paper since 2022, so it is due.</div>
+</div>
+<div class="foot"><span>03 Facade · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 03 FACADE : write ===================== -->
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade: write</h1><div class="lede">Copy in order. Swap the services for the ones in your question.</div></div>
+    <div class="meta">Structural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Facade</b> pattern, which is a structural pattern. It provides <b>one unified, simpler interface</b> to a set of interfaces in a subsystem, so the subsystem is easier to use.</div>
+    <p class="small"><b>Reasons:</b> (1) the client depends on <b>one class instead of four services</b>, so coupling is low; (2) the <b>call order is written once</b> inside the facade instead of being repeated in every screen; (3) if a service changes, <b>only the facade changes</b> and the clients don't; (4) it is easier to use and test, because you can mock the facade.</p>
+    <p class="small"><b>Mapping:</b> Facade = <b>LibraryFacade</b> with <code>borrowBook()</code> · subsystems = <b>LoginService, InventoryService, PaymentService, NotificationService</b> · client = <b>LibraryApp</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">arrows go from the facade to the subsystems, never back</span></div>
+    <svg class="dg" data-d="facade"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// SUBSYSTEMS: do the real work</span>
+<span class="k">class</span> LoginService {
+  <span class="k">boolean</span> verify(String user) { ... }
+}
+<span class="k">class</span> InventoryService {
+  <span class="k">boolean</span> isAvailable(String book) { ... }
+  <span class="k">void</span> reserve(String book) { ... }
+}
+<span class="k">class</span> PaymentService {
+  <span class="k">void</span> chargeFee(String user) { ... }
+}
+<span class="k">class</span> NotificationService {
+  <span class="k">void</span> send(String user, String msg) { ... }
+}
+
+<span class="c">// CLIENT: one call</span>
+LibraryFacade library = <span class="k">new</span> LibraryFacade();
+library.borrowBook(<span class="s">"U001"</span>, <span class="s">"B123"</span>);</pre>
+<pre class="code"><span class="c">// FACADE: one simple method, calls in order</span>
+<span class="k">public class</span> LibraryFacade {
+  <span class="k">private</span> LoginService login =
+      <span class="k">new</span> LoginService();
+  <span class="k">private</span> InventoryService inventory =
+      <span class="k">new</span> InventoryService();
+  <span class="k">private</span> PaymentService payment =
+      <span class="k">new</span> PaymentService();
+  <span class="k">private</span> NotificationService notifier =
+      <span class="k">new</span> NotificationService();
+
+  <span class="k">public boolean</span> borrowBook(String user,
+                            String book) {
+    <span class="k">if</span> (!login.verify(user)) <span class="k">return false</span>;
+    <span class="k">if</span> (!inventory.isAvailable(book))
+        <span class="k">return false</span>;
+    inventory.reserve(book);
+    payment.chargeFee(user);
+    notifier.send(user, <span class="s">"Borrowed "</span> + book);
+    <span class="k">return true</span>;
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>03 Facade · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 03 FACADE : answers ===================== -->
+<section class="page" data-sec="03">
+<div class="body">
+  <header class="ph">
+    <div class="code">03</div>
+    <div><h1>Facade: answers and challenges</h1><div class="lede">The travel booking question in full, and the challenges with their fixes.</div></div>
+    <div class="meta">Structural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Travel booking: air ticket, hotel and taxi <span class="r"><span class="y">2022</span> Q1.1–1.2, 15m</span></h2>
+    <p class="small"><b>1.1 Diagram:</b> draw the scenario diagram from tab 00 (traveller → website → TravelBookingFacade → air / hotel / taxi services → third-party APIs through adapters).</p>
+    <p class="small"><b>1.2 Pattern for the sub-system that combines them:</b> <b>Facade</b>. <code>TravelBookingFacade.bookTrip(request)</code> calls the AirTicketService, HotelService and TaxiService and returns one itinerary. The traveller does one action, the complexity of three services is hidden, and the website depends on one class only.</p>
+    <table class="small mt">
+      <tr><th style="width:40%">1.2.1 Challenge</th><th>1.2.2 Mechanism to overcome it</th></tr>
+      <tr><td>The facade grows into a <b>God class</b> as more services are added.</td><td>Split it into smaller facades per area (FlightFacade, StayFacade). Keep it delegating only, no business logic (SRP).</td></tr>
+      <tr><td>One service fails (taxi API down) and the <b>whole booking fails</b>. The facade is a <b>single point of failure</b>.</td><td>Timeouts, retries and a fallback provider for each service. Run the facade as several stateless copies behind a load balancer (HA).</td></tr>
+      <tr><td><b>Partial booking</b>: the flight is booked but the hotel fails.</td><td>Compensating actions: cancel the flight if the hotel fails (the saga idea), or reserve everything first and confirm all at the end.</td></tr>
+    </table>
+    <p class="tiny mt">1.3 (connecting to the different third-party web services) is Adapter: see tab 04, answers.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>One interface for borrowing <span class="r"><span class="y q">Quiz 3</span> Q5</span></h2>
+      <p class="small">Use a <b>Facade</b>. <code>LibraryFacade.borrowBook(userId, bookId)</code> calls, in order: <code>LoginService.verify()</code> → <code>InventoryService.isAvailable()</code> and <code>reserve()</code> → <code>PaymentService.chargeFee()</code> → <code>NotificationService.send()</code>. The librarian screen calls only the facade, so it doesn't depend on four services, and a change in any service is handled inside the facade. (Code: W3.)</p>
+    </div>
+    <div class="panel">
+      <h2>Slide questions</h2>
+      <p class="small"><b>Can you still access the subsystems directly?</b> Yes. The facade is a convenience, not a lock.</p>
+      <p class="small"><b>Must there be only one facade?</b> No. A large system can have several, one per area, which also avoids a God class.</p>
+      <p class="small"><b>Does the facade add functionality?</b> No. It only wraps existing features behind a simpler entry point.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">W5</span> Challenges → fix <span class="r">use for any "challenges" part</span></h2>
+    <table class="small">
+      <tr><th style="width:40%">Challenge</th><th>How to handle it</th></tr>
+      <tr><td>Becomes a <b>God class</b> (too big)</td><td>Several smaller facades; the facade only delegates.</td></tr>
+      <tr><td><b>Single point of failure / bottleneck</b></td><td>Keep it stateless and run several copies behind a load balancer. If one is enough, make it a Singleton.</td></tr>
+      <tr><td>Can <b>hide useful features</b> of the subsystems</td><td>Still allow direct access for advanced clients.</td></tr>
+      <tr><td>Subsystems have <b>incompatible interfaces</b> (third-party)</td><td>Put Adapters under the facade (tab 04).</td></tr>
+      <tr><td><b>Extra layer</b>, not worth it for tiny systems</td><td>Only use it when several clients repeat the same call sequence.</td></tr>
+    </table>
+  </div>
+
+  <div class="shade small"><b>Mistakes that lose marks:</b> putting business logic in the facade (it only delegates) · drawing arrows from the subsystems back to the facade (they don't know it) · calling it creational · confusing it with Adapter (converts an interface) or Proxy (same interface, controls access).</div>
+</div>
+<div class="foot"><span>03 Facade · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['facade'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:52, name:'LibraryApp'},
+    {id:'f', k:'class', x:150, y:20, name:'LibraryFacade', stereo:'Facade',
+      attrs:['- login : LoginService', '- inventory : InventoryService', '- payment : PaymentService', '- notifier : NotificationService'],
+      ops:['+ borrowBook(user, book) : boolean']},
+    {id:'s1', k:'class', x:420, y:0, w:162, name:'LoginService', ops:['+ verify(user) : boolean']},
+    {id:'s2', k:'class', x:420, y:44, w:162, name:'InventoryService', ops:['+ isAvailable(book) : boolean', '+ reserve(book) : void']},
+    {id:'s3', k:'class', x:420, y:100, w:162, name:'PaymentService', ops:['+ chargeFee(user) : void']},
+    {id:'s4', k:'class', x:420, y:144, w:162, name:'NotificationService', ops:['+ send(user, msg) : void']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'f', bs:'left', type:'assoc', label:'uses'},
+    {a:'f', as:'right', ao:.15, b:'s1', bs:'left', type:'assoc', mid:396},
+    {a:'f', as:'right', ao:.38, b:'s2', bs:'left', type:'assoc', mid:396},
+    {a:'f', as:'right', ao:.62, b:'s3', bs:'left', type:'assoc', mid:396},
+    {a:'f', as:'right', ao:.85, b:'s4', bs:'left', type:'assoc', mid:396},
+  ]
+};
+</script>

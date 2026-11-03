@@ -1,0 +1,82 @@
+<section class="page" data-sec="★">
+<div class="body">
+  <header class="ph">
+    <div class="code">★</div>
+    <div><h1>What's likely this year</h1><div class="lede">Based on the four past papers (2022 to 2025) and the seven in-class quizzes from this year's lecturer.</div></div>
+    <div class="meta">Forecast<br><b>Read once before the exam</b></div>
+  </header>
+
+  <table>
+    <tr><th style="width:3%"></th><th>What I expect</th><th style="width:27%">Why</th><th style="width:13%">How likely</th><th style="width:7%">Tab</th></tr>
+    <tr><td><b>1</b></td><td><b>Question 2 is microservices again</b>, with the same five parts on a new business. Businesses not used yet: food delivery, banking, LMS, hospital, ride-hailing.</td><td>2023, 2024 and 2025 all had it, with almost the same wording.</td><td><b>Almost certain</b></td><td class="go">11</td></tr>
+    <tr><td><b>2</b></td><td><b>One scenario, several patterns:</b> "identify the patterns for (a), (b), (c), (d) and give reasons".</td><td>All three pattern questions in 2025 were like this.</td><td><b>Very likely</b></td><td class="go">00</td></tr>
+    <tr><td><b>3</b></td><td><b>Write an interface with two methods, then a class that implements it.</b> Usually Decorator with <code>getCost()</code> and <code>getDescription()</code>.</td><td>2024 Q1 and 2025 Q1 asked exactly this.</td><td><b>Very likely</b></td><td class="go">06</td></tr>
+    <tr><td><b>4</b></td><td><b>Singleton for "one global something"</b> and how it plugs into the rest of the design.</td><td>In every paper, nine times in total.</td><td><b>Very likely</b></td><td class="go">01</td></tr>
+    <tr><td><b>5</b></td><td><b>An abstract class with a template method</b>, plus one subclass.</td><td>2025 Q4, Quiz 6.</td><td>Likely</td><td class="go">07</td></tr>
+    <tr><td><b>6</b></td><td><b>State with a state diagram</b> (Idle → … → Completed style).</td><td>2024 Q3, 2025 Q1, Quiz 1.</td><td>Likely</td><td class="go">09</td></tr>
+    <tr><td><b>7</b></td><td><b>Adapter or Facade comes back.</b></td><td>New slides and two quizzes this year, but not in a paper since 2023.</td><td>Possible</td><td class="go">03, 04</td></tr>
+    <tr><td><b>8</b></td><td><b>SOLID</b>: "which principle does your design follow?" or "explain the use of interfaces".</td><td>New lecture this year. Never examined yet.</td><td>Possible</td><td class="go">10</td></tr>
+    <tr><td><b>9</b></td><td><b>Challenges and how to overcome them</b>, <b>High Availability and Disaster Recovery</b>.</td><td>2022 and 2023 style. Could come back as a 4–5 mark part.</td><td>Possible</td><td class="go">12</td></tr>
+  </table>
+
+  <div class="panel">
+    <h2>How this lecturer builds a question <span class="r">every quiz follows this order</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">PART 1 · 2–4 MARKS</span><b>Why this pattern?</b><span class="small">Name it and give reasons that fit the scenario.</span></div>
+      <div class="step"><span class="n">PART 2 · 4–8 MARKS</span><b>Draw it</b><span class="small">A state diagram, a class diagram, or both.</span></div>
+      <div class="step"><span class="n">PART 3 · 3–6 MARKS</span><b>Write the Java</b><span class="small">The interface, the abstract class or the context class.</span></div>
+      <div class="step"><span class="n">PART 4 · 3–5 MARKS</span><b>The twist</b><span class="small">A <b>second pattern</b> joins at the end. Parking → Adapter, scanner → Facade, course → Decorator, support desk → Template.</span></div>
+    </div>
+  </div>
+
+  <div class="shade small">
+    <b>The big lesson from 2024 and 2025:</b> the question usually <b>gives you the class and method names</b> ("Define a Coffee interface with getCost()…", "Write a BookFactory that returns FictionBook…"). Use their names exactly. The code in this note is written so you only have to swap names.
+  </div>
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Forecast · page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="★">
+<div class="body">
+  <header class="ph">
+    <div class="code">★</div>
+    <div><h1>What keeps coming back</h1><div class="lede">Repeated questions and how often each pattern has been tested. Spend your revision time in this order.</div></div>
+    <div class="meta">Forecast<br><b>Repeats</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>How often each pattern was tested <span class="r">4 papers + 7 quizzes</span></h2>
+    <table class="small">
+      <tr><th style="width:26%">Pattern</th><th style="width:10%">Times</th><th>Usually appears as</th></tr>
+      <tr><td><b>Singleton</b> <span class="tiny">(+ Multiton)</span></td><td><b>9</b></td><td>one tax calculator, one logger, one ID generator, one payroll run, max 5 batsmen</td></tr>
+      <tr><td><b>Decorator</b></td><td><b>7</b></td><td>coffee add-ons, kiosk add-ons, profile features, cake extras, optional library services</td></tr>
+      <tr><td><b>Chain of Responsibility</b></td><td><b>6</b></td><td>support levels, spam sub-filters, validation checks in order, exception priorities</td></tr>
+      <tr><td><b>Factory Method</b></td><td><b>6</b></td><td>types of database, book, account, payment, LMS module</td></tr>
+      <tr><td><b>Template Method</b></td><td><b>5</b></td><td>salary calculation, checkout steps, payment workflow, course completion</td></tr>
+      <tr><td><b>Proxy</b></td><td><b>5</b></td><td>load a few pages (virtual), rare books and authorization (protection)</td></tr>
+      <tr><td><b>Adapter</b></td><td><b>4</b></td><td>new barcode scanner, vendor payment machine, third-party travel or event APIs</td></tr>
+      <tr><td><b>State</b></td><td><b>3</b></td><td>document workflow, self-checkout kiosk, parking session</td></tr>
+      <tr><td><b>Facade</b></td><td><b>2</b></td><td>combine air, hotel and taxi; one borrowBook() over four services</td></tr>
+      <tr><td><b>Microservices</b></td><td><b>3 of 4</b></td><td>always the whole of Question 2 (25 marks)</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>Questions that came back almost word for word</h2>
+    <table class="small">
+      <tr><th>The question</th><th style="width:27%">Seen in</th><th style="width:27%">Answer</th></tr>
+      <tr><td>LMS: load only a couple of pages, not the whole document</td><td><span class="y">2022</span> Q4.4 · <span class="y">2023</span> Q4.4</td><td>Virtual <b>Proxy</b> → 05</td></tr>
+      <tr><td>Define an interface with <code>getCost()</code> and <code>getDescription()</code></td><td><span class="y">2024</span> Q1.2 · <span class="y">2025</span> Q1.2</td><td><b>Decorator</b> → 06</td></tr>
+      <tr><td>Salary is calculated differently for each type of employee</td><td><span class="y">2022</span> Q2 · <span class="y">2023</span> Q1</td><td><b>Template Method</b> → 07</td></tr>
+      <tr><td>Only one user may run the payroll / log in during calculation</td><td><span class="y">2022</span> Q4.3 · <span class="y">2023</span> Q1.6</td><td><b>Singleton</b> + a lock → 01</td></tr>
+      <tr><td>Exception handling with different priorities or types</td><td><span class="y">2023</span> Q4.3 · <span class="y">2024</span> Q4.3</td><td><b>Chain</b> → 08</td></tr>
+      <tr><td>Different authorization options or levels</td><td><span class="y">2023</span> Q4.5 · <span class="y">2024</span> Q4.5</td><td>Protection <b>Proxy</b> → 05</td></tr>
+      <tr><td>A logger that writes everything to the same file</td><td><span class="y">2023</span> Q3.4 · <span class="y">2024</span> Q1.5</td><td><b>Singleton</b> → 01</td></tr>
+      <tr><td>Extend the design for High Availability and Disaster Recovery</td><td><span class="y">2022</span> Q3.5 · <span class="y">2023</span> Q3.5</td><td>Answer bank → 12</td></tr>
+      <tr><td>Microservices: diagram, scale / isolate / deploy, architecture, consistency, security</td><td><span class="y">2023</span> <span class="y">2024</span> <span class="y">2025</span> Q2</td><td>Microservices kit → 11</td></tr>
+    </table>
+  </div>
+
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Forecast · page <b class="pnum"></b></span></div>
+</section>

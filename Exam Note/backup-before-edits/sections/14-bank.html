@@ -1,0 +1,115 @@
+<!-- ===================== 12 BANK : page 1 ===================== -->
+<section class="page" data-sec="12">
+<div class="body">
+  <header class="ph">
+    <div class="code">12</div>
+    <div><h1>Answer bank</h1><div class="lede">Ready answers for the parts that can be attached to any scenario.</div></div>
+    <div class="meta">Reusable<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>"How can you extend this design to achieve High Availability and Disaster Recovery?" <span class="r"><span class="y">2022</span> Q3.5 · <span class="y">2023</span> Q3.5, 5m</span></h2>
+    <div class="g2">
+      <div class="small">
+        <p><b>High Availability</b> = the system keeps running when a part fails (little or no downtime).</p>
+        <ul>
+          <li>Run each component as several <b>stateless copies behind a load balancer</b>, with health checks and automatic restart (Kubernetes).</li>
+          <li><b>No single point of failure</b>: a Singleton or Facade on one server becomes replicas.</li>
+          <li><b>Database replication</b> / clusters with automatic failover.</li>
+          <li>Timeouts, retries and <b>circuit breakers</b>; a <b>fallback handler</b> at the end of a Chain.</li>
+        </ul>
+      </div>
+      <div class="small">
+        <p><b>Disaster Recovery</b> = getting back after a big failure (data centre lost).</p>
+        <ul>
+          <li><b>Regular backups</b>, and the database <b>replicated to a second region</b>.</li>
+          <li>Agreed <b>RPO</b> (how much data we can lose) and <b>RTO</b> (how fast we must be back).</li>
+          <li><b>Automated failover</b> to the DR site; infrastructure-as-code to rebuild quickly.</li>
+          <li><b>DR drills</b> to test it regularly.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small mt"><b>Tie it to the pattern:</b> "Because each filter / handler / service is stateless, extra copies can run on several servers…" makes the answer fit the question.</p>
+  </div>
+
+  <div class="panel">
+    <h2>"Many parameters change over time. Improve configurability." <span class="r"><span class="y">2023</span> Q1.5, 4m</span></h2>
+    <p class="small">Move every rate, limit and threshold out of the code into <b>external configuration</b> (a database table or a properties / YAML file). A <b>Singleton ConfigManager</b> loads it and every class reads from there. An admin screen changes values; changes are <b>versioned and audited</b> with an "effective from" date; <b>no recompiling or redeploying</b>. Example settings: <code>epf.employee=0.08</code>, <code>tax.threshold=100000</code>. (Code: tab 01 answers.)</p>
+  </div>
+
+  <div class="panel">
+    <h2>Interface or abstract class? <span class="r">"explain the use of interfaces / abstract classes"</span></h2>
+    <table class="small">
+      <tr><th style="width:17%"></th><th>Interface</th><th>Abstract class</th></tr>
+      <tr><td><b>Meaning</b></td><td>A contract: what a class <b>can do</b></td><td>A partial parent: what a class <b>is</b></td></tr>
+      <tr><td><b>Contains</b></td><td>Method signatures (plus default methods)</td><td>Fields, finished methods and abstract methods</td></tr>
+      <tr><td><b>Keyword</b></td><td><code>implements</code>, a class can have many</td><td><code>extends</code>, only one parent</td></tr>
+      <tr><td><b>Used in</b></td><td>Decorator Component, Adapter Target, Proxy Subject, State, Factory Product</td><td>Template Method base, Decorator base, Chain handler</td></tr>
+    </table>
+    <p class="small mt"><b>Why they help (write this):</b> the client depends on the <b>abstraction</b>, not the concrete class, so different implementations can be swapped through <b>polymorphism</b>. New classes plug in without changing the client (<b>Open/Closed</b>, <b>Dependency Inversion</b>), and tests can use mocks. An abstract class is chosen when shared code or a fixed order must live in the parent.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Pros and cons of using design patterns in general</h2>
+    <div class="g2 small">
+      <ul>
+        <li><b>+</b> Proven solutions, so fewer design mistakes</li>
+        <li><b>+</b> Shared vocabulary for the team</li>
+        <li><b>+</b> Loose coupling, reuse, flexibility</li>
+        <li><b>+</b> Easier to maintain and extend</li>
+      </ul>
+      <ul>
+        <li><b>−</b> More classes and more abstraction</li>
+        <li><b>−</b> Learning curve for new developers</li>
+        <li><b>−</b> Overuse is over-engineering</li>
+        <li><b>−</b> Ask: "is it worth the extra abstraction?"</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>12 Answer bank</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 12 BANK : page 2 ===================== -->
+<section class="page" data-sec="12">
+<div class="body">
+  <header class="ph">
+    <div class="code">12</div>
+    <div><h1>Answer bank: other patterns</h1><div class="lede">Patterns named in the lectures but not taught in detail, and general fallback answers.</div></div>
+    <div class="meta">Reusable<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>If the scenario fits a pattern you weren't taught <span class="r">name it, give one reason, sketch it</span></h2>
+    <table class="small">
+      <tr><th style="width:17%">Pattern</th><th style="width:31%">The question would say…</th><th>One-line answer</th></tr>
+      <tr><td><b>Strategy</b> <span class="tiny">behavioural</span></td><td>different discount rules / pricing / sorting, chosen at runtime</td><td>Each rule is a class behind one interface (<code>DiscountStrategy</code>); the context holds one and can swap it.</td></tr>
+      <tr><td><b>Observer</b> <span class="tiny">behavioural</span></td><td>notify customers when the order status changes; subscribers</td><td>The subject keeps a list of observers and calls <code>update()</code> on all of them when it changes.</td></tr>
+      <tr><td><b>Command</b> <span class="tiny">behavioural</span></td><td>undo and redo; queue or log requests</td><td>Each action is an object with <code>execute()</code> and <code>undo()</code>, kept on a history stack.</td></tr>
+      <tr><td><b>Builder</b> <span class="tiny">creational</span></td><td>build a complex report with many optional sections, step by step</td><td>A builder adds parts one at a time (<code>addHeader().addChart()</code>) and <code>build()</code> returns the result.</td></tr>
+      <tr><td><b>Abstract Factory</b> <span class="tiny">creational</span></td><td>create families of related objects that must match (a UI theme)</td><td>One factory interface creates every product of a family; one concrete factory per family.</td></tr>
+      <tr><td><b>Composite</b> <span class="tiny">structural</span></td><td>tree structures: folders and files, menus inside menus</td><td>Leaf and container share one interface, so the client treats one item and a group the same way.</td></tr>
+    </table>
+    <p class="tiny mt">From Lecture 1's activity: multiple payment methods → Strategy / Factory · user account types → Factory · order updates → Observer · new payment gateway → Adapter · complex report → Builder · discount rules → Strategy · simple access to a library system → Facade · one configuration manager → Singleton · undo/redo → Command · order status → State · coffee extras → Decorator · requests through several officers → Chain.</p>
+  </div>
+
+  <div class="panel">
+    <h2>"Why not just use inheritance for everything?"</h2>
+    <p class="small">Inheritance fixes behaviour at compile time. Every combination needs its own subclass (<b>class explosion</b>), the hierarchy becomes rigid, and a change in the parent ripples into every child. So prefer <b>composition</b>: Decorator, State, Strategy and Adapter all hold another object instead of inheriting from it, and can change at runtime.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Challenges that fit almost any pattern design <span class="r">use when the pattern's own W5 isn't enough</span></h2>
+    <table class="small">
+      <tr><th style="width:38%">Challenge</th><th>Mechanism to overcome it</th></tr>
+      <tr><td><b>More classes</b>, more complex to understand</td><td>Clear naming, a class diagram in the documentation, only use the pattern where change is likely.</td></tr>
+      <tr><td><b>Harder to debug</b> (calls pass through layers)</td><td>Logging at each layer, unit tests for each class.</td></tr>
+      <tr><td><b>Performance overhead</b></td><td>Usually negligible; cache results; keep chains and wrappers short.</td></tr>
+      <tr><td><b>Single point of failure</b> (Singleton, Facade, Proxy)</td><td>Stateless replicas behind a load balancer; standby copy.</td></tr>
+      <tr><td><b>Third-party parts change</b></td><td>Keep them behind an interface or Adapter so only one class changes.</td></tr>
+      <tr><td><b>Values change often</b></td><td>External configuration read by a Singleton ConfigManager.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>12 Answer bank</span><span>page <b class="pnum"></b></span></div>
+</section>

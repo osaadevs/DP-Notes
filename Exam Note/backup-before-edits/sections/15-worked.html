@@ -1,0 +1,139 @@
+<!-- ===================== 13 WORKED : 2025 Q4 ===================== -->
+<section class="page" data-sec="13">
+<div class="body">
+  <header class="ph">
+    <div class="code">13</div>
+    <div><h1>Worked answer: 2025 Q4</h1><div class="lede">A full multi-pattern question, answered at exam length. This is the style to expect.</div></div>
+    <div class="meta">Worked<br><b>25 marks</b></div>
+  </header>
+
+  <div class="shade small"><b>The question:</b> an e-commerce platform. Credit card, PayPal and cash-on-delivery payments follow a common workflow (validate → process → send receipt), but processing differs. Orders go through automated checks (inventory, fraud, delivery area) that must be maintainable and extendable. A single global OrderID generator must give every order a unique ID.</div>
+
+  <div class="panel">
+    <h2>4.1 Which patterns fit? Give reasons. <span class="r">8m, 2 marks each</span></h2>
+    <table class="small">
+      <tr><th style="width:25%">Case</th><th style="width:18%">Pattern</th><th>Reason (one or two lines is enough)</th></tr>
+      <tr><td>(a) common payment steps, different processing</td><td><b>Template Method</b></td><td>The order of steps is fixed in a final <code>handlePayment()</code>; only <code>processPayment()</code> is written by each payment type, so the workflow is standard and nothing is duplicated.</td></tr>
+      <tr><td>(b) checks in sequence, easy to extend</td><td><b>Chain of Responsibility</b></td><td>Each check is a handler linked to the next; a failure stops the order. A new check is one new class and one link, with no change to the others.</td></tr>
+      <tr><td>(c) one global OrderID generator</td><td><b>Singleton</b></td><td>Only one generator exists, so one counter is shared by every part of the system and IDs are never duplicated.</td></tr>
+      <tr><td>(d) creating payment objects</td><td><b>Factory Method</b></td><td>The customer picks the method at runtime; <code>PaymentFactory.create(method)</code> returns the right processor, so the client has no <code>new</code> or if-else.</td></tr>
+    </table>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">How the four fit together</h2><span class="tiny">draw this if they ask for one diagram of the whole design</span></div>
+    <svg class="dg" data-d="worked-q4"></svg>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>The rest of the question <span class="r">where to copy from</span></h2>
+      <table class="tight small">
+        <tr><td style="width:36%"><b>4.2</b> abstract PaymentProcessor (4m)</td><td>tab 07 W3, left code</td></tr>
+        <tr><td><b>3.3</b> CreditCardPaymentProcessor (3m)</td><td>tab 07 W3, right code</td></tr>
+        <tr><td><b>3.4</b> validation flow (5m)</td><td>tab 08 answers, Validator code</td></tr>
+        <tr><td><b>3.5</b> OrderID generator (5m)</td><td>tab 01 answers, OrderIdGenerator</td></tr>
+      </table>
+    </div>
+<pre class="code"><span class="k">public void</span> placeOrder(Order o) {
+  Validator chain = <span class="k">new</span> InventoryCheck();
+  chain.linkWith(<span class="k">new</span> FraudCheck())
+       .linkWith(<span class="k">new</span> DeliveryAreaCheck());
+  <span class="k">if</span> (!chain.validate(o)) <span class="k">return</span>; <span class="c">// Chain</span>
+  o.setId(OrderIdGenerator.getInstance()
+          .nextId());           <span class="c">// Singleton</span>
+  PaymentProcessor p = PaymentFactory
+      .create(o.getMethod());   <span class="c">// Factory</span>
+  p.handlePayment(o);           <span class="c">// Template</span>
+}</pre>
+  </div>
+</div>
+<div class="foot"><span>13 Worked answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 13 WORKED : 2025 Q1 ===================== -->
+<section class="page" data-sec="13">
+<div class="body">
+  <header class="ph">
+    <div class="code">13</div>
+    <div><h1>Worked answer: 2025 Q1</h1><div class="lede">The self-checkout kiosk: State + Decorator + Singleton in one scenario.</div></div>
+    <div class="meta">Worked<br><b>25 marks</b></div>
+  </header>
+
+  <div class="shade small"><b>The question:</b> a supermarket self-checkout kiosk. Customers scan items, add optional extras (gift-wrap, eco-bag, express packing) and pay. The kiosk works in states: Idle, Scanning, Payment, Completed. Item prices change with add-ons without a subclass for every combination. One global tax calculator must be used by every checkout counter.</div>
+
+  <div class="panel">
+    <h2>1.1 Which patterns, with reasons <span class="r">6m, 2 each</span></h2>
+    <table class="small">
+      <tr><td style="width:25%">(a) kiosk states</td><td style="width:14%"><b>State</b></td><td>The kiosk behaves differently in each state (pay is refused while Idle). Each state is a class that handles the actions and the next transition, so there is no if/else on a status field.</td></tr>
+      <tr><td>(b) optional add-ons, dynamic price</td><td><b>Decorator</b></td><td>Each add-on wraps the item and adds its own cost and description, so any combination is built at runtime without 2ⁿ subclasses.</td></tr>
+      <tr><td>(c) one tax calculator</td><td><b>Singleton</b></td><td>One instance shared by all counters means one rate and one rule set, so tax is consistent everywhere.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>1.2 + 1.3 Interface and class <span class="r">5m + 5m</span></h2>
+<pre class="code" style="border:none;padding:0"><span class="k">public interface</span> CheckoutItem {
+  <span class="k">double</span> getCost();
+  String getDescription();
+}
+<span class="k">public class</span> GroceryItem
+        <span class="k">implements</span> CheckoutItem {
+  <span class="k">private</span> String name;
+  <span class="k">private double</span> price;
+  <span class="k">public</span> GroceryItem(String n, <span class="k">double</span> p) {
+    name = n; price = p; }
+  <span class="k">public double</span> getCost() {
+    <span class="k">return</span> price; }
+  <span class="k">public</span> String getDescription() {
+    <span class="k">return</span> name; }
+}</pre>
+      <p class="tiny mt">Add-on decorators (GiftWrap etc.): tab 06 answers.</p>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h2>1.4 Kiosk states, example transition <span class="r">5m</span></h2>
+        <p class="small"><code>Kiosk</code> (context) holds a <code>KioskState</code>; <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code>, <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code>.</p>
+        <p class="small"><b>Example:</b> in Scanning, pressing Checkout adds up the items, adds tax and calls <code>kiosk.setState(new PaymentState())</code>. State diagram and code: tab 09 answers.</p>
+      </div>
+      <div class="panel">
+        <h2>1.5 Singleton in the pricing flow <span class="r">4m</span></h2>
+        <p class="small">Scanned items are decorated with their add-ons, so <code>item.getCost()</code> is the final item price. In the Payment state the kiosk adds them up and calls <code>TaxCalculator.getInstance().calculateTax(subtotal)</code>. Every counter gets the same instance, so a rate change applies everywhere at once.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>What these two worked answers teach</h2>
+    <ul class="small">
+      <li>Every sub-part names <b>one pattern and one or two reasons tied to the scenario</b>. Short is fine.</li>
+      <li>The code parts are <b>small</b>: an interface, one class, or one method. Use the names in the question.</li>
+      <li>The later parts ask how the patterns <b>connect</b> ("integrate the Singleton into the pricing flow"). Say which class calls which, in which state or step.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>13 Worked answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['worked-q4'] = {
+  items: [
+    {id:'os', k:'class', x:0, y:100, name:'OrderService', ops:['+ placeOrder(o : Order)']},
+    {id:'v', k:'class', x:210, y:0, name:'Validator', stereo:'abstract · Chain', abstract:true, attrs:['- next : Validator'], ops:['+ linkWith(v) : Validator', '+ validate(o) : boolean']},
+    {id:'c1', k:'node', x:210, y:94, w:170, round:0, lines:['InventoryCheck','FraudCheck · DeliveryAreaCheck']},
+    {id:'pf', k:'class', x:210, y:148, name:'PaymentFactory', stereo:'Factory', ops:['_+ create(method) : PaymentProcessor']},
+    {id:'g', k:'class', x:470, y:30, name:'OrderIdGenerator', stereo:'Singleton', ops:['_+ getInstance()', '+ nextId() : String']},
+    {id:'pp', k:'class', x:470, y:134, name:'PaymentProcessor', stereo:'abstract · Template', abstract:true, ops:['+ handlePayment(o) {final}', '/# processPayment(o)']},
+    {id:'c2', k:'node', x:470, y:212, w:150, round:0, lines:['CreditCard · PayPal · COD','processors']},
+  ],
+  edges: [
+    {a:'os', as:'right', ao:.25, b:'v', bs:'left', type:'assoc', label:'1. validate', mid:150},
+    {a:'os', as:'right', ao:.75, b:'pf', bs:'left', type:'assoc', label:'2. create', mid:150},
+    {a:'c1', as:'top', ax:290, b:'v', bs:'bottom', bx:290, type:'extend'},
+    {a:'pf', as:'right', b:'pp', bs:'left', type:'depend', label:'«create»'},
+    {a:'pp', as:'top', b:'g', bs:'bottom', type:'depend', label:'3. nextId()'},
+    {a:'c2', as:'top', b:'pp', bs:'bottom', type:'extend'},
+  ]
+};
+</script>

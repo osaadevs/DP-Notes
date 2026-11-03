@@ -1,0 +1,131 @@
+<!-- ===================== 11 MICRO : page 1 ===================== -->
+<section class="page" data-sec="11">
+<div class="body">
+  <header class="ph">
+    <div class="code">11</div>
+    <div><h1>Question 2: microservices</h1><div class="lede">Three years in a row, with the same five parts. Only the business changes. Rename the services and write.</div></div>
+    <div class="meta">Architecture<br><b>25 marks</b></div>
+  </header>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">2.1</span> Draw the scenario <span class="tiny" style="font-weight:400">· 4–5m</span></h2><span class="tiny">copy this shape; rename Service A, B, C for your business</span></div>
+    <svg class="dg" data-d="micro"></svg>
+  </div>
+
+  <div class="panel">
+    <h2>Services to use for each business</h2>
+    <table class="small">
+      <tr><th style="width:18%">Business</th><th>Services (plus Payment / Billing and Notification)</th></tr>
+      <tr><td><b>Food delivery</b></td><td>User · Restaurant & Menu · Order · Delivery / Rider tracking</td></tr>
+      <tr><td><b>Banking</b></td><td>Customer · Account · Transaction · Loan · Fraud detection</td></tr>
+      <tr><td><b>LMS</b></td><td>User · Course & Content · Enrolment · Assessment & Grading</td></tr>
+      <tr><td><b>Hospital</b></td><td>Patient · Appointment · Doctor & Staff · Pharmacy · Lab results</td></tr>
+      <tr><td><b>Ride-hailing</b></td><td>Rider · Driver · Trip matching · Pricing · Location</td></tr>
+      <tr><td class="tiny">already asked</td><td class="tiny">2023 supermarket chain: Purchasing, Sales/POS, Warehouse/Inventory, Supplier, Branch, Reporting · 2024 library: Book, User, Borrowing, Notification, Catalog Search (Elasticsearch) · 2025 streaming: User Profile, Content Delivery (transcode + CDN), Recommendation (ML), Billing/Subscription, Analytics</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">2.2</span> Scalability, fault isolation and continuous deployment <span class="r">5m</span></h2>
+    <table class="small">
+      <tr><td style="width:20%"><b>Scalability</b></td><td>Each service <b>scales on its own</b>: more copies (pods) of only the busy service, with auto-scaling on CPU or request load. Example: scale Content Delivery and Search at peak time, not Billing. Keep services <b>stateless</b>, and use a cache / CDN.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service runs in its <b>own process with its own database</b>, so one crash doesn't take down the rest. Use <b>circuit breakers</b>, timeouts, retries with back-off and bulkheads. <b>Degrade gracefully</b>: if Recommendations is down, show a "popular" list.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Each service has <b>its own repository and CI/CD pipeline</b>: automated tests, Docker image, then <b>blue-green or canary</b> release. APIs are versioned so one service can be updated without breaking others. One small team owns each service.</td></tr>
+      <tr><td><b>Manage it</b></td><td>Containers on <b>Kubernetes</b> (auto-scaling, self-healing), central <b>logging, metrics and tracing</b>, service registry and config server.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>11 Microservices</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 11 MICRO : page 2 ===================== -->
+<section class="page" data-sec="11">
+<div class="body">
+  <header class="ph">
+    <div class="code">11</div>
+    <div><h1>Microservices: the other parts</h1><div class="lede">Architecture, data consistency and security. Each is worth 4–5 marks.</div></div>
+    <div class="meta">Architecture<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">2.3</span> Propose the architecture <span class="r">4–5m</span></h2>
+    <ul class="small">
+      <li><b>One service per business capability</b> (list yours from the table), each with its <b>own codebase, own database and own deployment</b>.</li>
+      <li><b>API Gateway</b> as the single entry point for web and mobile clients: routing, authentication, rate limiting.</li>
+      <li><b>Service registry</b> so services can find each other; <b>config server</b> for settings.</li>
+      <li>Services talk <b>synchronously</b> with REST or gRPC when they need an answer now, and <b>asynchronously</b> with events on a <b>message broker</b> (Kafka / RabbitMQ) for everything else (e.g. "BookBorrowed" → Notification).</li>
+      <li>Everything runs in <b>Docker containers on Kubernetes</b>, with central monitoring.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">2.4</span> Keeping data consistent <span class="r">4–5m</span></h2>
+    <p class="small">With a <b>database per service</b> there are no shared transactions, so we accept <b>eventual consistency</b> and use:</p>
+    <ul class="small">
+      <li><b>Saga pattern</b>: a business action is a series of local transactions. If one step fails, earlier steps are undone with <b>compensating actions</b> (payment fails → cancel the borrow / release the stock). It can be coordinated by events (choreography) or by one orchestrator service.</li>
+      <li><b>Event-driven updates</b>: a service publishes an event when its data changes; others update their own copy.</li>
+      <li><b>Transactional outbox</b> so the database change and the event are never out of step, and <b>idempotent consumers</b> so a repeated event does no harm.</li>
+      <li><b>CQRS</b> for read-heavy views (catalog search) built from events.</li>
+      <li>Two-phase commit only where strong consistency is essential (rare, because it is slow and couples services).</li>
+    </ul>
+    <svg class="dg mt" data-d="saga"></svg>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">2.5</span> Security <span class="r">4–5m</span></h2>
+    <table class="small">
+      <tr><td style="width:24%"><b>Users</b></td><td>Login through <b>OAuth2 / OpenID Connect</b> at the gateway, which issues <b>JWT</b> tokens. <b>Role-based access</b> (RBAC): e.g. only librarians can add books.</td></tr>
+      <tr><td><b>Service to service</b></td><td><b>Mutual TLS</b> (a service mesh such as Istio), short-lived tokens, and each service only allowed to call what it needs.</td></tr>
+      <tr><td><b>Data</b></td><td>HTTPS everywhere, encryption at rest, card data handled to PCI-DSS, secrets in a vault, each service's DB user has least privilege.</td></tr>
+      <tr><td><b>Attacks</b></td><td>Rate limiting, input validation, a web application firewall, audit logs and monitoring for unusual activity.</td></tr>
+    </table>
+  </div>
+
+  <div class="shade small"><b>2023 Q2.6: "Why give every microservice platform the same hardware and configuration?"</b> Identical environments (containers and infrastructure-as-code) make deployment, scaling and failover predictable: any node can run any service, performance is the same everywhere, capacity planning, automation and troubleshooting are simpler, and a failed node can be rebuilt exactly (DR). It avoids "works on my machine". Exception: GPU nodes for ML services.</div>
+</div>
+<div class="foot"><span>11 Microservices</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['micro'] = {
+  items: [
+    {id:'cl', k:'node', x:0, y:62, w:74, lines:['Clients','web · mobile']},
+    {id:'gw', k:'node', x:92, y:48, w:100, h:62, lines:['API Gateway','auth (OAuth2 / JWT)','routing · rate limit'], dark:true},
+    {id:'a', k:'node', x:218, y:0, w:112, h:24, lines:['Service A   [DB]'], align:'left'},
+    {id:'b', k:'node', x:218, y:32, w:112, h:24, lines:['Service B   [DB]'], align:'left'},
+    {id:'c', k:'node', x:218, y:64, w:112, h:24, lines:['Service C   [DB]'], align:'left'},
+    {id:'p', k:'node', x:218, y:96, w:112, h:24, lines:['Payment   [DB]'], align:'left'},
+    {id:'n', k:'node', x:218, y:128, w:112, h:24, lines:['Notification   [DB]'], align:'left'},
+    {id:'mb', k:'node', x:356, y:48, w:98, h:62, lines:['Message broker','Kafka / RabbitMQ','events · sagas'], dashed:true},
+    {id:'r', k:'node', x:474, y:0, w:108, lines:['Service registry','+ config server'], shade:true},
+    {id:'k', k:'node', x:474, y:40, w:108, lines:['Docker + Kubernetes','auto-scale, self-heal'], shade:true},
+    {id:'ci', k:'node', x:474, y:80, w:108, lines:['CI/CD per service','blue-green, canary'], shade:true},
+    {id:'mo', k:'node', x:474, y:120, w:108, lines:['Monitoring','logs, metrics, tracing'], shade:true},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'gw', bs:'left', bx:79, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'a', bs:'left', type:'flow', mid:204},
+    {a:'gw', as:'right', ao:.3, b:'b', bs:'left', type:'flow', mid:204},
+    {a:'gw', as:'right', ao:.5, b:'c', bs:'left', type:'flow', mid:204},
+    {a:'gw', as:'right', ao:.7, b:'p', bs:'left', type:'flow', mid:204},
+    {a:'gw', as:'right', ao:.9, b:'n', bs:'left', type:'flow', mid:204},
+    {a:'c', as:'right', b:'mb', bs:'left', bx:76, type:'dflow', label:'events', lx:343, ly:72},
+  ]
+};
+DIAGRAMS['saga'] = {
+  items: [
+    {id:'1', k:'node', x:0, y:0, w:100, lines:['Borrow service','reserve book']},
+    {id:'2', k:'node', x:150, y:0, w:100, lines:['Payment service','charge fee']},
+    {id:'3', k:'node', x:300, y:0, w:110, lines:['Notification','send receipt']},
+    {id:'x', k:'node', x:150, y:56, w:100, lines:['payment fails'], dashed:true},
+    {id:'u', k:'node', x:0, y:56, w:100, lines:['cancel reservation','(compensate)'], shade:true},
+  ],
+  edges: [
+    {a:'1', as:'right', b:'2', bs:'left', type:'flow', label:'event'},
+    {a:'2', as:'right', b:'3', bs:'left', type:'flow', label:'event'},
+    {a:'2', as:'bottom', b:'x', bs:'top', type:'dflow'},
+    {a:'x', as:'left', b:'u', bs:'right', type:'dflow'},
+  ],
+  scale: 0.9
+};
+</script>

@@ -1,0 +1,226 @@
+<!-- ===================== 04 ADAPTER : understand ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter</h1><div class="lede">A translator class that lets your code use a class whose methods don't match what your code expects.</div></div>
+    <div class="meta">Structural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">legacy system</span><span class="chip">supplied by an external vendor, can't modify</span><span class="chip">the new scanner provides readBarcode() instead of scanBook()</span>
+      <span class="chip">hundreds of calls to the old method</span><span class="chip">third-party web services with different method signatures</span>
+      <span class="chip">websites developed by different vendors and technologies</span><span class="chip">incompatible interfaces</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Your system calls <code>scanBook()</code> in hundreds of places. The new scanner only has <code>readBarcode()</code>. You can't change the scanner (vendor code) and you don't want to change hundreds of calls.</p>
+      <p class="small">So you write one small class that <b>looks like</b> the old scanner (it has <code>scanBook()</code>) and inside it calls <code>readBarcode()</code>. Like a travel plug adapter: the socket and the plug stay as they are, and the adapter sits between them.</p>
+    </div>
+    <div class="panel">
+      <h2>Why not just change the code? <span class="r">Quiz 3 Q1</span></h2>
+      <ul class="small">
+        <li><b>Hundreds of call sites</b>: a huge change with a high risk of new bugs, full re-testing and downtime.</li>
+        <li>Tested, working code should stay <b>closed for modification</b> (Open/Closed).</li>
+        <li>The vendor class can't be changed: <b>no source code</b>, a licence or contract, or other systems depend on it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The parts <span class="r">"identify the participants" is asked directly</span></h2>
+    <table class="small">
+      <tr><th style="width:18%">Part</th><th style="width:44%">Job</th><th>Barcode scanner (Quiz 3)</th></tr>
+      <tr><td><b>Client</b></td><td>The existing code. Uses the Target interface only.</td><td><code>LibrarySystem</code></td></tr>
+      <tr><td><b>Target</b></td><td>The interface the client expects.</td><td><code>BarcodeScanner</code> with <code>scanBook()</code></td></tr>
+      <tr><td><b>Adaptee</b></td><td>The existing class with the useful behaviour but the wrong interface.</td><td><code>NewBarcodeScanner</code> with <code>readBarcode()</code></td></tr>
+      <tr><td><b>Adapter</b></td><td>Implements Target, holds an Adaptee, translates each call.</td><td><code>ScannerAdapter</code></td></tr>
+    </table>
+    <p class="small mt"><b>Flow:</b> client calls <code>scanBook()</code> → it goes to <code>ScannerAdapter</code> → the adapter calls <code>NewBarcodeScanner.readBarcode()</code> → the result comes back. Only the adapter knows the adaptee exists.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Three kinds of adapter <span class="r">use the object adapter unless asked</span></h2>
+    <table class="small">
+      <tr><th style="width:18%"></th><th>Object adapter (default)</th><th>Class adapter</th><th>Two-way adapter</th></tr>
+      <tr><td><b>How</b></td><td>implements Target, <b>holds</b> an Adaptee field</td><td>implements Target <b>and extends</b> Adaptee</td><td>implements <b>both</b> old and new interfaces</td></tr>
+      <tr><td><b>Good</b></td><td>works with any subclass of the adaptee; loose coupling</td><td>no extra object; can override adaptee methods</td><td>old and new clients use it during a migration</td></tr>
+      <tr><td><b>Bad</b></td><td>one extra object and call</td><td>Java has single inheritance; fails if the adaptee is final</td><td>more complex, two translations to keep right</td></tr>
+    </table>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y q">Quiz 3</span> Q1–Q4 barcode scanner · <span class="y q">Quiz 1</span> Q5 legacy parking payment machine · <span class="y">2022</span> Q1.3 third-party travel web services (10m) · <span class="y">2023</span> Q3.3 event websites from different vendors (5m). <b>All on the answers pages.</b> Java examples you can mention: <code>InputStreamReader</code>, <code>Arrays.asList()</code>.</div>
+</div>
+<div class="foot"><span>04 Adapter · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 04 ADAPTER : write ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: write</h1><div class="lede">Copy in order. Swap the scanner names for the classes in your question.</div></div>
+    <div class="meta">Structural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Adapter</b> pattern, which is a structural pattern. It <b>converts the interface of a class into another interface the client expects</b>, so classes with incompatible interfaces can work together.</div>
+    <p class="small"><b>Reasons:</b> (1) the new scanner is <b>reused without modifying it</b> (it is vendor code); (2) the <b>hundreds of existing <code>scanBook()</code> calls stay unchanged</b>, so there is no risk to tested code (Open/Closed); (3) the client depends only on the Target interface, so <b>another scanner later is just another adapter</b>.</p>
+    <p class="small"><b>Mapping:</b> Client = <b>LibrarySystem</b> · Target = <b>BarcodeScanner</b> (<code>scanBook()</code>) · Adaptee = <b>NewBarcodeScanner</b> (<code>readBarcode()</code>) · Adapter = <b>ScannerAdapter</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">the adapter implements the target and points to the adaptee</span></div>
+    <svg class="dg" data-d="adapter"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// 1. TARGET: what the library code expects</span>
+<span class="k">public interface</span> BarcodeScanner {
+    String scanBook();
+}
+<span class="c">// 2. ADAPTEE: vendor class, we can't change it</span>
+<span class="k">public class</span> NewBarcodeScanner {
+    <span class="k">public</span> String readBarcode() {
+        <span class="k">return</span> <span class="s">"978-0134685991"</span>;
+    }
+}</pre>
+<pre class="code"><span class="c">// 3. ADAPTER: is a Target, wraps Adaptee</span>
+<span class="k">public class</span> ScannerAdapter
+        <span class="k">implements</span> BarcodeScanner {
+    <span class="k">private final</span> NewBarcodeScanner scanner;
+    <span class="k">public</span> ScannerAdapter(NewBarcodeScanner s) {
+        <span class="k">this</span>.scanner = s;
+    }
+    <span class="k">public</span> String scanBook() {
+        <span class="c">// translate the call</span>
+        <span class="k">return</span> scanner.readBarcode();
+    }
+}
+<span class="c">// 4. CLIENT: only this line changes</span>
+BarcodeScanner sc =
+    <span class="k">new</span> ScannerAdapter(<span class="k">new</span> NewBarcodeScanner());
+<span class="c">// all the old calls stay the same</span>
+String isbn = sc.scanBook();</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <h2><span class="w">W4</span> Same pattern, legacy payment machine <span class="r"><span class="y q">Quiz 1</span> Q5</span></h2>
+    <div class="g2" style="align-items:start">
+      <p class="small">Target = <code>PaymentProcessor.pay(amount)</code>, the interface the parking system expects. Adaptee = the vendor's <code>LegacyPaymentMachine</code>. <code>LegacyPaymentAdapter</code> converts rupees → cents and the result code → true/false. The PaymentDue state only calls <code>processor.pay()</code>.</p>
+<pre class="code"><span class="k">class</span> LegacyPaymentAdapter
+      <span class="k">implements</span> PaymentProcessor {
+  <span class="k">private</span> LegacyPaymentMachine m =
+      <span class="k">new</span> LegacyPaymentMachine();
+  <span class="k">public boolean</span> pay(<span class="k">double</span> amount) {
+    <span class="k">int</span> cents = (<span class="k">int</span>) (amount * 100);
+    <span class="k">return</span> m.makeTransaction(cents) == 0;
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 04 ADAPTER : answers ===================== -->
+<section class="page" data-sec="04">
+<div class="body">
+  <header class="ph">
+    <div class="code">04</div>
+    <div><h1>Adapter: past questions answered</h1><div class="lede">Same pattern every time: one interface your system owns, one adapter per outside system.</div></div>
+    <div class="meta">Structural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Third-party travel web services <span class="r"><span class="y">2022</span> Q1.3, 10m</span></h2>
+    <p class="small"><b>Pattern:</b> <b>Adapter</b>, one per provider. <code>HotelService</code> talks to one interface it owns, <code>HotelProvider</code>. <code>HiltonAdapter</code>, <code>ShangriLaAdapter</code> and so on each translate that interface into the provider's own SOAP / REST / SDK calls. Airlines and taxis are done the same way.</p>
+    <svg class="dg" data-d="adapter-travel"></svg>
+    <table class="small mt">
+      <tr><th style="width:42%">1.3.1 Challenge</th><th>1.3.2 Mechanism</th></tr>
+      <tr><td>Many adapters to write and maintain</td><td>A common interface for all of them; pick the adapter from configuration with a Factory or registry.</td></tr>
+      <tr><td>Different data formats (XML vs JSON) and error codes</td><td>One common data object (DTO) and a mapper inside each adapter; unit-test each adapter.</td></tr>
+      <tr><td>A provider changes its API version</td><td>Only that one adapter changes; version the adapters.</td></tr>
+      <tr><td>A provider is slow or down</td><td>Timeouts, retries, caching, and fall back to another provider.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Event websites from different vendors <span class="r"><span class="y">2023</span> Q3.3, 5m</span></h2>
+      <p class="small">The restaurant owns one interface, <code>EventSource</code> with <code>getEvents()</code>, returning a common <code>Event</code> object. Each website gets its own adapter (<code>RssEventAdapter</code>, <code>JsonApiEventAdapter</code>, <code>HtmlScraperAdapter</code>) that converts that site's format. The restaurant site loops over a list of <code>EventSource</code>. A new vendor means a new adapter and nothing else changes.</p>
+      <p class="small">A <b>Facade</b> (<code>EventFeed</code>) can then combine all sources into one list.</p>
+    </div>
+    <div class="panel">
+      <h2><span class="w">W5</span> Challenges → fix</h2>
+      <ul class="small">
+        <li><b>Many adapters</b> (one per vendor) → common Target, created by a Factory.</li>
+        <li><b>Format translation</b> → a mapper inside the adapter; unit-test it.</li>
+        <li><b>Vendor API changes</b> → only that adapter changes.</li>
+        <li><b>Adaptee is missing a feature</b> → the adapter gives a default or throws a clear exception.</li>
+        <li><b>Extra layer</b> → tiny overhead; worth it for stable legacy code.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Adapter vs Facade vs Proxy</h2>
+    <table class="tight small">
+      <tr><th style="width:16%"></th><th>Adapter</th><th>Facade</th><th>Proxy</th></tr>
+      <tr><td><b>Goal</b></td><td>convert an interface</td><td>simplify a subsystem</td><td>control access</td></tr>
+      <tr><td><b>Interface</b></td><td>different from the adaptee's</td><td>new and simpler</td><td>same as the real object</td></tr>
+      <tr><td><b>Wraps</b></td><td>usually one object</td><td>many objects</td><td>one object</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>04 Adapter · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['adapter'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:22, name:'LibrarySystem'},
+    {id:'t', k:'class', x:170, y:8, name:'BarcodeScanner', stereo:'interface', ops:['+ scanBook() : String']},
+    {id:'a', k:'class', x:170, y:80, name:'ScannerAdapter', attrs:['- scanner : NewBarcodeScanner'], ops:['+ scanBook() : String']},
+    {id:'ad', k:'class', x:420, y:88, name:'NewBarcodeScanner', ops:['+ readBarcode() : String']},
+    {k:'text', x:0, y:52, lines:['Client'], size:8, italic:true},
+    {k:'text', x:345, y:20, lines:['Target'], size:8, italic:true},
+    {k:'text', x:170, y:142, lines:['Adapter'], size:8, italic:true},
+    {k:'text', x:420, y:82, lines:['Adaptee'], size:8, italic:true},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'t', bs:'left', bx:31, type:'assoc', label:'uses'},
+    {a:'a', as:'top', b:'t', bs:'bottom', type:'realize'},
+    {a:'a', as:'right', ax:106, b:'ad', bs:'left', bx:106, type:'assoc', label:'readBarcode()'},
+  ]
+};
+DIAGRAMS['adapter-travel'] = {
+  items: [
+    {id:'hs', k:'class', x:0, y:10, name:'HotelService', attrs:['- providers : List<HotelProvider>']},
+    {id:'hp', k:'class', x:250, y:0, name:'HotelProvider', stereo:'interface', ops:['+ search(city, dates) : List<Room>', '+ book(roomId) : Booking']},
+    {id:'a1', k:'class', cx:200, y:104, w:110, name:'HiltonAdapter'},
+    {id:'a2', k:'class', cx:335, y:104, w:110, name:'ShangriLaAdapter'},
+    {id:'a3', k:'class', cx:470, y:104, w:110, name:'BookingComAdapter'},
+    {id:'v1', k:'class', cx:200, y:160, w:110, name:'HiltonSoapAPI', shade:true},
+    {id:'v2', k:'class', cx:335, y:160, w:110, name:'ShangriLaREST', shade:true},
+    {id:'v3', k:'class', cx:470, y:160, w:110, name:'BookingComSDK', shade:true},
+  ],
+  edges: [
+    {a:'hs', as:'right', b:'hp', bs:'left', type:'assoc', label:'1..*'},
+    {a:'a1', as:'top', b:'hp', bs:'bottom', bo:.25, type:'realize', mid:84},
+    {a:'a2', as:'top', b:'hp', bs:'bottom', bo:.5, type:'realize', mid:84},
+    {a:'a3', as:'top', b:'hp', bs:'bottom', bo:.75, type:'realize', mid:84},
+    {a:'a1', as:'bottom', b:'v1', bs:'top', type:'assoc'},
+    {a:'a2', as:'bottom', b:'v2', bs:'top', type:'assoc'},
+    {a:'a3', as:'bottom', b:'v3', bs:'top', type:'assoc'},
+  ],
+  scale: 0.9
+};
+</script>

@@ -1,0 +1,314 @@
+<!-- ===================== 07 TEMPLATE : understand ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method</h1><div class="lede">The parent class fixes the steps and their order. Each subclass fills in only the steps that are different for it.</div></div>
+    <div class="meta">Behavioural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">all types follow the same overall process</span><span class="chip">however, step 2 is different for each type</span>
+      <span class="chip">standardise the common workflow while allowing custom behaviour</span><span class="chip">every level must follow the same procedure</span>
+      <span class="chip">enforce the procedure</span><span class="chip">salary components with a few deviations</span><span class="chip">copy-pasted algorithm with small differences</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Card, PayPal and cash-on-delivery payments all do the same three things in the same order: validate, process, send a receipt. Only "process" really differs.</p>
+      <p class="small">So you write the order once, in a <b>final</b> method in an abstract parent class. The common steps are written there too. The step that differs is left <b>abstract</b>, and each subclass writes only that step. Like a recipe card: same steps for every cake, only the filling changes.</p>
+      <p class="small">This is the <b>Hollywood principle</b>: "don't call us, we'll call you". The parent calls the child's steps.</p>
+    </div>
+    <div class="panel">
+      <h2>The four kinds of method <span class="r">know these</span></h2>
+      <table class="tight small">
+        <tr><th>Kind</th><th>Modifier</th><th>Job</th></tr>
+        <tr><td><b>Template method</b></td><td><code>public final</code></td><td>Calls the steps in a fixed order. Final, so no subclass can change the order.</td></tr>
+        <tr><td><b>Common step</b></td><td><code>private</code> or concrete</td><td>Written once, shared by all.</td></tr>
+        <tr><td><b>Primitive step</b></td><td><code>protected abstract</code></td><td>Each subclass must write it.</td></tr>
+        <tr><td><b>Hook</b></td><td><code>protected</code> with a default</td><td>Subclass may override it if it wants (e.g. <code>wantsEmail()</code> returns true).</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>OOP ideas used <span class="r">"explain how abstract classes are used"</span></h2>
+    <p class="small"><b>Inheritance</b> (subclasses extend the parent) · <b>abstract class and abstract methods</b> (the parent can't be created on its own and forces subclasses to write the varying steps) · <b>method overriding</b> · <b>final</b> (locks the order) · <b>access modifiers</b> (protected steps, private common steps) · <b>polymorphism</b> (the parent calls whichever subclass version exists).</p>
+    <p class="small"><b>Why an abstract class and not an interface?</b> The base has to hold real code (the common steps and the fixed order) as well as abstract steps. An interface can't enforce the order or share that code.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs Strategy</b>: Template varies <b>some steps</b> using inheritance, fixed at compile time. Strategy swaps the <b>whole algorithm</b> as an object at runtime.</li>
+        <li><b>vs Factory Method</b>: a factory method is often just one step inside a template method.</li>
+        <li><b>vs Chain</b>: Template is one object running fixed steps. Chain passes a request between objects.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Mistakes that lose marks</h2>
+      <ul class="small">
+        <li>Template method not marked <code>final</code>.</li>
+        <li>Making every step abstract (then nothing is shared).</li>
+        <li>Using an interface for the base class.</li>
+        <li>The client calling the steps one by one.</li>
+        <li>Drawing dashed (implements) arrows. Subclasses <b>extend</b>, so solid lines.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y">2025</span> Q4.1(a), 4.2, 3.3 payment workflow (abstract PaymentProcessor + CreditCard class) · <span class="y">2022</span> Q2 and <span class="y">2023</span> Q1 salary calculation (25m each) · <span class="y">2024</span> Q4.2, 4.4 checkout steps · <span class="y q">Quiz 6</span> course completion · <span class="y q">Quiz 7</span> Q4 support procedure. <b>All on the answers pages.</b></div>
+</div>
+<div class="foot"><span>07 Template Method · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 07 TEMPLATE : write ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: write</h1><div class="lede">The payment workflow from 2025 Q4. Swap the steps for the ones in your question.</div></div>
+    <div class="meta">Behavioural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Template Method</b> pattern, which is a behavioural pattern. It <b>defines the skeleton of an algorithm in a superclass</b> and lets subclasses <b>redefine certain steps</b> without changing the algorithm's structure.</div>
+    <p class="small"><b>Reasons:</b> (1) every payment type follows the <b>same order</b> (validate → process → receipt) and the final template method <b>enforces</b> it; (2) the common steps are <b>written once</b>, so there is no duplicated code; (3) a new payment type only writes <code>processPayment()</code>, so it is <b>easy to extend</b> (Open/Closed) and behaviour is consistent across types.</p>
+    <p class="small"><b>Mapping:</b> abstract class = <b>PaymentProcessor</b> · template method = <code>handlePayment()</code> (final) · common steps = <code>validate()</code>, <code>sendReceipt()</code> · varying step = <code>processPayment()</code> · concrete classes = <b>CreditCard, PayPal, CashOnDelivery</b> processors.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">italic = abstract · {final} on the template method · solid arrows (extends)</span></div>
+    <svg class="dg" data-d="template"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java (2025 Q4.2: abstract PaymentProcessor · Q3.3: CreditCardPaymentProcessor)</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> PaymentProcessor {
+
+  <span class="c">// TEMPLATE METHOD: fixed order, final</span>
+  <span class="k">public final void</span> handlePayment(Order o) {
+    <span class="k">if</span> (!validate(o)) {
+      System.out.println(<span class="s">"Invalid details"</span>);
+      <span class="k">return</span>;
+    }
+    processPayment(o);
+    sendReceipt(o);
+  }
+
+  <span class="c">// common step (subclass may extend it)</span>
+  <span class="k">protected boolean</span> validate(Order o) {
+    <span class="k">return</span> o.getAmount() &gt; 0
+        &amp;&amp; o.getCustomer() != <span class="k">null</span>;
+  }
+  <span class="c">// the step that differs</span>
+  <span class="k">protected abstract void</span>
+      processPayment(Order o);
+
+  <span class="c">// common step</span>
+  <span class="k">protected void</span> sendReceipt(Order o) {
+    System.out.println(<span class="s">"Receipt sent"</span>);
+  }
+}</pre>
+<pre class="code"><span class="k">public class</span> CreditCardPaymentProcessor
+        <span class="k">extends</span> PaymentProcessor {
+
+  <span class="c">// adds a card check to the common one</span>
+  <span class="k">protected boolean</span> validate(Order o) {
+    <span class="k">return super</span>.validate(o)
+        &amp;&amp; CardValidator.isValid(o.getCardNo());
+  }
+
+  <span class="c">// only the varying step is written here</span>
+  <span class="k">protected void</span> processPayment(Order o) {
+    System.out.println(<span class="s">"Charging card for "</span>
+        + o.getAmount());
+    BankGateway.charge(o.getCardNo(),
+                       o.getAmount());
+  }
+}
+
+<span class="c">// CLIENT</span>
+PaymentProcessor p =
+    <span class="k">new</span> CreditCardPaymentProcessor();
+p.handlePayment(order);
+<span class="c">// validate → process → receipt</span></pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 07 TEMPLATE : answers (salary) ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: salary questions</h1><div class="lede">2022 Q2 and 2023 Q1 were both 25-mark payroll questions. One design answers both.</div></div>
+    <div class="meta">Behavioural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Which pattern, and why <span class="r"><span class="y">2022</span> Q2.2 6m · <span class="y">2023</span> Q1.2 5m</span></h2>
+    <p class="small"><b>Template Method.</b> Every employee's salary is worked out in the same order: gross → EPF → deductions → net. The EPF, tax and net formulas are the same for everyone. Only some components differ (overtime, allowances, no-pay). So <code>calculateNetSalary()</code> is a final template method in an abstract <code>SalaryCalculator</code>, the common formulas are written there once, and each employee type overrides only its own components. 2023's deviation is easy: <code>ExecutiveSalary</code> overrides <code>overtime()</code> and <code>noPay()</code> to return 0. The 2023 formulas map straight onto the hooks: <code>overtime()</code> = basic × OT hours / (30 × 8), <code>noPay()</code> = basic × days / 30, attendance allowance in <code>allowances()</code> (absent 0 → 75%, 1–3 → 50%, more than 3 → none).</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Class diagram <span class="tiny" style="font-weight:400">· 2022 Q2.3 5m</span></h2><span class="tiny">hooks return 0 by default; subclasses override only what differs</span></div>
+    <svg class="dg" data-d="salary"></svg>
+  </div>
+
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> SalaryCalculator {
+  <span class="k">protected double</span> basic;
+
+  <span class="k">public final double</span> calculateNetSalary() {
+    <span class="k">double</span> gross = basic + allowances()
+                 + overtime();
+    <span class="k">double</span> epf = gross * Config.get(<span class="s">"epf"</span>);
+    <span class="k">double</span> tax = Math.max(0,
+                 (gross - 100000) * 0.06);
+    <span class="k">return</span> gross - (epf + noPay() + tax);
+  }
+  <span class="c">// hooks: default 0, override if needed</span>
+  <span class="k">protected double</span> allowances() { <span class="k">return</span> 0; }
+  <span class="k">protected double</span> overtime()   { <span class="k">return</span> 0; }
+  <span class="k">protected double</span> noPay()      { <span class="k">return</span> 0; }
+}</pre>
+    <div class="panel">
+      <h2>Challenges → mechanism <span class="r">Q2.4–2.5 / Q1.3–1.4</span></h2>
+      <table class="tight small">
+        <tr><td style="width:42%"><b>Rigid order</b>: one type needs a different sequence</td><td>Hooks for optional steps; if the order truly differs, use Strategy.</td></tr>
+        <tr><td><b>Many subclasses</b> as types grow</td><td>Shared middle classes (e.g. <code>HourlyPaid</code>); keep steps small.</td></tr>
+        <tr><td><b>Rates change</b> (EPF, tax)</td><td>Read them from a Singleton config (tab 01 answers).</td></tr>
+        <tr><td><b>A subclass overrides a common step</b></td><td>Make the template final and common steps private/final.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>"Code duplication can be achieved from this pattern." Agree? <span class="r"><span class="y">2022</span> Q2.6, 4m</span></h2>
+    <p class="small"><b>No, as worded.</b> Template Method <b>avoids</b> duplication: the common formulas (EPF 8%, tax, net) exist once in the superclass, and subclasses contain only their differences. A little duplication can remain if two subclasses override a step the same way; the fix is to move that code up into the parent or into a shared middle class.</p>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 07 TEMPLATE : answers 2 ===================== -->
+<section class="page" data-sec="07">
+<div class="body">
+  <header class="ph">
+    <div class="code">07</div>
+    <div><h1>Template Method: more answers</h1><div class="lede">Course completion, checkout steps, the support procedure, and the challenges.</div></div>
+    <div class="meta">Behavioural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Online course completion <span class="r"><span class="y q">Quiz 6</span>, 2 + 8 + 3 + 4m</span></h2>
+    <p class="small"><b>Why Template Method:</b> every course follows the same completion order, and it must be enforced, but two steps differ per course (programming: coding challenge marked by automated tests; design: portfolio marked by an instructor with a rubric). The abstract class fixes the order in a final <code>completeCourse()</code>, writes the common steps once, and leaves the two varying steps abstract.</p>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> OnlineCourse {
+  <span class="k">public final void</span> completeCourse() {
+    <span class="k">if</span> (!validateRegistration()) <span class="k">return</span>;
+    deliverFinalAssessment();
+    <span class="k">double</span> score = evaluatePerformance();
+    generateCertificate(score);
+  }
+  <span class="k">private boolean</span> validateRegistration() {
+    <span class="k">return true</span>; } <span class="c">// common</span>
+  <span class="k">protected abstract void</span>
+      deliverFinalAssessment();
+  <span class="k">protected abstract double</span>
+      evaluatePerformance();
+  <span class="k">private void</span> generateCertificate(<span class="k">double</span> s) {
+    <span class="k">if</span> (s &gt;= 50)
+      System.out.println(<span class="s">"Certificate"</span>);
+  }
+}</pre>
+<pre class="code"><span class="k">public class</span> ProgrammingCourse
+        <span class="k">extends</span> OnlineCourse {
+  <span class="k">protected void</span> deliverFinalAssessment() {
+    System.out.println(<span class="s">"Coding test"</span>); }
+  <span class="k">protected double</span> evaluatePerformance() {
+    <span class="k">return</span> AutoTests.run(studentId); }
+}
+<span class="k">public class</span> DesignCourse
+        <span class="k">extends</span> OnlineCourse {
+  <span class="k">protected void</span> deliverFinalAssessment() {
+    System.out.println(<span class="s">"Submit portfolio"</span>); }
+  <span class="k">protected double</span> evaluatePerformance() {
+    <span class="k">return</span> Instructor.rubric(studentId); }
+}
+<span class="c">// Q5 optional extras → Decorator</span></pre>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>E-commerce checkout <span class="r"><span class="y">2024</span> Q4.2, 4.4, 10m</span></h2>
+      <p class="small"><b>Template Method.</b> <code>CheckoutProcess</code> has a final <code>checkout()</code>: validate cart → process payment → arrange delivery → send confirmation. Validate cart and send confirmation are common; payment and delivery (domestic / international) vary.</p>
+      <p class="small"><b>Use of abstract classes:</b> <code>CheckoutProcess</code> is abstract because it holds real code (common steps and the fixed order) plus abstract steps. It can't be instantiated; subclasses supply the varying parts.</p>
+      <p class="tiny">4.3 exceptions → Chain (tab 08) · 4.5 authorization → Proxy (tab 05)</p>
+    </div>
+    <div class="panel">
+      <h2>Support procedure <span class="r"><span class="y q">Quiz 7</span> Q4, 4m</span></h2>
+      <p class="small">Every support level must log the request → attempt to solve → log the resolution. Put a <b>final</b> <code>handle()</code> in the abstract <code>SupportHandler</code> that does exactly that and calls an abstract <code>attemptToSolve()</code>. L1, L2, L3 and Specialist only write <code>attemptToSolve()</code>, so no level can skip the logging. This is Template Method inside a Chain of Responsibility (code in tab 08).</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">W5</span> Challenges → fix <span class="r">from the slides</span></h2>
+    <table class="small">
+      <tr><th style="width:38%">Challenge</th><th>How to handle it</th></tr>
+      <tr><td>The client <b>can't change the sequence</b> of steps</td><td>That's the point; if order must vary per request, use Builder or Strategy instead. Use hooks for optional steps.</td></tr>
+      <tr><td>A subclass may <b>override a parent method</b> it shouldn't</td><td>Template method <code>final</code>; common steps <code>private</code> or <code>final</code>; only primitives <code>protected abstract</code>.</td></tr>
+      <tr><td><b>More subclasses</b> → code spread out, harder to maintain</td><td>Keep steps small; shared middle abstract classes; document each step.</td></tr>
+      <tr><td><b>Rigid</b>: changing the skeleton affects every subclass</td><td>Design the skeleton carefully; add new optional steps as hooks with default bodies.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>07 Template Method · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['template'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:30, name:'OrderService'},
+    {id:'a', k:'class', cx:300, y:0, name:'PaymentProcessor', stereo:'abstract', abstract:true,
+      ops:['+ handlePayment(o : Order) : void {final}', '# validate(o : Order) : boolean', '/# processPayment(o : Order) : void', '# sendReceipt(o : Order) : void']},
+    {id:'c1', k:'class', cx:140, y:128, name:'CreditCardPaymentProcessor', ops:['# validate(o) : boolean', '# processPayment(o) : void']},
+    {id:'c2', k:'class', cx:340, y:128, name:'PayPalPaymentProcessor', ops:['# processPayment(o) : void']},
+    {id:'c3', k:'class', cx:520, y:128, name:'CashOnDeliveryProcessor', ops:['# processPayment(o) : void']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'a', bs:'left', bx:39, type:'assoc', label:'uses'},
+    {a:'c1', as:'top', b:'a', bs:'bottom', type:'extend', mid:110},
+    {a:'c2', as:'top', b:'a', bs:'bottom', type:'extend', mid:110},
+    {a:'c3', as:'top', b:'a', bs:'bottom', type:'extend', mid:110},
+  ]
+};
+DIAGRAMS['salary'] = {
+  items: [
+    {id:'a', k:'class', cx:300, y:0, name:'SalaryCalculator', stereo:'abstract', abstract:true,
+      attrs:['# basic : double', '# otHours, absentDays, noPayDays : int'],
+      ops:['+ calculateNetSalary() : double {final}', '# allowances() : double', '# overtime() : double', '# noPay() : double', '- epf(gross) / tax(gross) : double']},
+    {id:'p', k:'class', cx:70, y:170, w:126, name:'PermanentSalary', ops:['# overtime()', '# allowances()', '# noPay()']},
+    {id:'e', k:'class', cx:215, y:170, w:136, name:'ExecutiveSalary', ops:['# allowances() : bonus', '# overtime() : 0', '# noPay() : 0']},
+    {id:'d', k:'class', cx:365, y:170, w:136, name:'DailyWorkerSalary', ops:['# overtime() : > 8h/day', '# allowances() : >200h']},
+    {id:'t', k:'class', cx:510, y:170, w:126, name:'TemporarySalary', ops:['# allowances() : daily']},
+  ],
+  edges: [
+    {a:'p', as:'top', b:'a', bs:'bottom', type:'extend', mid:150},
+    {a:'e', as:'top', b:'a', bs:'bottom', type:'extend', mid:150},
+    {a:'d', as:'top', b:'a', bs:'bottom', type:'extend', mid:150},
+    {a:'t', as:'top', b:'a', bs:'bottom', type:'extend', mid:150},
+  ]
+};
+</script>

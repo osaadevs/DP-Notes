@@ -1,0 +1,407 @@
+<!-- ===================== 2022 Q1 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 1</h1><div class="lede">Travel booking website: air tickets, hotels and taxis from third-party web services.</div></div>
+    <div class="meta">Facade + Adapter<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>Develop a website for travellers to book foreign trips. Users need to book an air ticket, a hotel and a taxi. When the user requests them, the system collects data from different web services and sends the details to the user. The Hotel sub-system connects to web services provided by different hotels (third party); the Air ticket sub-service connects to airline web services; the Taxi sub-service connects to taxi web services. These web services were developed by third parties, so their method signatures can differ.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p22-travel"></svg>
+    <p class="tip">Label the facade and the adapters. That shows the examiner where your patterns sit before you name them.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.2</span><span class="qt">What design pattern can be employed for the sub-systems that combine air tickets, hotels and taxis? Explain your reasons.</span><span class="r">4 marks</span></div>
+    <p>I would use the <b>Facade</b> pattern (structural). It provides one unified, simpler interface to a set of sub-systems.</p>
+    <p>A <code>TravelBookingFacade</code> with one method, <code>bookTrip(request)</code>, calls the AirTicketService, HotelService and TaxiService in the right order and returns one combined itinerary. <b>Reasons:</b> (1) the traveller does one action instead of three; (2) the website depends on <b>one class</b> instead of three sub-systems, so coupling is low; (3) the call order and the combining of results are written <b>once</b>; (4) if a sub-system changes, only the facade changes.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2.1</span><span class="qt">Challenges with this pattern?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>The facade can grow into a <b>God class</b> as more services (car hire, insurance) are added.</li>
+        <li>It is a <b>single point of failure</b>: if the facade or one service is down, the whole booking fails.</li>
+        <li><b>Partial bookings</b>: the flight is booked but the hotel fails.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2.2</span><span class="qt">Mechanism to overcome them?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>Split into smaller facades (FlightFacade, StayFacade); the facade only delegates.</li>
+        <li>Run the facade as stateless copies behind a load balancer; timeouts, retries and a fallback provider for each service.</li>
+        <li>Compensating actions: cancel the flight if the hotel fails, or reserve all three first and confirm together.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 1 (cont.)</h1><div class="lede">Connecting each sub-system to third-party web services with different signatures.</div></div>
+    <div class="meta">Adapter<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.3</span><span class="qt">What design patterns can be employed for connecting the sub-system with different third-party web services?</span><span class="r">4 marks</span></div>
+    <p>I would use the <b>Adapter</b> pattern (structural). It converts the interface of a class into another interface the client expects, so classes with incompatible interfaces can work together.</p>
+    <p>The HotelService owns one interface, <code>HotelProvider</code> (<code>search()</code>, <code>book()</code>). Each hotel's web service gets its own adapter (<code>HiltonAdapter</code>, <code>ShangriLaAdapter</code>…) that implements <code>HotelProvider</code> and translates the call into that hotel's own SOAP / REST / SDK method. Airlines and taxis are done the same way. <b>Reasons:</b> the third-party services <b>can't be modified</b>; the sub-system code stays the same whichever provider is used; a <b>new provider is just a new adapter</b> (Open/Closed).</p>
+    <svg class="dg mt" data-d="p22-adapter"></svg>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3.1</span><span class="qt">Challenges with this pattern?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li><b>Many adapters</b> to write and maintain, one per provider.</li>
+        <li><b>Different data formats</b> (XML vs JSON, currencies, date formats) and error codes.</li>
+        <li>A provider <b>changes its API version</b>, or is slow or unavailable.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3.2</span><span class="qt">Mechanism to overcome them?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>One common interface; a <b>Factory or registry</b> picks the adapter from configuration.</li>
+        <li>A common data object (DTO) and a <b>mapper inside each adapter</b>; unit-test every adapter.</li>
+        <li>Only that adapter changes when an API changes (version adapters); <b>timeouts, retries, caching</b> and fall back to another provider.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Adapter code for one provider <span class="r">not asked, but adds weight to 1.3</span></h2>
+<pre class="code"><span class="k">public interface</span> HotelProvider {                 <span class="c">// Target</span>
+    List&lt;Room&gt; search(String city, LocalDate in, LocalDate out);
+}
+<span class="k">public class</span> HiltonAdapter <span class="k">implements</span> HotelProvider {  <span class="c">// Adapter</span>
+    <span class="k">private final</span> HiltonSoapApi api = <span class="k">new</span> HiltonSoapApi(); <span class="c">// Adaptee</span>
+    <span class="k">public</span> List&lt;Room&gt; search(String city, LocalDate in, LocalDate out) {
+        String xml = api.findRooms(city, in.toString(), out.toString());
+        <span class="k">return</span> RoomMapper.fromHiltonXml(xml);   <span class="c">// translate the result</span>
+    }
+}</pre>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2022 Q2 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 2</h1><div class="lede">Supermarket pay calculation for different employee categories.</div></div>
+    <div class="meta">Template Method<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>A supermarket has different pay calculations for executive employees, temporary staff and daily workers. <b>Executives:</b> basic salary, bonus and executive allowances. <b>Daily workers:</b> 8 hours per day; extra hours earn overtime; more than 200 hours earns an attendance allowance. <b>Temporary staff:</b> called when required and paid a daily allowance for the requested dates. All employees contribute 8% to the Employee Provident Fund.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p22-pay"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">What design pattern(s) can be employed? Explain the reasons for your selection.</span><span class="r">6 marks</span></div>
+    <p>I would use the <b>Template Method</b> pattern (behavioural). It defines the skeleton of an algorithm in a superclass and lets subclasses redefine certain steps without changing the structure.</p>
+    <p>Every category follows the <b>same calculation order</b>: work out the earnings → gross pay → deduct EPF 8% → net pay. The EPF deduction and the net calculation are <b>the same for everyone</b>; only the earning components differ (bonus, overtime, attendance allowance, daily allowance). So an abstract <code>SalaryCalculator</code> has a final <code>calculateNetSalary()</code> that fixes the order and does the common parts, and each category overrides only its own components.</p>
+    <p><b>Reasons:</b> (1) the common EPF and net logic is written <b>once</b>; (2) every category is calculated in the <b>same, enforced order</b>, so results are consistent; (3) a new category (e.g. part-time) is <b>one new subclass</b> (Open/Closed). <b>Supporting patterns:</b> a <b>Factory</b> creates the right calculator from the employee's category, and the payroll run can be a <b>Singleton</b> so it runs once at a time.</p>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 2 (cont.)</h1><div class="lede">Class diagram, challenges, and the "code duplication" statement.</div></div>
+    <div class="meta">Template Method<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Draw a class diagram for the above design pattern.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p22-payclass"></svg>
+<pre class="code mt"><span class="k">public final double</span> calculateNetSalary() {            <span class="c">// template method</span>
+    <span class="k">double</span> gross = basicPay() + allowances() + overtime();
+    <span class="k">return</span> gross - gross * 0.08;                     <span class="c">// EPF 8%, same for everyone</span>
+}</pre>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.4</span><span class="qt">What challenges will you face?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>The order of steps is <b>rigid</b>: a category that needs a different sequence doesn't fit.</li>
+        <li>The number of <b>subclasses grows</b> with every new category.</li>
+        <li>Rates and limits (8%, 200 hours, 8 hours/day) <b>change over time</b>.</li>
+        <li>A subclass might <b>override a common step</b> by mistake.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.5</span><span class="qt">Mechanism to overcome them?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li><b>Hook methods</b> with default 0 for optional parts (bonus, overtime), so subclasses override only what they need.</li>
+        <li>Shared middle classes (e.g. <code>HourlyPaid</code>) for categories that share rules.</li>
+        <li>Read rates from <b>external configuration</b> through a Singleton ConfigManager.</li>
+        <li>Make the template method <b>final</b> and the common steps private.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.6</span><span class="qt">"Code duplication can be achieved from the used design pattern in the above scenario." Do you agree? Explain.</span><span class="r">4 marks</span></div>
+    <p><b>I disagree.</b> Template Method is used to <b>avoid</b> code duplication. The parts every employee shares (the order of steps, the EPF 8% deduction, the net salary formula) are written once in the abstract <code>SalaryCalculator</code>. Each subclass contains only what is different for its category. Without the pattern, each category would copy the whole calculation and the EPF logic.</p>
+    <p>A small amount of duplication can remain if two subclasses override a step in the same way (e.g. two categories with the same overtime rule). The fix is to move that shared code up into the parent or into a shared middle class.</p>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2022 Q3 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 3</h1><div class="lede">Email spam filter made of sub-filters.</div></div>
+    <div class="meta">Chain of Responsibility<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>Design an email spam filter. Multiple sub-spam filters are available depending on the different components of the email, such as the email sender, the time it was sent, its content and its attachments.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Sketch a diagram and explain the different components of the email spam filter.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p22-spam"></svg>
+    <p class="small mt">The <b>mail server</b> receives the email and passes it to the first filter. The <b>sender filter</b> checks blacklists and domain reputation. The <b>time filter</b> flags odd sending hours and bursts. The <b>content filter</b> checks keywords, links and language patterns. The <b>attachment filter</b> checks file types and scans for viruses. Any filter can mark the email as spam and stop; if all pass, it is delivered to the inbox.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.2</span><span class="qt">What design pattern can you follow? Explain the reasons.</span><span class="r">5 marks</span></div>
+    <p>I would use the <b>Chain of Responsibility</b> pattern (behavioural). It avoids coupling the sender of a request to its receivers by giving more than one object a chance to handle it; the handlers are chained and the request is passed along.</p>
+    <p>Each sub-filter is a handler that extends an abstract <code>SpamFilter</code> and holds a link to the next filter. <b>Reasons:</b> (1) the mail server only knows the first filter, so it is <b>decoupled</b> from the filters; (2) each filter has <b>one responsibility</b>; (3) filters can be <b>added, removed or reordered</b> without changing the others; (4) the chain can be built from configuration at runtime.</p>
+    <svg class="dg mt" data-d="p22-spamclass"></svg>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 3 (cont.)</h1><div class="lede">Prioritising the filters, extending the chain, and High Availability / Disaster Recovery.</div></div>
+    <div class="meta">Chain of Responsibility<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.3</span><span class="qt">How do you prioritise the different components? Explain your prioritisation criteria.</span><span class="r">6 marks</span></div>
+    <table class="small">
+      <tr><th style="width:24%">Criterion</th><th>What it means here</th></tr>
+      <tr><td><b>Cost / speed</b></td><td>Cheap checks first (sender blacklist, sent time take microseconds); expensive ones last (content analysis, virus scanning of attachments). Most spam is stopped before the expensive filters run.</td></tr>
+      <tr><td><b>Rejection rate</b></td><td>The filter that catches the most spam goes early, saving work for the others.</td></tr>
+      <tr><td><b>Severity / security</b></td><td>A dangerous attachment (malware) may be moved earlier because the risk is high.</td></tr>
+      <tr><td><b>Accuracy</b></td><td>Filters with few false positives come before risky ones, so good mail isn't lost.</td></tr>
+    </table>
+    <p class="small mt"><b>Resulting order:</b> Sender → Time → Content → Attachment. The order is kept in configuration so it can be tuned using real statistics.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">What would be your suggestion if more sub-components need to be added?</span><span class="r">5 marks</span></div>
+    <p>Write a new class that extends <code>SpamFilter</code> and implements only its own check, for example <code>LinkReputationFilter</code> or <code>LanguageFilter</code>. Insert it into the chain with <code>setNext()</code>, or list it in the configuration file that builds the chain. The mail server and the existing filters <b>don't change</b>, which follows the Open/Closed principle. Each new filter is unit-tested on its own, and a fallback "deliver to inbox" handler stays at the end.</p>
+<pre class="code mt"><span class="k">class</span> LinkReputationFilter <span class="k">extends</span> SpamFilter {
+    <span class="k">protected boolean</span> isSpam(Email e) { <span class="k">return</span> LinkDb.hasBadLink(e.getBody()); }
+}
+sender.setNext(time).setNext(content).setNext(<span class="k">new</span> LinkReputationFilter()).setNext(attachment);</pre>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">How can you extend this design to achieve High Availability (HA) and Disaster Recovery (DR)?</span><span class="r">5 marks</span></div>
+    <p><b>HA:</b> the filters don't keep state, so the whole chain can run on <b>several servers behind a load balancer</b>, with health checks and automatic restart. Incoming mail goes into a <b>message queue</b> so nothing is lost if a server dies. If one filter times out (e.g. the virus scanner), a backup handler skips or retries it instead of blocking all mail.</p>
+    <p><b>DR:</b> blacklists, rules and the configuration are <b>backed up and replicated to a second region</b>. A defined RPO/RTO, automatic failover to the DR site, and regular DR drills.</p>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2022 Q4 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 4</h1><div class="lede">Five short scenarios. Name the pattern, explain it, give two reasons.</div></div>
+    <div class="meta">5 × 5 marks<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Online cake ordering: users select options such as decorations and colour. Prices and delivery times differ depending on the selections.</span><span class="r">5 marks</span></div>
+    <p><b>Decorator</b> (structural). A <code>Cake</code> interface has <code>getPrice()</code> and <code>getDeliveryDays()</code>. <code>PlainCake</code> is the base. Each option (<code>FondantDecoration</code>, <code>ChocolateColour</code>, <code>FlowerTopping</code>) is a decorator that wraps the cake and adds its own price and extra delivery days. <b>Reasons:</b> any mix of options is built at runtime without a subclass per combination (no class explosion), and a new option is just a new decorator.</p>
+    <p class="small"><code>Cake c = new FlowerTopping(new Fondant(new PlainCake()));</code> → price = 2,500 + 800 + 600; days = 1 + 1 + 0.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.2</span><span class="qt">Develop a scalable and extensible product-based framework for future needs of the cake ordering system.</span><span class="r">5 marks</span></div>
+    <p><b>Factory Method</b> (creational). A <code>Product</code> interface (cakes, cupcakes, gift boxes…) and a <code>ProductFactory.create(type)</code> that returns the right product. Client code works only with <code>Product</code>. <b>Reasons:</b> new product types are added as new classes registered with the factory, so the framework grows without changing existing code (Open/Closed), and creation logic is kept in one place. The Decorator from 4.1 can still wrap whatever the factory returns.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.3</span><span class="qt">Payroll system: salary calculation should be run by only one user, and all other connections to the salary system stopped.</span><span class="r">5 marks</span></div>
+    <p><b>Singleton</b> (creational) with a lock. <code>SalaryCalculationManager</code> has a private constructor and a static <code>getInstance()</code>, so only one calculation engine exists. Its <code>runPayroll(user)</code> is <code>synchronized</code> and sets a <code>running</code> flag; while it is set, other logins and connections are refused or queued. <b>Reasons:</b> one controller means no two payroll runs at once (no double payments or inconsistent data), and access is controlled in one place. Note that the Singleton limits objects; the lock is what blocks other users.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">4.4</span><span class="qt">LMS: when users read large content, load only a couple of pages rather than the entire document.</span><span class="r">5 marks</span></div>
+      <p class="small"><b>Proxy</b>, a <b>virtual proxy</b> (structural). <code>DocumentProxy</code> implements the same <code>Document</code> interface as <code>LargeDocument</code>. <code>getPage(n)</code> loads only the requested page (and maybe the next) and caches it; the full document is never loaded unless needed. <b>Reasons:</b> fast opening, low memory and bandwidth, and the reader code doesn't change because the interface is the same.</p>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">4.5</span><span class="qt">An LMS that needs different modules to be created depending on the user's needs.</span><span class="r">5 marks</span></div>
+      <p class="small"><b>Factory Method</b> (creational). A <code>Module</code> interface implemented by <code>QuizModule</code>, <code>ForumModule</code>, <code>AssignmentModule</code>, <code>VideoModule</code>. <code>ModuleFactory.create(userNeed)</code> returns the right one. <b>Reasons:</b> the LMS doesn't need to know concrete module classes (loose coupling), and new modules are added without changing the existing code.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p22-travel'] = {
+  items: [
+    {id:'u', k:'node', x:0, y:62, w:70, lines:['Traveller','web / mobile']},
+    {id:'w', k:'node', x:88, y:62, w:86, lines:['Travel website','booking UI']},
+    {id:'f', k:'node', x:194, y:52, w:112, h:52, lines:['TravelBookingFacade','bookTrip()','«Facade»'], shade:true},
+    {id:'a', k:'node', x:330, y:6, w:98, lines:['Air ticket service']},
+    {id:'h', k:'node', x:330, y:67, w:98, lines:['Hotel service']},
+    {id:'t', k:'node', x:330, y:128, w:98, lines:['Taxi service']},
+    {id:'a1', k:'node', x:452, y:0, w:96, h:16, lines:['AirlineAAdapter'], size:8},
+    {id:'a2', k:'node', x:452, y:20, w:96, h:16, lines:['AirlineBAdapter'], size:8},
+    {id:'h1', k:'node', x:452, y:60, w:96, h:16, lines:['HiltonAdapter'], size:8},
+    {id:'h2', k:'node', x:452, y:80, w:96, h:16, lines:['ShangriLaAdapter'], size:8},
+    {id:'t1', k:'node', x:452, y:122, w:96, h:16, lines:['UberAdapter'], size:8},
+    {id:'t2', k:'node', x:452, y:142, w:96, h:16, lines:['PickMeAdapter'], size:8},
+    {id:'x', k:'node', x:572, y:0, w:72, h:158, lines:['Third-party','web services','(SOAP / REST,','different','signatures)'], dashed:true},
+  ],
+  edges: [
+    {a:'u', as:'right', b:'w', bs:'left', type:'flow'},
+    {a:'w', as:'right', b:'f', bs:'left', bx:79, type:'flow'},
+    {a:'f', as:'right', ao:.2, b:'a', bs:'left', type:'flow', mid:318},
+    {a:'f', as:'right', ao:.5, b:'h', bs:'left', type:'flow', mid:318},
+    {a:'f', as:'right', ao:.8, b:'t', bs:'left', type:'flow', mid:318},
+    {a:'a', as:'right', b:'a1', bs:'left', type:'flow', mid:440},
+    {a:'a', as:'right', b:'a2', bs:'left', type:'flow', mid:440},
+    {a:'h', as:'right', b:'h1', bs:'left', type:'flow', mid:440},
+    {a:'h', as:'right', b:'h2', bs:'left', type:'flow', mid:440},
+    {a:'t', as:'right', b:'t1', bs:'left', type:'flow', mid:440},
+    {a:'t', as:'right', b:'t2', bs:'left', type:'flow', mid:440},
+  ]
+};
+DIAGRAMS['p22-adapter'] = {
+  items: [
+    {id:'hs', k:'class', x:0, y:10, name:'HotelService', attrs:['- providers : List<HotelProvider>'], ops:['+ findRooms(req) : List<Room>']},
+    {id:'hp', k:'class', x:260, y:0, name:'HotelProvider', stereo:'interface', ops:['+ search(city, in, out) : List<Room>', '+ book(roomId) : Booking']},
+    {id:'a1', k:'class', cx:200, y:104, w:116, name:'HiltonAdapter'},
+    {id:'a2', k:'class', cx:335, y:104, w:116, name:'ShangriLaAdapter'},
+    {id:'a3', k:'class', cx:470, y:104, w:116, name:'BookingComAdapter'},
+    {id:'v1', k:'class', cx:200, y:156, w:116, name:'HiltonSoapApi', shade:true},
+    {id:'v2', k:'class', cx:335, y:156, w:116, name:'ShangriLaRest', shade:true},
+    {id:'v3', k:'class', cx:470, y:156, w:116, name:'BookingComSdk', shade:true},
+  ],
+  edges: [
+    {a:'hs', as:'right', b:'hp', bs:'left', type:'assoc', label:'1..*'},
+    {a:'a1', as:'top', b:'hp', bs:'bottom', bo:.25, type:'realize', mid:86},
+    {a:'a2', as:'top', b:'hp', bs:'bottom', bo:.5, type:'realize', mid:86},
+    {a:'a3', as:'top', b:'hp', bs:'bottom', bo:.75, type:'realize', mid:86},
+    {a:'a1', as:'bottom', b:'v1', bs:'top', type:'assoc'},
+    {a:'a2', as:'bottom', b:'v2', bs:'top', type:'assoc'},
+    {a:'a3', as:'bottom', b:'v3', bs:'top', type:'assoc'},
+  ],
+  scale: 0.92
+};
+DIAGRAMS['p22-pay'] = {
+  items: [
+    {id:'e', k:'node', x:0, y:56, w:96, lines:['Employee','category, hours, dates']},
+    {id:'s', k:'node', x:130, y:44, w:120, h:56, lines:['Payroll system','calculate salary','same order for all'], shade:true},
+    {id:'x', k:'node', x:290, y:0, w:170, lines:['Executive','basic + bonus + exec allowance'], align:'left'},
+    {id:'d', k:'node', x:290, y:50, w:170, lines:['Daily worker','8h/day, overtime, >200h allowance'], align:'left'},
+    {id:'t', k:'node', x:290, y:100, w:170, lines:['Temporary staff','daily allowance × requested days'], align:'left'},
+    {id:'epf', k:'node', x:500, y:44, w:100, h:56, lines:['Common','EPF 8%','net = gross − EPF'], dark:true},
+  ],
+  edges: [
+    {a:'e', as:'right', b:'s', bs:'left', bx:73, type:'flow'},
+    {a:'s', as:'right', ao:.2, b:'x', bs:'left', type:'flow', mid:272},
+    {a:'s', as:'right', ao:.5, b:'d', bs:'left', type:'flow', mid:272},
+    {a:'s', as:'right', ao:.8, b:'t', bs:'left', type:'flow', mid:272},
+    {a:'x', as:'right', b:'epf', bs:'left', bo:.2, type:'flow', mid:480},
+    {a:'d', as:'right', b:'epf', bs:'left', bo:.5, type:'flow', mid:480},
+    {a:'t', as:'right', b:'epf', bs:'left', bo:.8, type:'flow', mid:480},
+  ]
+};
+DIAGRAMS['p22-payclass'] = {
+  items: [
+    {id:'f', k:'class', x:0, y:20, name:'PayrollService', ops:['+ runPayroll()']},
+    {id:'a', k:'class', cx:330, y:0, name:'SalaryCalculator', stereo:'abstract', abstract:true,
+      attrs:['# basic : double', '# EPF_RATE : double = 0.08'],
+      ops:['+ calculateNetSalary() : double {final}', '/# basicPay() : double', '# allowances() : double', '# overtime() : double', '- epf(gross) : double']},
+    {id:'x', k:'class', cx:170, y:170, w:150, name:'ExecutiveSalary', ops:['# basicPay()', '# allowances() : bonus+exec']},
+    {id:'d', k:'class', cx:330, y:170, w:150, name:'DailyWorkerSalary', ops:['# basicPay() : 8h × rate', '# overtime() : extra hrs', '# allowances() : >200h']},
+    {id:'t', k:'class', cx:490, y:170, w:150, name:'TemporaryStaffSalary', ops:['# basicPay() : 0', '# allowances() : daily×days']},
+  ],
+  edges: [
+    {a:'f', as:'right', b:'a', bs:'left', bx:39, type:'assoc', label:'uses'},
+    {a:'x', as:'top', b:'a', bs:'bottom', type:'extend', mid:152},
+    {a:'d', as:'top', b:'a', bs:'bottom', type:'extend', mid:152},
+    {a:'t', as:'top', b:'a', bs:'bottom', type:'extend', mid:152},
+  ]
+};
+DIAGRAMS['p22-spam'] = {
+  items: [
+    {id:'in', k:'node', x:0, y:8, w:72, lines:['Incoming', 'email']},
+    {id:'ms', k:'node', x:88, y:8, w:72, lines:['Mail server', 'client'], shade:true},
+    {id:'f1', k:'node', x:176, y:8, w:72, lines:['Sender', 'filter']},
+    {id:'f2', k:'node', x:264, y:8, w:72, lines:['Time', 'filter']},
+    {id:'f3', k:'node', x:352, y:8, w:72, lines:['Content', 'filter']},
+    {id:'f4', k:'node', x:440, y:8, w:72, lines:['Attachment', 'filter']},
+    {id:'ib', k:'node', x:528, y:8, w:56, lines:['Inbox']},
+    {id:'sp', k:'node', x:298, y:76, w:98, lines:['Spam folder'], dashed:true},
+  ],
+  edges: [
+    {a:'in', as:'right', b:'ms', bs:'left', type:'flow'},
+    {a:'ms', as:'right', b:'f1', bs:'left', type:'flow'},
+    {a:'f1', as:'right', b:'f2', bs:'left', type:'flow'},
+    {a:'f2', as:'right', b:'f3', bs:'left', type:'flow'},
+    {a:'f3', as:'right', b:'f4', bs:'left', type:'flow'},
+    {a:'f4', as:'right', b:'ib', bs:'left', type:'flow'},
+    {a:'f1', as:'bottom', b:'sp', bs:'left', type:'dflow', label:'spam', lx:214, ly:70},
+    {a:'f2', as:'bottom', b:'sp', bs:'top', bo:.25, type:'dflow', mid:62},
+    {a:'f3', as:'bottom', b:'sp', bs:'top', bo:.75, type:'dflow', mid:62},
+    {a:'f4', as:'bottom', b:'sp', bs:'right', type:'dflow'},
+  ]
+};
+DIAGRAMS['p22-spamclass'] = {
+  items: [
+    {id:'ms', k:'class', x:0, y:24, name:'MailServer'},
+    {id:'em', k:'class', x:0, y:84, name:'Email', attrs:['- sender, sentTime', '- body, attachments']},
+    {id:'h', k:'class', cx:300, y:0, name:'SpamFilter', stereo:'abstract', abstract:true, attrs:['# next : SpamFilter'], ops:['+ setNext(f) : SpamFilter', '+ check(e : Email) : Verdict', '/# isSpam(e : Email) : boolean']},
+    {id:'f1', k:'class', cx:150, y:150, w:110, name:'SenderFilter'},
+    {id:'f2', k:'class', cx:270, y:150, w:110, name:'TimeFilter'},
+    {id:'f3', k:'class', cx:390, y:150, w:110, name:'ContentFilter'},
+    {id:'f4', k:'class', cx:510, y:150, w:116, name:'AttachmentFilter'},
+  ],
+  edges: [
+    {a:'ms', as:'right', b:'h', bs:'left', bx:33, type:'assoc', label:'sends to first'},
+    {a:'h', as:'left', ao:.75, b:'em', bs:'right', type:'depend', label:'checks'},
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.85, type:'aggr', loop:34, label:'next  0..1'},
+    {a:'f1', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'f2', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'f3', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'f4', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+  ]
+};
+</script>

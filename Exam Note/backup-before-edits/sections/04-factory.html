@@ -1,0 +1,298 @@
+<!-- ===================== 02 FACTORY : understand ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method</h1><div class="lede">One place decides which class to create. The rest of the code just asks for "a database" or "a book".</div></div>
+    <div class="meta">Creational<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">create different types of X depending on the user's request</span><span class="chip">different types of accounts / books / payments</span>
+      <span class="chip">supports MySQL, PostgreSQL and MongoDB</span><span class="chip">too many if-else blocks to create objects</span>
+      <span class="chip">without exposing the concrete class</span><span class="chip">scalable, extensible product-based framework</span><span class="chip">modules created depending on the user's needs</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">When the program needs one of several related types, the code that uses the object shouldn't have to know which class to <code>new</code>. A factory takes the request ("MYSQL", "FICTION", "CARD") and hands back the right object, typed as the common interface.</p>
+      <p class="small">Like ordering at a restaurant: you ask for "a pizza", and the kitchen decides how to make it. You never go into the kitchen.</p>
+    </div>
+    <div class="panel">
+      <h2>The problem it removes</h2>
+<pre class="code"><span class="c">// BEFORE: copied all over the client</span>
+<span class="k">if</span> (type.equals(<span class="s">"MYSQL"</span>))
+    db = <span class="k">new</span> MySQLDatabase();
+<span class="k">else if</span> (type.equals(<span class="s">"MONGO"</span>))
+    db = <span class="k">new</span> MongoDatabase();
+<span class="c">// new database = edit every copy</span>
+
+<span class="c">// AFTER: one line, interface only</span>
+Database db =
+    DatabaseFactory.getDatabase(type);</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The parts <span class="r">name them in your answer</span></h2>
+    <table class="small">
+      <tr><th style="width:24%">Part</th><th style="width:40%">Job</th><th>Example</th></tr>
+      <tr><td><b>Product</b> «interface»</td><td>The common type every product shares</td><td><code>Database</code>, <code>Book</code>, <code>Account</code></td></tr>
+      <tr><td><b>Concrete products</b></td><td>The real classes</td><td><code>MySQLDatabase</code>, <code>FictionBook</code>, <code>SavingAccount</code></td></tr>
+      <tr><td><b>Factory / Creator</b></td><td>Decides which concrete class to create and returns it as the Product</td><td><code>DatabaseFactory.getDatabase(type)</code></td></tr>
+      <tr><td><b>Client</b></td><td>Asks the factory, then uses the product through the interface only</td><td><code>ProductService</code></td></tr>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs Singleton</b>: Factory decides which type; Singleton decides how many (one). Often used together: the factory or the connection it creates is a Singleton.</li>
+        <li><b>vs Facade</b>: Factory creates objects. Facade coordinates objects that already exist.</li>
+        <li><b>vs Abstract Factory</b>: Abstract Factory creates whole families of related objects (e.g. a Windows button + Windows menu). Not taught in detail.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Why is <code>new</code> in the client bad?</h2>
+      <p class="small">It hard-codes the concrete class. Every new type forces a change in the client, which breaks <b>Open/Closed</b>, and the client depends on details instead of an abstraction, which breaks <b>Dependency Inversion</b>. The factory also separates creating from using (<b>Single Responsibility</b>).</p>
+    </div>
+  </div>
+  <div class="shade small"><b>Asked before:</b> <span class="y q">Quiz 2</span> database types · <span class="y">2025</span> Q3 book types (Book interface + BookFactory, 7m) · <span class="y">2025</span> Q4 payment objects · <span class="y">2023</span> Q4.2 bank accounts · <span class="y">2022</span> Q4.2, 4.5 product framework / LMS modules. <b>All answered on the answers page.</b></div>
+</div>
+<div class="foot"><span>02 Factory Method · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 02 FACTORY : write ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method: write</h1><div class="lede">Copy in order. Swap Database and its types for the product in your question.</div></div>
+    <div class="meta">Creational<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Factory Method</b> pattern, which is a creational pattern. It defines an interface for creating an object but lets the factory (or a subclass) decide <b>which class to instantiate</b>, so the client never uses <code>new</code> on a concrete class.</div>
+    <p class="small"><b>Reasons:</b> (1) <b>loose coupling</b>, because the client depends only on the <code>Database</code> interface, not on MySQL or MongoDB classes; (2) the <b>creation logic is in one place</b> instead of if-else copied across the code; (3) it is <b>easy to extend (Open/Closed)</b>: a new type is one new class and one new case, and client code doesn't change.</p>
+    <p class="small"><b>Mapping:</b> Product = <b>Database</b> «interface» · concrete products = <b>MySQLDatabase, PostgreSQLDatabase, MongoDatabase</b> · factory = <b>DatabaseFactory.getDatabase(type)</b> · client = <b>ProductService</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">dashed «create» arrows from the factory; dashed triangles to the interface</span></div>
+    <svg class="dg" data-d="factory"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// 1. PRODUCT</span>
+<span class="k">public interface</span> Database {
+    <span class="k">void</span> connect();
+    <span class="k">void</span> create(Product p);
+}
+<span class="c">// 2. CONCRETE PRODUCTS</span>
+<span class="k">public class</span> MySQLDatabase
+        <span class="k">implements</span> Database {
+    <span class="k">public void</span> connect() {
+        <span class="c">/* open MySQL connection */</span> }
+    <span class="k">public void</span> create(Product p) {
+        <span class="c">/* INSERT into MySQL */</span> }
+}
+<span class="c">// PostgreSQLDatabase, MongoDatabase:</span>
+<span class="c">// same shape</span></pre>
+<pre class="code"><span class="c">// 3. FACTORY: the only place with "new"</span>
+<span class="k">public class</span> DatabaseFactory {
+  <span class="k">public static</span> Database getDatabase(
+          String type) {
+    <span class="k">switch</span> (type.toUpperCase()) {
+      <span class="k">case</span> <span class="s">"MYSQL"</span>: <span class="k">return new</span> MySQLDatabase();
+      <span class="k">case</span> <span class="s">"POSTGRES"</span>:
+          <span class="k">return new</span> PostgreSQLDatabase();
+      <span class="k">case</span> <span class="s">"MONGO"</span>: <span class="k">return new</span> MongoDatabase();
+      <span class="k">default</span>: <span class="k">throw new</span>
+        IllegalArgumentException(type);
+    }
+  }
+}
+<span class="c">// 4. CLIENT: knows only the interface</span>
+Database db =
+    DatabaseFactory.getDatabase(<span class="s">"MYSQL"</span>);
+db.create(product);</pre>
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>02 Factory Method · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 02 FACTORY : answers ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method: past questions answered</h1><div class="lede">Short answers sized to the marks.</div></div>
+    <div class="meta">Creational<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Database objects <span class="r"><span class="y q">Quiz 2</span> Q1–Q3</span></h2>
+    <table class="small">
+      <tr><td style="width:28%"><b>Role of the factory</b></td><td>It takes object creation out of the client. The client asks <code>DatabaseFactory.getDatabase("MYSQL")</code> and receives a <code>Database</code>. The factory decides and creates MySQL, PostgreSQL or Mongo.</td></tr>
+      <tr><td><b>Two advantages</b></td><td>(1) <b>Loose coupling</b>: switching from MySQL to PostgreSQL changes only the parameter or config, not the business code. (2) <b>Easy to extend</b>: adding Oracle is one new class and one new case, and the creation logic stays in one place.</td></tr>
+      <tr><td><b>Why the developer doesn't need to know the DB</b></td><td>Because of <b>abstraction and polymorphism</b>. The variable's type is the <code>Database</code> interface, and every database implements <code>connect()</code> and <code>create()</code>. The factory returns the right object at runtime, and <code>db.create(product)</code> runs the right version automatically.</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>Library book types: Book interface + BookFactory <span class="r"><span class="y">2025</span> Q3.2–3.3, 7m</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> Book {
+    String getTitle();
+    String getCategory();
+}
+<span class="k">public class</span> FictionBook <span class="k">implements</span> Book {
+    <span class="k">private</span> String title;
+    <span class="k">public</span> FictionBook(String t) {
+        title = t; }
+    <span class="k">public</span> String getTitle() {
+        <span class="k">return</span> title; }
+    <span class="k">public</span> String getCategory() {
+        <span class="k">return</span> <span class="s">"Fiction"</span>; }
+}
+<span class="c">// ResearchBook, Magazine: same shape</span></pre>
+<pre class="code"><span class="k">public class</span> BookFactory {
+  <span class="k">public static</span> Book createBook(
+          String type, String title) {
+    <span class="k">switch</span> (type) {
+      <span class="k">case</span> <span class="s">"FICTION"</span>:
+          <span class="k">return new</span> FictionBook(title);
+      <span class="k">case</span> <span class="s">"RESEARCH"</span>:
+          <span class="k">return new</span> ResearchBook(title);
+      <span class="k">case</span> <span class="s">"MAGAZINE"</span>:
+          <span class="k">return new</span> Magazine(title);
+      <span class="k">default</span>: <span class="k">throw new</span>
+          IllegalArgumentException(type);
+    }
+  }
+}
+<span class="c">// client</span>
+Book b = BookFactory.createBook(
+        <span class="s">"RESEARCH"</span>, <span class="s">"AI Ethics"</span>);</pre>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Bank accounts <span class="r"><span class="y">2023</span> Q4.2, 5m</span></h2>
+      <p class="small">Factory Method. An <code>Account</code> interface (or abstract class) with <code>deposit()</code>, <code>withdraw()</code> and <code>calculateInterest()</code>. <code>CurrentAccount</code>, <code>SavingAccount</code> and <code>ChildrenAccount</code> implement it with their own rules (overdraft, interest, withdrawal limit). <code>AccountFactory.createAccount(type)</code> returns the right one. The bank code only uses <code>Account</code>, so a new FixedDeposit account can be added without touching it.</p>
+    </div>
+    <div class="panel">
+      <h2>Payment objects <span class="r"><span class="y">2025</span> Q4.1(d)</span></h2>
+      <p class="small">Factory Method. <code>PaymentFactory.create(method)</code> returns <code>CreditCardProcessor</code>, <code>PayPalProcessor</code> or <code>CODProcessor</code>, all typed as <code>PaymentProcessor</code>. The customer picks the method at runtime, so the client needs no <code>new</code> and no if-else. Each processor then follows the Template Method <code>handlePayment()</code> (tab 07).</p>
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>02 Factory Method · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<!-- ===================== 02 FACTORY : answers 2 ===================== -->
+<section class="page" data-sec="02">
+<div class="body">
+  <header class="ph">
+    <div class="code">02</div>
+    <div><h1>Factory Method: more answers</h1><div class="lede">Short 5-mark answers, the names to swap in, and the challenges.</div></div>
+    <div class="meta">Creational<br><b>Answers</b></div>
+  </header>
+  <div class="g2">
+    <div class="panel">
+      <h2>LMS modules / product framework <span class="r"><span class="y">2022</span> Q4.2, Q4.5</span></h2>
+      <p class="small">Factory Method. A <code>Module</code> interface, implemented by Quiz, Forum, Assignment and VideoLecture. <code>ModuleFactory.create(userNeed)</code> builds what the user needs. New modules (new products) are new classes registered with the factory, so the framework grows without changing existing code. That is what "scalable, extensible product-based framework" is asking for.</p>
+    </div>
+    <div class="panel">
+      <h2>"It avoids code duplication." Agree?</h2>
+      <p class="small"><b>Yes.</b> The creation logic (the if-else and the <code>new</code> calls) is written once in the factory instead of in every client. Shared behaviour can sit in an abstract creator. The cost is extra classes, so keep the factory parameterised rather than writing near-identical creators.</p>
+      <p class="tiny mt">Mistakes: client still calls <code>new MySQLDatabase()</code>; factory returns the concrete type instead of the interface; missing «create» arrows.</p>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <h2><span class="w">W4</span> Rename for your question</h2>
+      <table class="tight small">
+        <tr><th style="width:38%">Product</th><th>Concrete products</th><th>Factory</th></tr>
+        <tr><td><code>Book</code></td><td>Fiction, Research, Magazine</td><td>BookFactory</td></tr>
+        <tr><td><code>Account</code></td><td>Current, Saving, Children</td><td>AccountFactory</td></tr>
+        <tr><td><code>PaymentProcessor</code></td><td>CreditCard, PayPal, COD</td><td>PaymentFactory</td></tr>
+        <tr><td><code>Module</code></td><td>Quiz, Forum, Assignment</td><td>ModuleFactory</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2><span class="w">W5</span> Challenges → fix</h2>
+      <ul class="small">
+        <li><b>More classes</b> → keep one parameterised factory, not a creator per type.</li>
+        <li><b>The switch is edited for each new type</b> → register types in a <code>Map</code> or config.</li>
+        <li><b>Unknown type</b> → validate input, throw a clear exception.</li>
+        <li><b>Need one shared factory or connection</b> → make it a Singleton.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">The strict GoF version</h2><span class="tiny">subclasses decide</span></div>
+      <svg class="dg" data-d="factory-gof"></svg>
+    </div>
+    <div class="panel">
+      <h2>Two forms</h2>
+      <p class="small"><b>Simple factory</b> (what the lectures and past answers use): one class with a static <code>create(type)</code> method and a switch.</p>
+      <p class="small"><b>GoF Factory Method</b>: an abstract Creator declares <code>factoryMethod()</code>, and each ConcreteCreator subclass returns its own product.</p>
+      <p class="small">Either is accepted. Use the simple one unless the question says "let subclasses decide".</p>
+
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>02 Factory Method · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['factory'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:6, name:'ProductService', attrs:['- db : Database'], ops:['+ save(p : Product) : void']},
+    {id:'db', k:'class', cx:345, y:0, name:'Database', stereo:'interface', ops:['+ connect() : void', '+ create(p : Product) : void']},
+    {id:'my', k:'class', cx:200, y:96, name:'MySQLDatabase', ops:['+ connect()', '+ create(p)']},
+    {id:'pg', k:'class', cx:345, y:96, name:'PostgreSQLDatabase', ops:['+ connect()', '+ create(p)']},
+    {id:'mg', k:'class', cx:490, y:96, name:'MongoDatabase', ops:['+ connect()', '+ create(p)']},
+    {id:'fa', k:'class', cx:345, y:184, name:'DatabaseFactory', ops:['_+ getDatabase(type : String) : Database']},
+  ],
+  edges: [
+    {a:'my', as:'top', b:'db', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'pg', as:'top', b:'db', bs:'bottom', bo:.5, type:'realize', mid:76},
+    {a:'mg', as:'top', b:'db', bs:'bottom', bo:.7, type:'realize', mid:76},
+    {a:'fa', as:'top', ao:.2, b:'my', bs:'bottom', type:'depend', mid:166},
+    {a:'fa', as:'top', ao:.5, b:'pg', bs:'bottom', type:'depend', label:'«create»', lx:376, ly:162},
+    {a:'fa', as:'top', ao:.8, b:'mg', bs:'bottom', type:'depend', mid:166},
+    {a:'cl', as:'right', b:'db', bs:'left', type:'assoc', label:'uses'},
+    {a:'cl', as:'bottom', b:'fa', bs:'left', type:'depend', label:'asks', lx:62, ly:150, lanchor:'start'},
+  ]
+};
+DIAGRAMS['factory-gof'] = {
+  items: [
+    {id:'p', k:'class', x:0, y:0, name:'Product', stereo:'interface', ops:['+ operation()']},
+    {id:'c', k:'class', x:170, y:0, name:'Creator', stereo:'abstract', abstract:true, ops:['/+ factoryMethod() : Product', '+ someOperation()']},
+    {id:'pa', k:'class', x:0, y:110, name:'ConcreteProduct'},
+    {id:'ca', k:'class', x:170, y:110, name:'ConcreteCreator', ops:['+ factoryMethod() : Product']},
+  ],
+  edges: [
+    {a:'pa', as:'top', b:'p', bs:'bottom', type:'realize'},
+    {a:'ca', as:'top', b:'c', bs:'bottom', type:'extend'},
+    {a:'ca', as:'left', ax:119, b:'pa', bs:'right', type:'depend', label:'«create»'},
+  ]
+};
+</script>

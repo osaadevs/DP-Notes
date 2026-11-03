@@ -1,0 +1,496 @@
+<!-- ===================== 2023 Q1 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 1</h1><div class="lede">Salary components with deviations for executives, configurable parameters, one-user payroll run.</div></div>
+    <div class="meta">Template + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>
+    Overtime = Basic × OT hours / (30 × 8) · Attendance allowance: absent &gt; 3 days → none; 1–3 days → 50% of basic; 0 days → 75% of basic · Gross = Basic + Attendance + Overtime · EPF employee = Gross × 0.08 · EPF employer = Gross × 0.12 · ETF = Gross × 0.03 · No pay = Basic × no-pay days / 30 · Tax = (Gross − 100,000) × 0.06 · Total deduction = EPF employee + No pay + Tax · Net = Gross − Total deduction · Total EPF = EPF employee + EPF employer.<br>
+    Permanent employees use all of these; for <b>executive</b> employees there is <b>no overtime and no no-pay</b>.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Draw a diagram to indicate the above scenario.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p23-salflow"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.2</span><span class="qt">What design pattern can be employed for the sub-systems that calculate different salary components for different employees? Reasons.</span><span class="r">5 marks</span></div>
+    <p>I would use the <b>Template Method</b> pattern (behavioural). It defines the skeleton of an algorithm in a superclass and lets subclasses redefine certain steps without changing the structure.</p>
+    <p>The calculation always runs in the same order: overtime and allowance → gross → deductions → net (dashed boxes in 1.1 are 0 for executives). An abstract <code>SalaryCalculator</code> has a final <code>calculateNetSalary()</code> containing that order and every common formula. <code>overtime()</code>, <code>attendanceAllowance()</code> and <code>noPay()</code> are hook methods. <code>PermanentSalary</code> uses the standard formulas; <code>ExecutiveSalary</code> overrides <code>overtime()</code> and <code>noPay()</code> to return 0. <b>Reasons:</b> shared formulas exist <b>once</b>; the <b>same order</b> is enforced; a new type is <b>one subclass</b>.</p>
+  </div>
+  <div class="panel">
+    <h2>The design in code <span class="r">supports 1.2, write it if time allows</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> SalaryCalculator {
+  <span class="k">protected double</span> basic;
+  <span class="k">protected int</span> otHours, absentDays,
+                noPayDays;
+
+  <span class="k">public final double</span> calculateNetSalary() {
+    <span class="k">double</span> gross = basic
+        + attendanceAllowance() + overtime();
+    <span class="k">double</span> epfEmp = gross * cfg(<span class="s">"epf.emp"</span>);
+    <span class="k">double</span> taxable =
+        gross - cfg(<span class="s">"tax.threshold"</span>);
+    <span class="k">double</span> tax = Math.max(0,
+        taxable * cfg(<span class="s">"tax.rate"</span>));
+    <span class="k">return</span> gross - (epfEmp + noPay() + tax);
+  }</pre>
+<pre class="code"><span class="c">  // hooks with the standard formulas</span>
+  <span class="k">protected double</span> overtime() {
+    <span class="k">return</span> basic * otHours / (30 * 8); }
+  <span class="k">protected double</span> noPay() {
+    <span class="k">return</span> basic * noPayDays / 30; }
+  <span class="k">protected double</span> attendanceAllowance() {
+    <span class="k">if</span> (absentDays == 0)
+      <span class="k">return</span> basic * 0.75;
+    <span class="k">if</span> (absentDays &lt;= 3)
+      <span class="k">return</span> basic * 0.50;
+    <span class="k">return</span> 0; }
+}
+<span class="k">class</span> PermanentSalary
+    <span class="k">extends</span> SalaryCalculator {}
+<span class="k">class</span> ExecutiveSalary
+    <span class="k">extends</span> SalaryCalculator {
+  <span class="k">protected double</span> overtime() { <span class="k">return</span> 0; }
+  <span class="k">protected double</span> noPay()    { <span class="k">return</span> 0; }
+}</pre>
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>2023 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 1 (cont.)</h1><div class="lede">The code, challenges, configurability and a payroll run that blocks everyone else.</div></div>
+    <div class="meta">Template + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3</span><span class="qt">Challenges with the selected pattern?</span><span class="r">4 marks</span></div>
+      <ul class="small">
+        <li>The <b>order is fixed</b>; an employee type that needs a different sequence doesn't fit.</li>
+        <li><b>Rates and thresholds change</b> (8%, 12%, 3%, 100,000, 6%), and hard-coded values need a redeploy.</li>
+        <li><b>Subclasses multiply</b> as new employee types appear.</li>
+        <li>A subclass may <b>override a common formula</b> by mistake.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.4</span><span class="qt">Mechanism to overcome them?</span><span class="r">4 marks</span></div>
+      <ul class="small">
+        <li><b>Hooks</b> with default bodies for optional components; Strategy if a whole step must vary.</li>
+        <li>All rates in <b>external configuration</b> (1.5).</li>
+        <li>Shared middle classes for types with common rules.</li>
+        <li>Template method <b>final</b>; common formulas private.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.5</span><span class="qt">Many of the parameters can change over time. How would you improve configurability? State the configuration.</span><span class="r">4 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Move every rate and threshold out of the code into <b>external configuration</b>, a database table or a properties file. A <b>Singleton ConfigManager</b> loads it once; the calculator reads values through <code>cfg(key)</code>. An admin screen updates them; each change is <b>versioned with an "effective from" date</b> and audited, so old payslips can be recalculated with the old rates. No recompile or redeploy is needed.</p>
+<pre class="code"><span class="c"># salary.properties</span>
+ot.divisor.days=30
+ot.divisor.hours=8
+attendance.full=0.75
+attendance.partial=0.50
+attendance.maxAbsent=3
+epf.emp=0.08
+epf.employer=0.12
+etf=0.03
+tax.threshold=100000
+tax.rate=0.06</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.6</span><span class="qt">During salary calculation no other user should be logged in and no other process should run. Which pattern and why?</span><span class="r">4 marks</span></div>
+    <p class="small"><b>Singleton</b>, combined with a lock. <code>PayrollEngine</code> has a private constructor and a static <code>getInstance()</code>, so there is <b>only one calculation controller</b> in the system. Its <code>synchronized runPayroll()</code> sets a <code>running</code> flag; the login service and other processes check <code>PayrollEngine.getInstance().isRunning()</code> and are refused or queued until it finishes. <b>Why:</b> one controlling object means two calculations can't run at the same time, and the lock gives one place that blocks everyone else, so the data stays consistent.</p>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2023 Q2 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 2</h1><div class="lede">A supermarket that is part of a chain: purchasing, sales, warehousing.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>A supermarket has functions such as purchasing, sales and warehousing. You are hired to design a system for it. The supermarket is part of a supermarket chain.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p23-chain"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can an organisation effectively implement and manage a microservices architecture to achieve scalability, fault isolation and ease of continuous deployment?</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Each service scales on its own. Sales/POS gets extra copies at weekends and in the festive season; Purchasing doesn't. Stateless services on Kubernetes with auto-scaling, plus a cache for the product catalogue.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Reporting crashes, branches can still sell. Circuit breakers, timeouts and retries; POS keeps working offline and syncs later.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Own repository and CI/CD pipeline per service, automated tests, Docker images, blue-green or canary releases, versioned APIs. One team per service.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, central config, and central logging, metrics and tracing.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 2 (cont.)</h1><div class="lede">Architecture, data consistency, security, and identical platforms.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a microservice architecture for the above problem.</span><span class="r">4 marks</span></div>
+    <table class="small">
+      <tr><th style="width:24%">Service</th><th>Owns</th></tr>
+      <tr><td><b>Product Catalogue</b></td><td>items, prices, promotions (shared by every branch)</td></tr>
+      <tr><td><b>Sales / POS</b></td><td>bills, payments at the till, returns</td></tr>
+      <tr><td><b>Inventory / Warehouse</b></td><td>stock per branch and per warehouse, transfers between branches</td></tr>
+      <tr><td><b>Purchasing</b></td><td>purchase orders, reorder levels, goods received</td></tr>
+      <tr><td><b>Supplier</b></td><td>supplier details, contracts, invoices</td></tr>
+      <tr><td><b>Branch</b></td><td>branches of the chain, staff, opening hours</td></tr>
+      <tr><td><b>Customer / Loyalty</b>, <b>Reporting</b>, <b>Notification</b></td><td>points, chain-wide sales reports, SMS/email alerts</td></tr>
+    </table>
+    <p class="small mt">Each service has its own database. Clients (POS terminals, head office web, mobile app) go through an <b>API gateway</b>. Services publish events to a <b>message broker</b> ("SaleCompleted" → Inventory reduces stock → Purchasing reorders when below the level). Everything runs in containers on Kubernetes.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.4</span><span class="qt">Methods to maintain data consistency in the proposed architecture?</span><span class="r">4 marks</span></div>
+    <ul class="small">
+      <li><b>Database per service</b>, so there are no shared transactions; accept <b>eventual consistency</b>.</li>
+      <li><b>Saga pattern</b>: a sale reduces stock; if the payment fails, a <b>compensating action</b> puts the stock back. Coordinated by events or by an orchestrator.</li>
+      <li><b>Event-driven updates</b> through Kafka/RabbitMQ, with a <b>transactional outbox</b> and <b>idempotent consumers</b> so a repeated event does no harm.</li>
+      <li><b>CQRS</b> read models for chain-wide reports. Two-phase commit only where it is essential.</li>
+    </ul>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.5</span><span class="qt">How would you achieve security?</span><span class="r">4 marks</span></div>
+      <ul class="small">
+        <li><b>OAuth2 / OpenID Connect</b> at the gateway with <b>JWT</b>; roles for cashier, branch manager, buyer, head office (RBAC).</li>
+        <li><b>Mutual TLS</b> between services; least-privilege database users.</li>
+        <li>HTTPS everywhere, card data handled to <b>PCI-DSS</b>, secrets in a vault.</li>
+        <li>Rate limiting, input validation, audit logs.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.6</span><span class="qt">Why is it essential to provide the same hardware configurations and options for each microservice platform?</span><span class="r">4 marks</span></div>
+      <p class="small">Identical environments (containers and infrastructure-as-code) make <b>deployment, scaling and failover predictable</b>: any node can run any service, and performance is the same everywhere. <b>Capacity planning, automation, monitoring and troubleshooting</b> are simpler, it avoids "works on my machine", and a failed node can be <b>rebuilt exactly</b> for disaster recovery. (Exception: special nodes such as GPUs for ML.)</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2023 Q3 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 3</h1><div class="lede">Restaurant with many coffee flavours, event websites from other vendors, logging, HA and DR.</div></div>
+    <div class="meta">Decorator · Adapter · Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>A restaurant has different flavours of coffee. For example, Irish Coffee is hot coffee, Irish whiskey and sugar, topped with cream; Nitro Coffee is cold-brew coffee infused with nitrogen, served on tap, with a creamy texture.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Considering the many combinations that exist for coffee, what is the proposed design pattern?</span><span class="r">5 marks</span></div>
+    <p>I would use the <b>Decorator</b> pattern (structural). It attaches additional responsibilities to an object dynamically by wrapping it, which is a flexible alternative to subclassing.</p>
+    <p>The base coffees (<code>HotCoffee</code>, <code>ColdBrew</code>) are concrete components. Every ingredient (Whiskey, Sugar, Cream, Nitrogen) is a decorator that wraps a coffee and adds its own price and description. Irish Coffee = <code>new Cream(new Sugar(new Whiskey(new HotCoffee())))</code>; Nitro Coffee = <code>new Nitrogen(new ColdBrew())</code>. <b>Reasons:</b> the number of combinations is huge (n ingredients → 2ⁿ subclasses), so wrapping avoids class explosion; new recipes are made at runtime; a new ingredient is one new class (Open/Closed).</p>
+  </div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">3.2</span><span class="qt">Draw a simple class diagram to facilitate the above design pattern.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p23-coffee"></svg>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 3 (cont.)</h1><div class="lede">Integrating other vendors' websites, logging, and HA / DR.</div></div>
+    <div class="meta">Adapter · Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.3</span><span class="qt">The restaurant must connect to different websites to show events organised by different entities. They were developed with different technologies by different vendors. How do you integrate them?</span><span class="r">5 marks</span></div>
+    <p>Use the <b>Adapter</b> pattern (structural). The restaurant system owns one interface, <code>EventSource</code> with <code>getEvents()</code>, returning a common <code>Event</code> object (title, date, venue). Each website gets its own adapter (<code>RssEventAdapter</code>, <code>JsonApiEventAdapter</code>, <code>HtmlScraperAdapter</code>) that calls that site in its own technology and converts the result into <code>Event</code>. The restaurant site just loops over a list of <code>EventSource</code>. <b>Reasons:</b> the vendors' systems can't be changed; the restaurant code doesn't depend on any vendor; a new vendor is just a new adapter. A <b>Facade</b> (<code>EventFeed.getAllEvents()</code>) can then merge all sources into one list.</p>
+    <svg class="dg mt" data-d="p23-events"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">If you must implement a logging mechanism, which design pattern can you use? Give logical reasons.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Use the <b>Singleton</b> pattern for the logger. <b>Reasons:</b> (1) all parts of the system must write to <b>the same log file</b>; several logger objects would open the file several times and produce duplicate or interleaved lines; (2) one instance owns the file handle, so the format and order are consistent; (3) a global access point (<code>Logger.getInstance()</code>) from anywhere; (4) less memory. <code>log()</code> is synchronized so threads don't mix lines. (Adding logging around existing services without changing them can be done with a logging <b>Proxy</b> that calls this Singleton.)</p>
+<pre class="code"><span class="k">public final class</span> Logger {
+  <span class="k">private static final</span> Logger INSTANCE =
+      <span class="k">new</span> Logger();
+  <span class="k">private final</span> PrintWriter out;
+  <span class="k">private</span> Logger() {
+    out = Files.openAppend(<span class="s">"app.log"</span>); }
+  <span class="k">public static</span> Logger getInstance() {
+    <span class="k">return</span> INSTANCE; }
+  <span class="k">public synchronized void</span> log(String m) {
+    out.println(LocalDateTime.now()
+        + <span class="s">" "</span> + m);
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">How can you extend this design to achieve High Availability (HA) and Disaster Recovery (DR)?</span><span class="r">5 marks</span></div>
+    <p class="small"><b>HA:</b> run the ordering application as <b>several stateless copies behind a load balancer</b>, with health checks and auto-restart; the database is replicated with automatic failover. Event adapters use timeouts, retries and a <b>cache</b> of the last events, so a vendor site being down doesn't break the page. A single logger instance per server ships logs to a central, replicated log store, so the Singleton isn't a single point of failure. <b>DR:</b> regular backups, the database replicated to a <b>second region</b>, agreed RPO/RTO, automated failover, infrastructure-as-code to rebuild, and DR drills.</p>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2023 Q4 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 4</h1><div class="lede">Five scenarios. Pattern, explanation and a simple class diagram for each.</div></div>
+    <div class="meta">5 × 5 marks<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Fantasy cricket: the user selects a maximum of five batsmen, five bowlers and one wicketkeeper; there should be one captain. How would you use an extended Singleton to achieve this?</span><span class="r">5 marks</span></div>
+    <p class="small">An extended Singleton is a <b>Multiton</b>: the class controls how many objects can exist, but the limit is N per key instead of 1. <code>Player</code> has a private constructor; the only way to get one is <code>addPlayer(role, name)</code>, which counts the players of that role and throws an exception once the limit (5 batsmen, 5 bowlers, 1 wicketkeeper) is reached. <code>Captain</code> is a plain Singleton (exactly one).</p>
+    <div class="g2 mt" style="align-items:start">
+      <svg class="dg" data-d="p23-cricket"></svg>
+<pre class="code"><span class="k">public static synchronized</span> Player addPlayer(
+        String role, String name) {
+  team.putIfAbsent(role, <span class="k">new</span> ArrayList&lt;&gt;());
+  <span class="k">int</span> n = team.get(role).size();
+  <span class="k">if</span> (n &gt;= LIMIT.get(role))
+    <span class="k">throw new</span> IllegalStateException(
+        <span class="s">"Max "</span> + role + <span class="s">" reached"</span>);
+  Player p = <span class="k">new</span> Player(role, name);
+  team.get(role).add(p);
+  <span class="k">return</span> p;
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.2</span><span class="qt">A banking system with different types of accounts: Current, Saving and Children accounts.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Factory Method</b> (creational). An <code>Account</code> interface with <code>deposit()</code>, <code>withdraw()</code>, <code>calculateInterest()</code>. <code>CurrentAccount</code> (overdraft, no interest), <code>SavingAccount</code> (interest) and <code>ChildrenAccount</code> (withdrawal limit, guardian) implement it. <code>AccountFactory.createAccount(type)</code> returns the right one. <b>Reasons:</b> the bank code works only with <code>Account</code> (loose coupling), creation logic is in one place, and a new account type (FixedDeposit) is added without changing existing code.</p>
+      <svg class="dg" data-d="p23-bank"></svg>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 4 (cont.)</h1><div class="lede">Exceptions by priority, loading part of a document, and authorization options.</div></div>
+    <div class="meta">Chain · Proxy<br><b>15 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.3</span><span class="qt">An exception-handling system that can handle different priorities depending on the problem.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Chain of Responsibility</b> (behavioural). Each handler deals with the exceptions of its own priority and passes the rest to the next: <code>LowPriorityHandler</code> (validation errors: show a message) → <code>MediumPriorityHandler</code> (payment or timeout errors: retry) → <code>HighPriorityHandler</code> (system failures: log and alert the admin) → <code>DefaultHandler</code> (generic error page). <b>Reasons:</b> the code that throws doesn't need to know who handles it; handlers can be added or reordered; it works like nested try/catch blocks.</p>
+      <svg class="dg" data-d="p23-exc"></svg>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.4</span><span class="qt">LMS: when users read large content, load only a couple of pages rather than the entire document.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Proxy</b>, a <b>virtual proxy</b> (structural). <code>DocumentProxy</code> and <code>LargeDocument</code> both implement <code>Document</code>. The reader holds the proxy; <code>getPage(n)</code> loads only that page from storage and caches it, and the full document is never loaded unless needed. <b>Reasons:</b> fast opening, low memory and bandwidth; same interface, so the reader code doesn't change.</p>
+      <svg class="dg" data-d="p23-proxy"></svg>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.5</span><span class="qt">A website with different authorization options, depending on the user's need.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Proxy</b>, a <b>protection proxy</b> (structural). Each protected service (<code>ReportService</code>, <code>AdminService</code>) sits behind a proxy with the same interface. The proxy checks the user's role and permissions, logs the access and only then forwards the call. <b>Reasons:</b> security is in one place and the real services stay clean; access rules change without touching the services. If authorization is a series of checks (login → role → permission → 2FA), combine with a <b>Chain of Responsibility</b>.</p>
+      <svg class="dg" data-d="p23-auth"></svg>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p23-salflow'] = {
+  items: [
+    {id:'b', k:'node', x:0, y:46, w:72, lines:['Basic salary']},
+    {id:'ot', k:'node', x:100, y:0, w:118, lines:['Overtime','basic × OT / (30×8)'], dashed:true},
+    {id:'aa', k:'node', x:100, y:46, w:118, lines:['Attendance allow.','0 days 75%, 1–3 50%']},
+    {id:'g', k:'node', x:246, y:46, w:76, lines:['Gross','B + AA + OT'], shade:true},
+    {id:'epf', k:'node', x:350, y:0, w:112, lines:['EPF employee 8%']},
+    {id:'np', k:'node', x:350, y:34, w:112, lines:['No pay','basic × days / 30'], dashed:true},
+    {id:'tx', k:'node', x:350, y:78, w:112, lines:['Tax','(G − 100,000) × 6%']},
+    {id:'n', k:'node', x:490, y:40, w:84, h:40, lines:['Net salary','G − deductions'], dark:true},
+    {id:'er', k:'node', x:246, y:112, w:216, lines:['Employer side: EPF 12% + ETF 3% (from gross)']},
+  ],
+  edges: [
+    {a:'b', as:'right', b:'aa', bs:'left', type:'flow'},
+    {a:'b', as:'top', b:'ot', bs:'left', type:'flow'},
+    {a:'ot', as:'right', b:'g', bs:'top', type:'flow'},
+    {a:'aa', as:'right', b:'g', bs:'left', type:'flow'},
+    {a:'g', as:'right', ao:.2, b:'epf', bs:'left', type:'flow', mid:336},
+    {a:'g', as:'right', ao:.5, b:'np', bs:'left', type:'flow', mid:336},
+    {a:'g', as:'right', ao:.8, b:'tx', bs:'left', type:'flow', mid:336},
+    {a:'epf', as:'right', b:'n', bs:'left', bo:.2, type:'flow', mid:476},
+    {a:'np', as:'right', b:'n', bs:'left', bo:.5, type:'flow', mid:476},
+    {a:'tx', as:'right', b:'n', bs:'left', bo:.8, type:'flow', mid:476},
+    {a:'g', as:'bottom', b:'er', bs:'top', bx:284, type:'flow'},
+  ]
+};
+DIAGRAMS['p23-chain'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:40, w:84, h:70, lines:['Clients','branch POS','head office web','mobile app']},
+    {id:'gw', k:'node', x:104, y:50, w:96, h:50, lines:['API Gateway','auth · routing'], dark:true},
+    {id:'s1', k:'node', x:226, y:0, w:150, h:22, lines:['Product Catalogue  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:226, y:26, w:150, h:22, lines:['Sales / POS  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:226, y:52, w:150, h:22, lines:['Inventory / Warehouse  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:226, y:78, w:150, h:22, lines:['Purchasing  [DB]'], align:'left'},
+    {id:'s5', k:'node', x:226, y:104, w:150, h:22, lines:['Supplier  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:226, y:130, w:150, h:22, lines:['Branch · Reporting  [DB]'], align:'left'},
+    {id:'mb', k:'node', x:404, y:40, w:110, h:70, lines:['Message broker','SaleCompleted →','StockLow →','PurchaseOrder'], dashed:true},
+    {id:'k', k:'node', x:404, y:122, w:110, lines:['Kubernetes, CI/CD,','monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.3, b:'s2', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.5, b:'s3', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.7, b:'s4', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.8, b:'s5', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.9, b:'s6', bs:'left', type:'flow', mid:212},
+    {a:'s3', as:'right', b:'mb', bs:'left', bx:63, type:'dflow', label:'events', lx:390, ly:58},
+  ]
+};
+DIAGRAMS['p23-coffee'] = {
+  items: [
+    {id:'c', k:'class', cx:270, y:0, name:'Coffee', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'h', k:'class', cx:55, y:100, w:100, name:'HotCoffee', ops:['+ getCost()', '+ getDescription()']},
+    {id:'cb', k:'class', cx:170, y:100, w:100, name:'ColdBrew', ops:['+ getCost()', '+ getDescription()']},
+    {id:'d', k:'class', cx:400, y:96, name:'CoffeeDecorator', stereo:'abstract', abstract:true, attrs:['# coffee : Coffee'], ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'w', k:'class', cx:250, y:206, w:84, name:'Whiskey'},
+    {id:'s', k:'class', cx:345, y:206, w:84, name:'Sugar'},
+    {id:'cr', k:'class', cx:440, y:206, w:84, name:'Cream'},
+    {id:'n', k:'class', cx:535, y:206, w:84, name:'Nitrogen'},
+  ],
+  edges: [
+    {a:'h', as:'top', b:'c', bs:'bottom', bo:.2, type:'realize', mid:80},
+    {a:'cb', as:'top', b:'c', bs:'bottom', bo:.4, type:'realize', mid:80},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.75, type:'realize', mid:80},
+    {a:'d', as:'right', ao:.15, b:'c', bs:'right', bo:.5, type:'aggr', via:[[540,110],[540,30]], label:'wraps  1', lx:546, ly:70, lanchor:'start'},
+    {a:'w', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'cr', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'n', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+  ]
+};
+DIAGRAMS['p23-events'] = {
+  items: [
+    {id:'r', k:'class', x:0, y:6, name:'RestaurantSite', attrs:['- sources : List<EventSource>']},
+    {id:'i', k:'class', x:240, y:0, name:'EventSource', stereo:'interface', ops:['+ getEvents() : List<Event>']},
+    {id:'a1', k:'class', cx:150, y:86, w:128, name:'RssEventAdapter'},
+    {id:'a2', k:'class', cx:300, y:86, w:136, name:'JsonApiEventAdapter'},
+    {id:'a3', k:'class', cx:455, y:86, w:136, name:'HtmlScraperAdapter'},
+  ],
+  edges: [
+    {a:'r', as:'right', b:'i', bs:'left', type:'assoc', label:'1..*'},
+    {a:'a1', as:'top', b:'i', bs:'bottom', bo:.2, type:'realize', mid:68},
+    {a:'a2', as:'top', b:'i', bs:'bottom', bo:.5, type:'realize', mid:68},
+    {a:'a3', as:'top', b:'i', bs:'bottom', bo:.8, type:'realize', mid:68},
+  ],
+  scale: 0.9
+};
+DIAGRAMS['p23-cricket'] = {
+  items: [
+    {id:'p', k:'class', x:0, y:0, name:'Player', stereo:'Multiton', attrs:['_- team : Map<Role,List<Player>>', '_- LIMIT : Map<Role,Integer>', '- role, name : String'], ops:['- Player(role, name)', '_+ addPlayer(role, name) : Player']},
+    {id:'c', k:'class', x:0, y:150, name:'Captain', stereo:'Singleton', attrs:['_- instance : Captain'], ops:['- Captain()', '_+ getInstance() : Captain']},
+  ],
+  edges: [
+    {a:'c', as:'top', b:'p', bs:'bottom', type:'assoc', label:'is one of 1'},
+  ]
+};
+DIAGRAMS['p23-bank'] = {
+  items: [
+    {id:'f', k:'class', x:0, y:0, name:'AccountFactory', ops:['_+ createAccount(type) : Account']},
+    {id:'a', k:'class', x:0, y:62, name:'Account', stereo:'interface', ops:['+ deposit(amt)', '+ withdraw(amt)', '+ calculateInterest()']},
+    {id:'c1', k:'class', x:200, y:46, w:110, name:'CurrentAccount'},
+    {id:'c2', k:'class', x:200, y:80, w:110, name:'SavingAccount'},
+    {id:'c3', k:'class', x:200, y:114, w:110, name:'ChildrenAccount'},
+  ],
+  edges: [
+    {a:'f', as:'right', b:'c1', bs:'top', type:'depend', label:'«create»', lx:220, ly:20},
+    {a:'c1', as:'left', b:'a', bs:'right', bo:.25, type:'realize', mid:180},
+    {a:'c2', as:'left', b:'a', bs:'right', bo:.55, type:'realize', mid:180},
+    {a:'c3', as:'left', b:'a', bs:'right', bo:.85, type:'realize', mid:180},
+  ]
+};
+DIAGRAMS['p23-exc'] = {
+  items: [
+    {id:'h', k:'class', x:30, y:0, name:'ExceptionHandler', stereo:'abstract', abstract:true, attrs:['# next : ExceptionHandler'], ops:['+ handle(e : AppException)', '/# canHandle(e) : boolean']},
+    {id:'l', k:'class', x:0, y:118, w:90, name:'LowPriority'},
+    {id:'m', k:'class', x:96, y:118, w:96, name:'MediumPriority'},
+    {id:'hi', k:'class', x:198, y:118, w:90, name:'HighPriority'},
+  ],
+  edges: [
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.8, type:'aggr', loop:26, label:'next'},
+    {a:'l', as:'top', b:'h', bs:'bottom', type:'extend', mid:102},
+    {a:'m', as:'top', b:'h', bs:'bottom', type:'extend', mid:102},
+    {a:'hi', as:'top', b:'h', bs:'bottom', type:'extend', mid:102},
+  ]
+};
+DIAGRAMS['p23-proxy'] = {
+  items: [
+    {id:'s', k:'class', cx:140, y:0, name:'Document', stereo:'interface', ops:['+ getPage(n) : Page']},
+    {id:'r', k:'class', cx:50, y:82, w:100, name:'LargeDocument'},
+    {id:'p', k:'class', cx:225, y:82, name:'DocumentProxy', attrs:['- cache : Map<Integer,Page>']},
+  ],
+  edges: [
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:64},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:64},
+    {a:'p', as:'left', ao:.3, b:'r', bs:'right', type:'assoc'},
+  ]
+};
+DIAGRAMS['p23-auth'] = {
+  items: [
+    {id:'s', k:'class', cx:140, y:0, name:'ReportService', stereo:'interface', ops:['+ getReport(id)']},
+    {id:'r', k:'class', cx:50, y:82, w:100, name:'RealReportService'},
+    {id:'p', k:'class', cx:232, y:82, name:'ReportServiceProxy', attrs:['- user : User'], ops:['- hasPermission() : boolean']},
+  ],
+  edges: [
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:64},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:64},
+    {a:'p', as:'left', ao:.25, b:'r', bs:'right', type:'assoc'},
+  ]
+};
+</script>

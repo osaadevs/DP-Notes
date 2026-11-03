@@ -1,0 +1,368 @@
+<!-- ======================= PRACTICE PAPER 1 ======================= -->
+
+<!-- ---------- P1 Q1 ---------- -->
+<div class="chunk" data-sec="P1" data-code="1" data-title="Paper 1 · Question 1" data-lede="Food delivery app" data-meta="Practice paper 1<br><b>25 marks</b>" data-foot="Practice paper 1 · Question 1">
+  <div class="examhead"><b>PRACTICE PAPER 1</b><br>INTE 22313 – Software Design Patterns and Frameworks · No. of questions: 4 · Time: 2½ hours<br>Answer ALL questions. Allocate time by the marks. State any assumptions you make. This is an OPEN BOOK exam.</div>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>
+    <b>QuickBite</b> is a food delivery app. A customer's order moves through these stages: <b>Placed</b> → <b>Confirmed</b> by the restaurant → <b>Preparing</b> → <b>Out for delivery</b> → <b>Delivered</b>. An order can be <b>Cancelled</b> only before it is out for delivery. What a customer can do (cancel, track, rate) depends on the current stage.<br>
+    QuickBite works with many restaurants. Each restaurant already uses its own point-of-sale system from a different vendor: one accepts orders through <code>pushOrder(xml)</code>, another through <code>createTicket(json)</code>. QuickBite cannot change these systems.<br>
+    When a customer taps "Place order", the app must check the restaurant, take the payment, assign a rider and send notifications. The mobile team wants one simple call for this instead of talking to four services.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Identify a suitable design pattern, with reasons, for each of: (a) the order stages, (b) sending orders to the restaurants' different systems, (c) the single "Place order" call.</span><span class="r">6 marks</span></div>
+    <div class="a">
+      <table class="small">
+        <tr><td style="width:24%"><b>(a)</b> order stages</td><td style="width:13%"><b>State</b></td><td>The order behaves differently in each stage: cancel is allowed while Placed, Confirmed or Preparing but refused once out for delivery; rating only works after Delivered. Each stage becomes a class that knows its allowed actions and its next stage, so there are no if/else checks on a status field.</td></tr>
+        <tr><td><b>(b)</b> restaurant systems</td><td><b>Adapter</b></td><td>The restaurants' systems have incompatible methods and can't be changed. One adapter per vendor converts QuickBite's <code>sendOrder(order)</code> into <code>pushOrder(xml)</code> or <code>createTicket(json)</code>; a new vendor is just a new adapter.</td></tr>
+        <tr><td><b>(c)</b> one "Place order"</td><td><b>Facade</b></td><td><code>OrderFacade.placeOrder()</code> calls restaurant check → payment → rider → notification in the right order, so the mobile app depends on one class instead of four services.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.2</span><span class="qt">Draw a state diagram for an order.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp1-sd"></svg>
+      <p class="tip">Marks: start dot, every state, each arrow labelled with its event, cancel only from the first three, end states shown.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.3</span><span class="qt">Write Java for the OrderState interface and the Order context class. Show one concrete state.</span><span class="r">6 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> OrderState {
+  <span class="k">void</span> confirm(Order o);
+  <span class="k">void</span> startPreparing(Order o);
+  <span class="k">void</span> dispatch(Order o);
+  <span class="k">void</span> deliver(Order o);
+  <span class="k">void</span> cancel(Order o);
+}
+<span class="k">public class</span> Order {           <span class="c">// context</span>
+  <span class="k">private</span> OrderState state =
+      <span class="k">new</span> PlacedState();
+  <span class="k">public void</span> setState(OrderState s) {
+    state = s; }
+  <span class="c">// every request goes to the state</span>
+  <span class="k">public void</span> confirm() {
+    state.confirm(<span class="k">this</span>); }
+  <span class="k">public void</span> dispatch() {
+    state.dispatch(<span class="k">this</span>); }
+  <span class="k">public void</span> cancel() {
+    state.cancel(<span class="k">this</span>); }
+  <span class="c">// startPreparing(), deliver(): same</span>
+}</pre>
+<pre class="code"><span class="k">public class</span> OutForDeliveryState
+        <span class="k">implements</span> OrderState {
+  <span class="k">public void</span> deliver(Order o) {
+    o.setState(<span class="k">new</span> DeliveredState()); }
+  <span class="k">public void</span> cancel(Order o) {
+    System.out.println(
+      <span class="s">"Too late to cancel"</span>); }
+  <span class="k">public void</span> confirm(Order o) {
+    System.out.println(
+      <span class="s">"Already confirmed"</span>); }
+  <span class="k">public void</span> startPreparing(Order o) {
+    System.out.println(
+      <span class="s">"Already cooked"</span>); }
+  <span class="k">public void</span> dispatch(Order o) {
+    System.out.println(
+      <span class="s">"Already on the way"</span>); }
+}</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.4</span><span class="qt">Draw a class diagram showing how QuickBite connects to two restaurants' point-of-sale systems.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp1-adapter"></svg>
+      <p class="tip">Target interface owned by QuickBite; one adapter per vendor implements it and holds the vendor's class (the adaptee).</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.5</span><span class="qt">Give one challenge of the "Place order" design in (c) and how you would overcome it.</span><span class="r">3 marks</span></div>
+    <div class="a"><p class="small"><b>Challenge:</b> if one service fails half way (payment succeeded but no rider is free), the order is left half done, and the facade becomes a single point of failure. <b>Fix:</b> compensating actions inside the facade (refund the payment, tell the restaurant to cancel), timeouts and retries for each service, and run the facade as several stateless copies behind a load balancer. (Other valid answer: the facade growing into a God class → split it into OrderFacade and TrackingFacade, delegating only.)</p></div>
+  </div>
+</div>
+
+<!-- ---------- P1 Q2 ---------- -->
+<div class="chunk" data-sec="P1" data-code="2" data-title="Paper 1 · Question 2" data-lede="Hospital management system" data-meta="Practice paper 1<br><b>25 marks</b>" data-foot="Practice paper 1 · Question 2">
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>
+    A private hospital group with five branches wants a new system built as <b>microservices</b>. Key functional requirements:
+    <b>Patient management</b> (register patients, medical history, profiles) · <b>Appointments</b> (book, reschedule, cancel channelling sessions with doctors) · <b>Doctors &amp; staff</b> (schedules, availability, specialities) · <b>Pharmacy</b> (prescriptions, stock, dispensing) · <b>Laboratory</b> (test orders and results) · <b>Billing</b> (invoices, insurance claims, payments) · <b>Notifications</b> (SMS reminders, results ready).</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the microservices scenario.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp1-hosp"></svg></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can the hospital implement and manage this architecture to achieve scalability, fault isolation and continuous deployment?</span><span class="r">5 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Scale each service on its own: <b>Appointments</b> peaks in the morning when channelling opens, so it auto-scales; Lab and Pharmacy scale per branch; Billing stays small. Stateless services on Kubernetes with auto-scaling and caching of doctor schedules.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Notification fails, appointments are still booked and SMS messages wait in the queue; if Billing is down, doctors still see patients. Circuit breakers, timeouts, retries, bulkheads.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>A repository and CI/CD pipeline per service, automated tests, Docker images, blue-green releases at night, versioned APIs, so Pharmacy can be updated without touching Appointments.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, config server, central logging, metrics and tracing; one team per service.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a suitable microservices architecture.</span><span class="r">5 marks</span></div>
+    <div class="a"><p class="small">One service per capability, each with its <b>own database</b>: <b>Patient</b>, <b>Appointment</b>, <b>Doctor/Staff</b>, <b>Pharmacy</b>, <b>Laboratory</b>, <b>Billing</b> (with an insurance adapter), <b>Notification</b>. Web portal, mobile app and branch counters go through an <b>API gateway</b> (authentication, routing). Services use REST when they need an answer now (Appointment asks Doctor "is Dr. Perera free at 10:00?") and publish events to a <b>message broker</b> otherwise ("LabResultReady" → Notification sends an SMS; "PrescriptionIssued" → Pharmacy prepares it). Containers on Kubernetes across the branches, plus a service registry, config server and monitoring.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.4</span><span class="qt">What methods can maintain data consistency across the services?</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Database per service</b>, so no shared transactions; accept <b>eventual consistency</b> where safe (notification history).</li>
+      <li><b>Saga</b> for an appointment: reserve the doctor's slot → take the booking fee → confirm. If payment fails, a <b>compensating action</b> frees the slot.</li>
+      <li><b>Events</b> through a broker with a <b>transactional outbox</b> and <b>idempotent consumers</b>, so a repeated "PrescriptionIssued" doesn't dispense twice.</li>
+      <li><b>CQRS</b> read models for a patient's full history view; stronger consistency for medication stock and billing.</li>
+    </ul></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you secure patient data and communication between services?</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Users:</b> OAuth2 / OpenID Connect at the gateway with JWT; strict roles (doctor, nurse, pharmacist, cashier, patient), so a cashier can't read lab results.</li>
+      <li><b>Patient data:</b> encrypted at rest and in transit, access to records logged (audit trail), data kept to health-data privacy rules, secrets in a vault.</li>
+      <li><b>Service to service:</b> mutual TLS (service mesh), short-lived tokens, least-privilege database users per service.</li>
+      <li>Rate limiting, input validation, a web application firewall, and alerts on unusual access (one user opening hundreds of records).</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ---------- P1 Q3 ---------- -->
+<div class="chunk" data-sec="P1" data-code="3" data-title="Paper 1 · Question 3" data-lede="Smart home controller" data-meta="Practice paper 1<br><b>25 marks</b>" data-foot="Practice paper 1 · Question 3">
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>
+    A company builds a <b>smart home app</b>. Homes have lights, door locks, air conditioners and cameras from different manufacturers; some speak Zigbee (<code>zbSwitch(id, on)</code>), others Bluetooth (<code>btWrite(mac, cmd)</code>), and the app can't change the devices' software.<br>
+    An <b>"Away mode"</b> button must turn off all lights, lock every door, set the AC to eco and arm the cameras, all in one tap.<br>
+    Family <b>members</b> can control everything remotely, but <b>guests</b> may only switch lights; every remote command must be checked and logged.<br>
+    Every phone in the house must talk to <b>one home hub controller</b>; two controllers would send conflicting commands to the same device.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Identify the design patterns, with reasons, for: (a) devices with different protocols, (b) the "Away mode" button, (c) member vs guest control, (d) the one home hub controller.</span><span class="r">8 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:24%"><b>(a)</b> different protocols</td><td style="width:16%"><b>Adapter</b></td><td>The app talks to one <code>Device</code> interface (<code>turnOn()</code>, <code>turnOff()</code>); <code>ZigbeeLightAdapter</code> and <code>BluetoothLockAdapter</code> translate to the vendors' calls, which can't be changed.</td></tr>
+      <tr><td><b>(b)</b> Away mode</td><td><b>Facade</b></td><td><code>HomeFacade.awayMode()</code> runs four subsystems in order behind one call, so the app doesn't coordinate lights, locks, AC and cameras itself.</td></tr>
+      <tr><td><b>(c)</b> member vs guest</td><td><b>Protection Proxy</b></td><td><code>DeviceProxy</code> has the same interface as the device, checks the user's role before forwarding (guests: lights only), and logs every command.</td></tr>
+      <tr><td><b>(d)</b> one controller</td><td><b>Singleton</b></td><td><code>HomeHub.getInstance()</code> gives every phone the same controller, so commands go through one queue and never conflict.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.2</span><span class="qt">Draw a class diagram showing how "Away mode" works with the different devices.</span><span class="r">7 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp1-home"></svg>
+      <p class="tip">Facade on the left, the common Device interface in the middle, adapters realising it, and each adapter pointing to its vendor class.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.3</span><span class="qt">Write Java for the component that stops guests controlling anything except lights.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> Device {
+  String getType();       <span class="c">// "LIGHT", "LOCK"…</span>
+  <span class="k">void</span> turnOn();
+  <span class="k">void</span> turnOff();
+}
+<span class="k">public class</span> DeviceProxy <span class="k">implements</span> Device {
+  <span class="k">private final</span> Device real;
+  <span class="k">private final</span> User user;
+  <span class="k">public</span> DeviceProxy(Device d, User u) {
+    real = d; user = u; }
+  <span class="k">public</span> String getType() {
+    <span class="k">return</span> real.getType(); }</pre>
+<pre class="code">  <span class="k">public void</span> turnOn() {
+    check();
+    AuditLog.record(user, real, <span class="s">"ON"</span>);
+    real.turnOn();
+  }
+  <span class="k">public void</span> turnOff() {
+    check();
+    AuditLog.record(user, real, <span class="s">"OFF"</span>);
+    real.turnOff();
+  }
+  <span class="k">private void</span> check() {
+    <span class="k">if</span> (user.isGuest()
+        &amp;&amp; !real.getType().equals(<span class="s">"LIGHT"</span>))
+      <span class="k">throw new</span> AccessDeniedException(
+          <span class="s">"Guests can only control lights"</span>);
+  }
+}</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Explain which SOLID principles your design follows.</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Single Responsibility:</b> each adapter only translates for one vendor; the proxy only checks access; the facade only coordinates.</li>
+      <li><b>Open/Closed:</b> a new device brand is a new adapter, and a new scene ("Night mode") is a new facade method; existing classes don't change.</li>
+      <li><b>Liskov Substitution:</b> a <code>DeviceProxy</code> or any adapter can be used anywhere a <code>Device</code> is expected.</li>
+      <li><b>Interface Segregation:</b> <code>Device</code> is small; a camera-only action (<code>arm()</code>) goes in a separate <code>Armable</code> interface rather than forcing lights to implement it.</li>
+      <li><b>Dependency Inversion:</b> the facade and hub depend on the <code>Device</code> abstraction, not on Zigbee or Bluetooth classes.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ---------- P1 Q4 ---------- -->
+<div class="chunk" data-sec="P1" data-code="4" data-title="Paper 1 · Question 4" data-lede="Online examination platform" data-meta="Practice paper 1<br><b>25 marks</b>" data-foot="Practice paper 1 · Question 4">
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>
+    A university's <b>online exam platform</b> runs every exam through the same process: <b>authenticate the student → load the paper → conduct the exam → evaluate → publish results</b>. Evaluation differs by exam type: MCQ exams are auto-marked, essay exams are marked by a lecturer with a rubric, and programming exams run hidden test cases.<br>
+    Question objects (MCQ, essay, coding) are created depending on what the lecturer adds. When a student submits, the answer script goes through checks in order: <b>time limit → file format → plagiarism</b>; more checks will be added later.<br>
+    Departments may switch on optional proctoring features (webcam monitoring, screen recording, AI flagging) for any exam, in any combination.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Identify suitable patterns, with reasons, for: (a) the common exam process, (b) creating question objects, (c) submission checks, (d) optional proctoring features.</span><span class="r">8 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:24%"><b>(a)</b> exam process</td><td style="width:17%"><b>Template Method</b></td><td>The five steps are fixed in a final <code>runExam()</code>; only <code>evaluate()</code> differs, so the order is enforced and the common steps are written once.</td></tr>
+      <tr><td><b>(b)</b> question objects</td><td><b>Factory Method</b></td><td><code>QuestionFactory.create(type)</code> returns MCQ, Essay or Coding questions, so the editor never uses <code>new</code> and new types are easy to add.</td></tr>
+      <tr><td><b>(c)</b> submission checks</td><td><b>Chain of Responsibility</b></td><td>Time limit → format → plagiarism as linked handlers; any failure stops it; more checks are one class and one link each.</td></tr>
+      <tr><td><b>(d)</b> proctoring</td><td><b>Decorator</b></td><td>Each feature wraps the exam session and adds its monitoring, in any combination at runtime, without a subclass per mix.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.2</span><span class="qt">Write the abstract class for the exam process using the pattern from (a).</span><span class="r">5 marks</span></div>
+    <div class="a">
+<pre class="code"><span class="k">public abstract class</span> ExamProcess {
+    <span class="k">public final void</span> runExam(Student s) {      <span class="c">// template method: order is fixed</span>
+        <span class="k">if</span> (!authenticate(s)) <span class="k">return</span>;
+        Paper p = loadPaper();
+        Script script = conduct(s, p);
+        <span class="k">double</span> mark = evaluate(script);             <span class="c">// the step that differs</span>
+        publish(s, mark);
+    }
+    <span class="k">private boolean</span> authenticate(Student s) { <span class="k">return</span> Auth.verify(s); }   <span class="c">// common</span>
+    <span class="k">private</span> Paper loadPaper() { <span class="k">return</span> PaperStore.current(); }       <span class="c">// common</span>
+    <span class="k">protected</span> Script conduct(Student s, Paper p) { <span class="k">return</span> Exam.run(s, p); } <span class="c">// hook</span>
+    <span class="k">protected abstract double</span> evaluate(Script script);
+    <span class="k">private void</span> publish(Student s, <span class="k">double</span> m) { Results.save(s, m); }  <span class="c">// common</span>
+}</pre></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.3</span><span class="qt">Write a ProgrammingExam subclass.</span><span class="r">3 marks</span></div>
+    <div class="a">
+<pre class="code"><span class="k">public class</span> ProgrammingExam <span class="k">extends</span> ExamProcess {
+    <span class="k">protected double</span> evaluate(Script script) {
+        <span class="k">int</span> passed = TestRunner.runHiddenTests(script.getCode());
+        <span class="k">return</span> passed * 100.0 / TestRunner.TOTAL;      <span class="c">// percentage of tests passed</span>
+    }
+}</pre></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.4</span><span class="qt">Outline how the submission checks would be implemented so new checks can be added easily.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small">An abstract <code>SubmissionCheck</code> holds a <code>next</code> link and a <code>check(script)</code> method. <code>TimeLimitCheck</code>, <code>FormatCheck</code> and <code>PlagiarismCheck</code> each test one thing. The chain is built once (cheap checks first, the expensive plagiarism scan last) and every submission goes to the first check. A failure stops the chain with a reason ("submitted 3 minutes late"); passing all means the script is accepted. A new rule (e.g. <code>WordCountCheck</code>) is one new class added with one link; nothing else changes.</p>
+<pre class="code"><span class="k">abstract class</span> SubmissionCheck {
+  <span class="k">private</span> SubmissionCheck next;
+  SubmissionCheck then(SubmissionCheck n) {
+    next = n; <span class="k">return</span> n; }
+  <span class="k">boolean</span> check(Script s) {
+    <span class="k">if</span> (!test(s)) <span class="k">return false</span>;
+    <span class="k">return</span> next == <span class="k">null</span> || next.check(s);
+  }
+  <span class="k">abstract boolean</span> test(Script s);
+}
+SubmissionCheck c = <span class="k">new</span> TimeLimitCheck();
+c.then(<span class="k">new</span> FormatCheck())
+ .then(<span class="k">new</span> PlagiarismCheck());</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.5</span><span class="qt">Explain how the proctoring features can be added without changing the existing exam classes.</span><span class="r">4 marks</span></div>
+    <div class="a"><p class="small">Use the <b>Decorator</b> pattern. An <code>ExamSession</code> interface (<code>start()</code>, <code>end()</code>) is implemented by <code>BasicExamSession</code>. An abstract <code>ProctoringDecorator</code> implements <code>ExamSession</code> and holds the session it wraps. <code>WebcamMonitor</code>, <code>ScreenRecorder</code> and <code>AiFlagging</code> each add their own behaviour in <code>start()</code>/<code>end()</code> and then call the wrapped session. A department that wants webcam + AI flagging gets <code>new AiFlagging(new WebcamMonitor(new BasicExamSession()))</code>. No exam class changes, and a new feature is one new decorator (Open/Closed).</p></div>
+  </div>
+</div>
+
+<script>
+DIAGRAMS['pp1-sd'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'pl', k:'state', x:28, y:30, w:66, label:'Placed'},
+    {id:'cf', k:'state', x:140, y:30, w:84, label:'Confirmed'},
+    {id:'pr', k:'state', x:272, y:30, w:84, label:'Preparing'},
+    {id:'od', k:'state', x:404, y:30, w:112, label:'Out for delivery'},
+    {id:'dl', k:'state', x:404, y:100, w:84, label:'Delivered'},
+    {id:'ca', k:'state', x:140, y:100, w:84, label:'Cancelled'},
+    {id:'f1', k:'final', cx:530, cy:112},
+    {id:'f2', k:'final', cx:100, cy:112},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'pl', bs:'left', type:'trans'},
+    {a:'pl', as:'right', b:'cf', bs:'left', type:'trans', label:'confirm()'},
+    {a:'cf', as:'right', b:'pr', bs:'left', type:'trans', label:'prepare()'},
+    {a:'pr', as:'right', b:'od', bs:'left', type:'trans', label:'dispatch()'},
+    {a:'od', as:'bottom', b:'dl', bs:'top', ax:446, bx:446, type:'trans', label:'deliver()'},
+    {a:'dl', as:'right', b:'f1', bs:'left', type:'trans'},
+    {a:'pl', as:'bottom', b:'ca', bs:'left', type:'trans', label:'cancel()', lx:70, ly:96},
+    {a:'cf', as:'bottom', b:'ca', bs:'top', ax:182, bx:182, type:'trans', label:'cancel()'},
+    {a:'pr', as:'bottom', b:'ca', bs:'right', type:'trans', label:'cancel()', lx:286, ly:96},
+    {a:'ca', as:'left', b:'f2', bs:'right', type:'trans'},
+  ]
+};
+DIAGRAMS['pp1-adapter'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:10, name:'OrderService'},
+    {id:'t', k:'class', x:180, y:0, name:'RestaurantGateway', stereo:'interface', ops:['+ sendOrder(o : Order) : boolean']},
+    {id:'a1', k:'class', x:60, y:96, name:'VendorAAdapter', attrs:['- pos : VendorAPos'], ops:['+ sendOrder(o) : boolean']},
+    {id:'a2', k:'class', x:300, y:96, name:'VendorBAdapter', attrs:['- pos : VendorBPos'], ops:['+ sendOrder(o) : boolean']},
+    {id:'v1', k:'class', x:60, y:186, name:'VendorAPos', shade:true, ops:['+ pushOrder(xml : String)']},
+    {id:'v2', k:'class', x:300, y:186, name:'VendorBPos', shade:true, ops:['+ createTicket(json : String)']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'t', bs:'left', bx:28, type:'assoc', label:'uses'},
+    {a:'a1', as:'top', b:'t', bs:'bottom', bo:.3, type:'realize', mid:78},
+    {a:'a2', as:'top', b:'t', bs:'bottom', bo:.7, type:'realize', mid:78},
+    {a:'a1', as:'bottom', b:'v1', bs:'top', type:'assoc', label:'adaptee'},
+    {a:'a2', as:'bottom', b:'v2', bs:'top', type:'assoc', label:'adaptee'},
+  ]
+};
+DIAGRAMS['pp1-hosp'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:56, w:78, h:52, lines:['Clients','patient app','branch counters','doctor portal']},
+    {id:'gw', k:'node', x:100, y:52, w:96, h:60, lines:['API Gateway','OAuth2 / JWT','routing'], dark:true},
+    {id:'s1', k:'node', x:222, y:0, w:144, h:21, lines:['Patient  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:222, y:24, w:144, h:21, lines:['Appointment  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:222, y:48, w:144, h:21, lines:['Doctor / Staff  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:222, y:72, w:144, h:21, lines:['Pharmacy  [DB]'], align:'left'},
+    {id:'s5', k:'node', x:222, y:96, w:144, h:21, lines:['Laboratory  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:222, y:120, w:144, h:21, lines:['Billing  [DB]'], align:'left'},
+    {id:'s7', k:'node', x:222, y:144, w:144, h:21, lines:['Notification  [DB]'], align:'left'},
+    {id:'mb', k:'node', x:394, y:52, w:110, h:60, lines:['Message broker','LabResultReady,','PrescriptionIssued'], dashed:true},
+    {id:'k', k:'node', x:394, y:124, w:110, lines:['Kubernetes, CI/CD,','monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:82, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.24, b:'s2', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.38, b:'s3', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.5, b:'s4', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.62, b:'s5', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.76, b:'s6', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.9, b:'s7', bs:'left', type:'flow', mid:209},
+    {a:'s5', as:'right', b:'mb', bs:'left', bx:100, type:'dflow', label:'events', lx:380, ly:102},
+  ]
+};
+DIAGRAMS['pp1-home'] = {
+  items: [
+    {id:'app', k:'class', x:0, y:20, name:'HomeApp'},
+    {id:'f', k:'class', x:100, y:0, name:'HomeFacade', stereo:'Facade', attrs:['- devices : List<Device>'], ops:['+ awayMode() : void', '+ nightMode() : void']},
+    {id:'d', k:'class', x:330, y:0, name:'Device', stereo:'interface', ops:['+ getType() : String', '+ turnOn() : void', '+ turnOff() : void']},
+    {id:'a1', k:'class', cx:250, y:116, w:132, name:'ZigbeeLightAdapter'},
+    {id:'a2', k:'class', cx:395, y:116, w:140, name:'BluetoothLockAdapter'},
+    {id:'a3', k:'class', cx:545, y:116, w:132, name:'WifiCameraAdapter'},
+    {id:'v1', k:'class', cx:250, y:170, w:132, name:'ZigbeeLight', shade:true, ops:['+ zbSwitch(id, on)']},
+    {id:'v2', k:'class', cx:395, y:170, w:140, name:'BtLock', shade:true, ops:['+ btWrite(mac, cmd)']},
+    {id:'v3', k:'class', cx:545, y:170, w:132, name:'WifiCamera', shade:true, ops:['+ arm(level)']},
+  ],
+  edges: [
+    {a:'app', as:'right', b:'f', bs:'left', bx:29, type:'assoc'},
+    {a:'f', as:'right', ao:.3, b:'d', bs:'left', type:'assoc', label:'1..*'},
+    {a:'a1', as:'top', b:'d', bs:'bottom', bo:.2, type:'realize', mid:96},
+    {a:'a2', as:'top', b:'d', bs:'bottom', bo:.5, type:'realize', mid:96},
+    {a:'a3', as:'top', b:'d', bs:'bottom', bo:.8, type:'realize', mid:96},
+    {a:'a1', as:'bottom', b:'v1', bs:'top', type:'assoc'},
+    {a:'a2', as:'bottom', b:'v2', bs:'top', type:'assoc'},
+    {a:'a3', as:'bottom', b:'v3', bs:'top', type:'assoc'},
+  ]
+};
+</script>

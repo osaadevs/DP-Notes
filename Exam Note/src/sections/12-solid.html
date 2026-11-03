@@ -1,0 +1,156 @@
+<!-- ===================== 10 SOLID : page 1 ===================== -->
+<section class="page" data-sec="10">
+<div class="body">
+  <header class="ph">
+    <div class="code">10</div>
+    <div><h1>SOLID principles</h1><div class="lede">Five rules for designing classes that are easy to change. Lecture 12, new this year, so it may appear.</div></div>
+    <div class="meta">Principles<br><b>Overview</b></div>
+  </header>
+
+  <table>
+    <tr><th style="width:19%">Principle</th><th style="width:30%">In plain words</th><th style="width:23%">Ask yourself</th><th>Patterns that follow it</th></tr>
+    <tr><td><b>S</b>ingle Responsibility</td><td>A class should have only <b>one reason to change</b>.</td><td>Can I describe the class without "and"?</td><td>Facade (work stays in the subsystems), Decorator (one extra each), State (one class per state), Chain (one check per handler)</td></tr>
+    <tr><td><b>O</b>pen / Closed</td><td>Open for extension, <b>closed for modification</b>.</td><td>Can I add behaviour without editing tested code?</td><td>Decorator, Factory, Template, State, Chain, Adapter, Strategy: all add new classes instead of editing old ones</td></tr>
+    <tr><td><b>L</b>iskov Substitution</td><td>A subclass must work <b>anywhere the parent works</b>, without surprises.</td><td>Can I swap in the child safely?</td><td>Template subclasses, State classes, Proxy, Decorator: all must be safe substitutes</td></tr>
+    <tr><td><b>I</b>nterface Segregation</td><td>Don't force a class to implement <b>methods it doesn't use</b>. Prefer small interfaces.</td><td>Is any class stuck with empty or throwing methods?</td><td>Adapter (narrow Target), role interfaces like <code>Workable</code>, <code>Eatable</code></td></tr>
+    <tr><td><b>D</b>ependency Inversion</td><td>High-level code should depend on <b>abstractions</b>, not concrete classes.</td><td>Does business logic <code>new</code> a concrete class?</td><td>Factory (returns interfaces), Facade / Adapter / Proxy behind interfaces, Dependency Injection (Spring)</td></tr>
+  </table>
+
+  <div class="panel">
+    <h2>S: Single Responsibility</h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// BAD: Order changes for 4 different reasons</span>
+<span class="k">public class</span> Order {
+  <span class="k">double</span> calculateTotal() { ... } <span class="c">// rules</span>
+  <span class="k">void</span> saveToDatabase() { ... }  <span class="c">// storage</span>
+  <span class="k">void</span> printInvoice() { ... }    <span class="c">// display</span>
+  <span class="k">void</span> sendEmail() { ... }       <span class="c">// messaging</span>
+}</pre>
+<pre class="code"><span class="c">// GOOD: one job each</span>
+<span class="k">class</span> Order           <span class="c">// business rules</span>
+<span class="k">class</span> OrderRepository <span class="c">// saves to the DB</span>
+<span class="k">class</span> InvoicePrinter  <span class="c">// prints invoices</span>
+<span class="k">class</span> EmailService    <span class="c">// sends emails</span>
+<span class="c">// OrderService (a facade) uses all four</span></pre>
+    </div>
+    <p class="small mt">Test: "If the database changes, should <code>Order</code> change?" If yes, responsibilities are mixed. Warning sign: "this class calculates orders <b>and</b> saves them <b>and</b> sends emails".</p>
+  </div>
+
+  <div class="panel">
+    <h2>O: Open / Closed</h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// BAD: edit this for every new type</span>
+<span class="k">double</span> discount(String t, <span class="k">double</span> a) {
+  <span class="k">if</span> (t.equals(<span class="s">"REGULAR"</span>)) <span class="k">return</span> a * 0.05;
+  <span class="k">if</span> (t.equals(<span class="s">"PREMIUM"</span>)) <span class="k">return</span> a * 0.10;
+  <span class="k">if</span> (t.equals(<span class="s">"VIP"</span>))     <span class="k">return</span> a * 0.20;
+  <span class="k">return</span> 0;   <span class="c">// STUDENT? edit again</span>
+}</pre>
+<pre class="code"><span class="c">// GOOD: add a class, change nothing</span>
+<span class="k">interface</span> DiscountStrategy {
+  <span class="k">double</span> calculate(<span class="k">double</span> amt);
+}
+<span class="k">class</span> VipDiscount
+      <span class="k">implements</span> DiscountStrategy {
+  <span class="k">public double</span> calculate(<span class="k">double</span> a) {
+    <span class="k">return</span> a * 0.20; }
+}
+<span class="c">// new StudentDiscount = new class only</span></pre>
+    </div>
+    <p class="small mt">Same idea for payments: a <code>PaymentMethod</code> interface, and <code>CryptoPayment</code> is added as a new class without touching the <code>PaymentProcessor</code>.</p>
+  </div>
+</div>
+<div class="foot"><span>10 SOLID</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 10 SOLID : page 2 ===================== -->
+<section class="page" data-sec="10">
+<div class="body">
+  <header class="ph">
+    <div class="code">10</div>
+    <div><h1>SOLID: L, I, D</h1><div class="lede">And how to use SOLID to strengthen any pattern answer.</div></div>
+    <div class="meta">Principles<br><b>L · I · D</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>L: Liskov Substitution</h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// VIOLATION: Square extends Rectangle</span>
+Rectangle r = <span class="k">new</span> Square();
+r.setWidth(5);
+r.setHeight(10);
+r.getArea();   <span class="c">// expected 50, got 100</span>
+
+<span class="c">// VIOLATION: Penguin extends Bird</span>
+<span class="k">class</span> Penguin <span class="k">extends</span> Bird {
+  <span class="k">void</span> fly() {
+    <span class="k">throw new</span> UnsupportedOperationException();
+  }
+}</pre>
+<pre class="code"><span class="c">// FIX: model the right abstraction</span>
+<span class="k">interface</span> Shape { <span class="k">double</span> getArea(); }
+<span class="k">class</span> Rectangle <span class="k">implements</span> Shape { ... }
+<span class="k">class</span> Square    <span class="k">implements</span> Shape { ... }
+
+<span class="k">abstract class</span> Bird { <span class="k">abstract void</span> eat(); }
+<span class="k">interface</span> Flyable { <span class="k">void</span> fly(); }
+<span class="k">class</span> Sparrow <span class="k">extends</span> Bird
+              <span class="k">implements</span> Flyable { ... }
+<span class="k">class</span> Penguin <span class="k">extends</span> Bird { ... }</pre>
+    </div>
+    <p class="small mt">Don't only ask "is it a kind of?" Ask "can the child keep every promise the parent makes?" No stricter inputs, no weaker results, no surprise exceptions.</p>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel">
+      <h2>I: Interface Segregation</h2>
+<pre class="code" style="border:none;padding:0"><span class="c">// BAD: a fat interface</span>
+<span class="k">interface</span> Worker {
+  <span class="k">void</span> work(); <span class="k">void</span> eat(); <span class="k">void</span> sleep();
+}
+<span class="c">// Robot must throw on eat() and sleep()</span>
+
+<span class="c">// GOOD: small role interfaces</span>
+<span class="k">interface</span> Workable  { <span class="k">void</span> work(); }
+<span class="k">interface</span> Eatable   { <span class="k">void</span> eat(); }
+<span class="k">interface</span> Sleepable { <span class="k">void</span> sleep(); }
+<span class="k">class</span> Human <span class="k">implements</span> Workable,
+    Eatable, Sleepable { ... }
+<span class="k">class</span> Robot <span class="k">implements</span> Workable { ... }</pre>
+      <p class="tiny mt">Java's own examples: <code>Comparable</code>, <code>Runnable</code>, <code>Iterable</code>, <code>AutoCloseable</code>.</p>
+    </div>
+    <div class="panel">
+      <h2>D: Dependency Inversion</h2>
+<pre class="code" style="border:none;padding:0"><span class="c">// BAD: tied to MySQL, can't mock it</span>
+<span class="k">class</span> UserService {
+  <span class="k">private</span> MySQLDatabase db =
+      <span class="k">new</span> MySQLDatabase();
+}
+
+<span class="c">// GOOD: depend on an interface,</span>
+<span class="c">// inject it through the constructor</span>
+<span class="k">class</span> UserService {
+  <span class="k">private final</span> UserRepository repo;
+  UserService(UserRepository r) {
+    repo = r; }
+}
+<span class="k">new</span> UserService(<span class="k">new</span> PostgresUserRepo());</pre>
+      <p class="tiny mt"><b>Dependency Inversion</b> is the principle. <b>Dependency Injection</b> is the technique (pass dependencies in from outside; Spring does it for you).</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Add one SOLID line to any pattern answer <span class="r">cheap extra marks</span></h2>
+    <table class="tight small">
+      <tr><td style="width:36%">Decorator, Factory, Strategy, State, Chain</td><td>"…which follows the <b>Open/Closed</b> principle: new types are new classes, existing code is not modified."</td></tr>
+      <tr><td>Facade, Chain handlers, Decorator</td><td>"…each class has a <b>single responsibility</b>."</td></tr>
+      <tr><td>Template subclasses, State, Proxy</td><td>"…any subclass can replace the parent (<b>Liskov</b>)."</td></tr>
+      <tr><td>Adapter Target, role interfaces</td><td>"…clients only see the small interface they need (<b>Interface Segregation</b>)."</td></tr>
+      <tr><td>Factory, any interface-based design</td><td>"…the client depends on an abstraction, not a concrete class (<b>Dependency Inversion</b>)."</td></tr>
+    </table>
+  </div>
+
+  <div class="shade small"><b>SOLID vs patterns vs frameworks:</b> SOLID are <b>principles</b> ("how should I design classes?"), patterns are <b>proven solutions</b> to recurring problems, frameworks are <b>reusable infrastructure</b> (Spring applies Dependency Inversion through injection). Using a pattern doesn't guarantee SOLID; it depends on how you apply it. And SOLID isn't "more interfaces everywhere": adding abstraction to a 2-line calculator is over-engineering (YAGNI).</div>
+</div>
+<div class="foot"><span>10 SOLID</span><span>page <b class="pnum"></b></span></div>
+</section>

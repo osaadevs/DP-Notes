@@ -1,0 +1,2327 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Design Patterns — Past Papers Answered</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&display=block" rel="stylesheet">
+<style>:root{
+  --ink:#111; --ink2:#3d3d3d; --ink3:#6e6e6e; --rule:#b9b9b9; --hair:#d4d4d4; --fill:#f0f0f0; --fill2:#e1e1e1;
+}
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:"IBM Plex Sans",Arial,sans-serif;font-size:9.2pt;line-height:1.45;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;font-kerning:normal}
+@media screen{body{background:#8d8d8d;padding:6mm 0}.page{margin:0 auto 6mm;box-shadow:0 1px 8px rgba(0,0,0,.35)}}
+#report{display:none}
+
+/* ---------- page frame ---------- */
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;break-after:page;background:#fff}
+.page:last-of-type{break-after:auto}
+.body{position:absolute;top:15mm;bottom:16mm;left:16mm;right:22mm;display:flex;flex-direction:column;gap:4.2mm}
+.foot{position:absolute;left:16mm;right:22mm;bottom:8.5mm;display:flex;justify-content:space-between;font-size:7pt;color:var(--ink3);border-top:.5pt solid var(--hair);padding-top:1.4mm}
+.foot b{color:var(--ink);font-weight:600}
+
+/* thumb-index ladder on the right edge */
+.ladder{position:absolute;right:5.5mm;top:15mm;display:flex;flex-direction:column;gap:1.1mm}
+.rung{width:8.5mm;height:15.4mm;border:.6pt solid var(--rule);border-radius:1.2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono",monospace;font-size:6.6pt;color:var(--ink3)}
+.rung.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.rung b{font-weight:600}
+.rung.on b{font-size:8.6pt}
+.rung span{writing-mode:vertical-rl;font-family:"IBM Plex Sans";font-size:6.2pt;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:1mm}
+
+/* ---------- page header ---------- */
+.ph{display:grid;grid-template-columns:auto 1fr auto;column-gap:4.5mm;align-items:end;padding-bottom:2.6mm;border-bottom:1.3pt solid var(--ink)}
+.ph .code{font-family:"IBM Plex Mono",monospace;font-size:27pt;font-weight:600;line-height:.78;letter-spacing:-.04em}
+.ph h1{margin:0;font-size:19pt;line-height:1.05;font-weight:700;letter-spacing:-.012em}
+.ph .lede{font-size:9.6pt;color:var(--ink2);margin-top:1.1mm;line-height:1.35}
+.ph .meta{text-align:right;font-size:6.8pt;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3);line-height:1.6;white-space:nowrap}
+.ph .meta b{color:var(--ink);font-weight:600}
+
+/* ---------- headings & text ---------- */
+h2{margin:0 0 1.8mm;font-size:10.2pt;line-height:1.25;font-weight:700;display:flex;align-items:baseline;gap:2mm}
+h2 .w{font-family:"IBM Plex Mono",monospace;font-size:7.6pt;font-weight:600;background:var(--ink);color:#fff;border-radius:.9mm;padding:.2mm 1.3mm;position:relative;top:-.3mm}
+h2 .r{margin-left:auto;font-size:7.5pt;font-weight:400;color:var(--ink3);white-space:nowrap}
+h3{margin:2mm 0 .8mm;font-size:9pt;font-weight:700}
+h3:first-child{margin-top:0}
+p{margin:0 0 1.5mm}
+p:last-child{margin-bottom:0}
+ul,ol{margin:0;padding-left:4.2mm}
+li{margin:0 0 .9mm}
+li:last-child{margin-bottom:0}
+.small{font-size:8.4pt;line-height:1.42}
+.tiny{font-size:7.4pt;color:var(--ink3)}
+.muted{color:var(--ink2)}
+.nw{white-space:nowrap}
+.mt{margin-top:1.6mm}
+b,strong{font-weight:600}
+.mark{background:var(--fill2);padding:0 .7mm;border-radius:.6mm}
+code{overflow-wrap:anywhere;font-family:"IBM Plex Mono",monospace;font-size:8.1pt;background:var(--fill);padding:0 .6mm;border-radius:.5mm}
+
+/* ---------- blocks ---------- */
+.panel{border:.7pt solid var(--rule);border-radius:1.8mm;padding:3mm 3.4mm}
+.shade{background:var(--fill);border-radius:1.8mm;padding:3mm 3.4mm}
+.say{border-left:2.2pt solid var(--ink);padding:.6mm 0 .6mm 3mm;font-size:9.4pt;line-height:1.45;margin:0 0 2mm}
+.say:last-child{margin-bottom:0}
+.say em{font-style:normal;background:var(--fill2);padding:0 .6mm;border-radius:.5mm}
+.chips{display:flex;flex-wrap:wrap;gap:1.4mm}
+.chip{background:var(--fill2);border-radius:1mm;padding:.35mm 1.8mm;font-size:8.6pt}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4mm}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm}
+.gc{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr);gap:4mm;align-items:start}
+.stack{display:flex;flex-direction:column;gap:4mm}
+.y{font-family:"IBM Plex Mono",monospace;font-size:7pt;font-weight:600;background:var(--ink);color:#fff;border-radius:.8mm;padding:.1mm 1.1mm;white-space:nowrap}
+.y.q{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 .7pt var(--ink)}
+.go{font-family:"IBM Plex Mono",monospace;font-weight:600;white-space:nowrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:4.6mm;height:4.6mm;border-radius:50%;border:.8pt solid var(--ink);font-size:7.4pt;font-weight:700;flex:none}
+
+/* ---------- code ---------- */
+pre.code{margin:0;font-family:"IBM Plex Mono",monospace;font-size:7.55pt;line-height:1.43;white-space:pre;overflow:hidden;
+  border:.7pt solid var(--rule);border-radius:1.8mm;padding:2.6mm 3mm;background:#fff}
+pre.code .c{color:var(--ink3);font-style:italic}
+pre.code .k{font-weight:600}
+pre.code .h{background:var(--fill2)}
+.codecap{font-size:7.2pt;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 1mm;font-weight:600}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;font-size:8.5pt;line-height:1.38}
+th{text-align:left;font-size:6.9pt;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:0 1.6mm 1mm;border-bottom:.9pt solid var(--ink);vertical-align:bottom}
+td{padding:1.15mm 1.6mm;border-bottom:.5pt solid var(--hair);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child,th:first-child{padding-left:0}
+td:last-child,th:last-child{padding-right:0}
+table.tight td{padding-top:.8mm;padding-bottom:.8mm}
+
+/* steps row */
+.steps{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3mm}
+.step{border-top:1.6pt solid var(--ink);padding-top:1.6mm}
+.step .n{font-family:"IBM Plex Mono",monospace;font-size:7.2pt;color:var(--ink3);font-weight:600}
+.step > b{display:block;font-size:9pt;margin:.3mm 0 .5mm}
+
+/* diagram frame */
+.fig{border:.7pt solid var(--rule);border-radius:1.8mm;padding:3mm 3.4mm}
+.fig .cap{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.6mm}
+svg.dg{overflow:visible}
+.legend{display:flex;gap:5mm;flex-wrap:wrap;font-size:7.4pt;color:var(--ink3);margin-top:1.6mm}
+pre.code .s{color:var(--ink2)}
+td code{overflow-wrap:normal}
+.rung b{font-family:"IBM Plex Mono","Apple Symbols",monospace}
+
+/* ---------- past papers: question blocks ---------- */
+.qbox{background:var(--fill);border-radius:1.8mm;padding:2.6mm 3.2mm;font-size:8.7pt;line-height:1.45}
+.qbox .lab{font-family:"IBM Plex Mono",monospace;font-size:7pt;font-weight:600;letter-spacing:.1em;color:var(--ink3);display:block;margin-bottom:.8mm}
+.ql{display:flex;gap:2.2mm;align-items:baseline;margin:0 0 1.8mm;font-size:8.7pt;line-height:1.38;color:var(--ink2)}
+.ql .qt{font-style:italic}
+.ql .r{margin-left:auto;font-size:7.5pt;color:var(--ink3);white-space:nowrap;padding-left:2mm}
+.w{font-family:"IBM Plex Mono",monospace;font-size:7.6pt;font-weight:600;background:var(--ink);color:#fff;border-radius:.9mm;padding:.2mm 1.3mm;white-space:nowrap;flex:none}
+.ans{font-size:9pt}
+.ans p{margin:0 0 1.4mm}
+.tip{font-size:7.6pt;color:var(--ink3);margin-top:1.4mm}
+</style>
+<script>window.SECTIONS=[{code:"22",short:"2022"},{code:"23",short:"2023"},{code:"24",short:"2024"},{code:"25",short:"2025"}];window.DIAGRAMS={};</script>
+</head><body>
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">PP</div>
+    <div><h1>Past papers, answered</h1><div class="lede">All four papers (2022 to 2025), every part, answered at the length its marks need.</div></div>
+    <div class="meta">INTE 22313<br><b>Open book</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>How to use this booklet with the exam note</h2>
+    <ul class="small">
+      <li>If a question in the exam looks like one of these, <b>find the closest past question here</b> and adapt the answer to the new scenario. The thumb index on the right goes 22, 23, 24, 25.</li>
+      <li>The answers use the same wording as the note, so the two documents agree. For the theory behind a pattern, open that pattern's tab in the note.</li>
+      <li>Each answer is <b>sized to its marks</b>: a 2-mark part gets a name and a reason; a 10-mark part gets a full diagram.</li>
+      <li>Grey boxes hold the question as it was printed. The black tag is the part number and the right side shows the marks.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Index of every question</h2>
+    <table class="small">
+      <tr><th style="width:12%">Paper</th><th style="width:5%">Q</th><th>Scenario</th><th style="width:36%">Patterns / topic</th></tr>
+      <tr><td><span class="y">2022</span></td><td><b>1</b></td><td>Travel booking: air ticket, hotel, taxi from third-party services</td><td>Facade + Adapter</td></tr>
+      <tr><td></td><td><b>2</b></td><td>Supermarket pay for executives, daily workers, temporary staff</td><td>Template Method (+ Factory)</td></tr>
+      <tr><td></td><td><b>3</b></td><td>Email spam filter with sub-filters</td><td>Chain of Responsibility, HA &amp; DR</td></tr>
+      <tr><td></td><td><b>4</b></td><td>Cake shop · product framework · payroll one user · LMS pages · LMS modules</td><td>Decorator · Factory · Singleton · Proxy · Factory</td></tr>
+      <tr><td><span class="y">2023</span></td><td><b>1</b></td><td>Salary components, executive deviations, configurable parameters</td><td>Template Method, config, Singleton</td></tr>
+      <tr><td></td><td><b>2</b></td><td>Supermarket chain: purchasing, sales, warehousing</td><td>Microservices</td></tr>
+      <tr><td></td><td><b>3</b></td><td>Restaurant coffee flavours, event websites, logging</td><td>Decorator · Adapter · Singleton, HA &amp; DR</td></tr>
+      <tr><td></td><td><b>4</b></td><td>Fantasy cricket · bank accounts · exceptions · LMS pages · authorization</td><td>Multiton · Factory · Chain · Proxy · Proxy</td></tr>
+      <tr><td><span class="y">2024</span></td><td><b>1</b></td><td>Coffee shop add-ons, profit, logger</td><td>Decorator + Singleton (code)</td></tr>
+      <tr><td></td><td><b>2</b></td><td>Library management system</td><td>Microservices</td></tr>
+      <tr><td></td><td><b>3</b></td><td>Document workflow: Draft, Moderation, Published, Archived</td><td>State (state + class diagram)</td></tr>
+      <tr><td></td><td><b>4</b></td><td>E-commerce checkout steps, exceptions, authorization</td><td>Template · Chain · Proxy</td></tr>
+      <tr><td><span class="y">2025</span></td><td><b>1</b></td><td>Self-checkout kiosk</td><td>State · Decorator · Singleton (code)</td></tr>
+      <tr><td></td><td><b>2</b></td><td>Media streaming platform</td><td>Microservices</td></tr>
+      <tr><td></td><td><b>3</b></td><td>Library borrowing workflow</td><td>Chain · Factory · Proxy · Decorator (code)</td></tr>
+      <tr><td></td><td><b>4</b></td><td>E-commerce orders and payments</td><td>Template · Chain · Singleton · Factory (code)</td></tr>
+    </table>
+  </div>
+
+  <div class="shade small"><b>Every paper:</b> 4 questions × 25 marks, answer all, 2½ hours, open book, "state any assumptions you make". So start each answer with one or two assumption lines, for example: "Assume the system is written in Java and third-party services can't be modified."</div>
+</div>
+<div class="foot"><span>Past papers answered · INTE 22313</span><span>page <b class="pnum"></b></span></div>
+</section>
+<!-- ===================== 2022 Q1 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 1</h1><div class="lede">Travel booking website: air tickets, hotels and taxis from third-party web services.</div></div>
+    <div class="meta">Facade + Adapter<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>Develop a website for travellers to book foreign trips. Users need to book an air ticket, a hotel and a taxi. When the user requests them, the system collects data from different web services and sends the details to the user. The Hotel sub-system connects to web services provided by different hotels (third party); the Air ticket sub-service connects to airline web services; the Taxi sub-service connects to taxi web services. These web services were developed by third parties, so their method signatures can differ.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p22-travel"></svg>
+    <p class="tip">Label the facade and the adapters. That shows the examiner where your patterns sit before you name them.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.2</span><span class="qt">What design pattern can be employed for the sub-systems that combine air tickets, hotels and taxis? Explain your reasons.</span><span class="r">4 marks</span></div>
+    <p>I would use the <b>Facade</b> pattern (structural). It provides one unified, simpler interface to a set of sub-systems.</p>
+    <p>A <code>TravelBookingFacade</code> with one method, <code>bookTrip(request)</code>, calls the AirTicketService, HotelService and TaxiService in the right order and returns one combined itinerary. <b>Reasons:</b> (1) the traveller does one action instead of three; (2) the website depends on <b>one class</b> instead of three sub-systems, so coupling is low; (3) the call order and the combining of results are written <b>once</b>; (4) if a sub-system changes, only the facade changes.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2.1</span><span class="qt">Challenges with this pattern?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>The facade can grow into a <b>God class</b> as more services (car hire, insurance) are added.</li>
+        <li>It is a <b>single point of failure</b>: if the facade or one service is down, the whole booking fails.</li>
+        <li><b>Partial bookings</b>: the flight is booked but the hotel fails.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2.2</span><span class="qt">Mechanism to overcome them?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>Split into smaller facades (FlightFacade, StayFacade); the facade only delegates.</li>
+        <li>Run the facade as stateless copies behind a load balancer; timeouts, retries and a fallback provider for each service.</li>
+        <li>Compensating actions: cancel the flight if the hotel fails, or reserve all three first and confirm together.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 1 (cont.)</h1><div class="lede">Connecting each sub-system to third-party web services with different signatures.</div></div>
+    <div class="meta">Adapter<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.3</span><span class="qt">What design patterns can be employed for connecting the sub-system with different third-party web services?</span><span class="r">4 marks</span></div>
+    <p>I would use the <b>Adapter</b> pattern (structural). It converts the interface of a class into another interface the client expects, so classes with incompatible interfaces can work together.</p>
+    <p>The HotelService owns one interface, <code>HotelProvider</code> (<code>search()</code>, <code>book()</code>). Each hotel's web service gets its own adapter (<code>HiltonAdapter</code>, <code>ShangriLaAdapter</code>…) that implements <code>HotelProvider</code> and translates the call into that hotel's own SOAP / REST / SDK method. Airlines and taxis are done the same way. <b>Reasons:</b> the third-party services <b>can't be modified</b>; the sub-system code stays the same whichever provider is used; a <b>new provider is just a new adapter</b> (Open/Closed).</p>
+    <svg class="dg mt" data-d="p22-adapter"></svg>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3.1</span><span class="qt">Challenges with this pattern?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li><b>Many adapters</b> to write and maintain, one per provider.</li>
+        <li><b>Different data formats</b> (XML vs JSON, currencies, date formats) and error codes.</li>
+        <li>A provider <b>changes its API version</b>, or is slow or unavailable.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3.2</span><span class="qt">Mechanism to overcome them?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>One common interface; a <b>Factory or registry</b> picks the adapter from configuration.</li>
+        <li>A common data object (DTO) and a <b>mapper inside each adapter</b>; unit-test every adapter.</li>
+        <li>Only that adapter changes when an API changes (version adapters); <b>timeouts, retries, caching</b> and fall back to another provider.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Adapter code for one provider <span class="r">not asked, but adds weight to 1.3</span></h2>
+<pre class="code"><span class="k">public interface</span> HotelProvider {                 <span class="c">// Target</span>
+    List&lt;Room&gt; search(String city, LocalDate in, LocalDate out);
+}
+<span class="k">public class</span> HiltonAdapter <span class="k">implements</span> HotelProvider {  <span class="c">// Adapter</span>
+    <span class="k">private final</span> HiltonSoapApi api = <span class="k">new</span> HiltonSoapApi(); <span class="c">// Adaptee</span>
+    <span class="k">public</span> List&lt;Room&gt; search(String city, LocalDate in, LocalDate out) {
+        String xml = api.findRooms(city, in.toString(), out.toString());
+        <span class="k">return</span> RoomMapper.fromHiltonXml(xml);   <span class="c">// translate the result</span>
+    }
+}</pre>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2022 Q2 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 2</h1><div class="lede">Supermarket pay calculation for different employee categories.</div></div>
+    <div class="meta">Template Method<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>A supermarket has different pay calculations for executive employees, temporary staff and daily workers. <b>Executives:</b> basic salary, bonus and executive allowances. <b>Daily workers:</b> 8 hours per day; extra hours earn overtime; more than 200 hours earns an attendance allowance. <b>Temporary staff:</b> called when required and paid a daily allowance for the requested dates. All employees contribute 8% to the Employee Provident Fund.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p22-pay"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">What design pattern(s) can be employed? Explain the reasons for your selection.</span><span class="r">6 marks</span></div>
+    <p>I would use the <b>Template Method</b> pattern (behavioural). It defines the skeleton of an algorithm in a superclass and lets subclasses redefine certain steps without changing the structure.</p>
+    <p>Every category follows the <b>same calculation order</b>: work out the earnings → gross pay → deduct EPF 8% → net pay. The EPF deduction and the net calculation are <b>the same for everyone</b>; only the earning components differ (bonus, overtime, attendance allowance, daily allowance). So an abstract <code>SalaryCalculator</code> has a final <code>calculateNetSalary()</code> that fixes the order and does the common parts, and each category overrides only its own components.</p>
+    <p><b>Reasons:</b> (1) the common EPF and net logic is written <b>once</b>; (2) every category is calculated in the <b>same, enforced order</b>, so results are consistent; (3) a new category (e.g. part-time) is <b>one new subclass</b> (Open/Closed). <b>Supporting patterns:</b> a <b>Factory</b> creates the right calculator from the employee's category, and the payroll run can be a <b>Singleton</b> so it runs once at a time.</p>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 2 (cont.)</h1><div class="lede">Class diagram, challenges, and the "code duplication" statement.</div></div>
+    <div class="meta">Template Method<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Draw a class diagram for the above design pattern.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p22-payclass"></svg>
+<pre class="code mt"><span class="k">public final double</span> calculateNetSalary() {            <span class="c">// template method</span>
+    <span class="k">double</span> gross = basicPay() + allowances() + overtime();
+    <span class="k">return</span> gross - gross * 0.08;                     <span class="c">// EPF 8%, same for everyone</span>
+}</pre>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.4</span><span class="qt">What challenges will you face?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li>The order of steps is <b>rigid</b>: a category that needs a different sequence doesn't fit.</li>
+        <li>The number of <b>subclasses grows</b> with every new category.</li>
+        <li>Rates and limits (8%, 200 hours, 8 hours/day) <b>change over time</b>.</li>
+        <li>A subclass might <b>override a common step</b> by mistake.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.5</span><span class="qt">Mechanism to overcome them?</span><span class="r">3 marks</span></div>
+      <ul class="small">
+        <li><b>Hook methods</b> with default 0 for optional parts (bonus, overtime), so subclasses override only what they need.</li>
+        <li>Shared middle classes (e.g. <code>HourlyPaid</code>) for categories that share rules.</li>
+        <li>Read rates from <b>external configuration</b> through a Singleton ConfigManager.</li>
+        <li>Make the template method <b>final</b> and the common steps private.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.6</span><span class="qt">"Code duplication can be achieved from the used design pattern in the above scenario." Do you agree? Explain.</span><span class="r">4 marks</span></div>
+    <p><b>I disagree.</b> Template Method is used to <b>avoid</b> code duplication. The parts every employee shares (the order of steps, the EPF 8% deduction, the net salary formula) are written once in the abstract <code>SalaryCalculator</code>. Each subclass contains only what is different for its category. Without the pattern, each category would copy the whole calculation and the EPF logic.</p>
+    <p>A small amount of duplication can remain if two subclasses override a step in the same way (e.g. two categories with the same overtime rule). The fix is to move that shared code up into the parent or into a shared middle class.</p>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2022 Q3 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 3</h1><div class="lede">Email spam filter made of sub-filters.</div></div>
+    <div class="meta">Chain of Responsibility<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>Design an email spam filter. Multiple sub-spam filters are available depending on the different components of the email, such as the email sender, the time it was sent, its content and its attachments.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Sketch a diagram and explain the different components of the email spam filter.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p22-spam"></svg>
+    <p class="small mt">The <b>mail server</b> receives the email and passes it to the first filter. The <b>sender filter</b> checks blacklists and domain reputation. The <b>time filter</b> flags odd sending hours and bursts. The <b>content filter</b> checks keywords, links and language patterns. The <b>attachment filter</b> checks file types and scans for viruses. Any filter can mark the email as spam and stop; if all pass, it is delivered to the inbox.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.2</span><span class="qt">What design pattern can you follow? Explain the reasons.</span><span class="r">5 marks</span></div>
+    <p>I would use the <b>Chain of Responsibility</b> pattern (behavioural). It avoids coupling the sender of a request to its receivers by giving more than one object a chance to handle it; the handlers are chained and the request is passed along.</p>
+    <p>Each sub-filter is a handler that extends an abstract <code>SpamFilter</code> and holds a link to the next filter. <b>Reasons:</b> (1) the mail server only knows the first filter, so it is <b>decoupled</b> from the filters; (2) each filter has <b>one responsibility</b>; (3) filters can be <b>added, removed or reordered</b> without changing the others; (4) the chain can be built from configuration at runtime.</p>
+    <svg class="dg mt" data-d="p22-spamclass"></svg>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 3 (cont.)</h1><div class="lede">Prioritising the filters, extending the chain, and High Availability / Disaster Recovery.</div></div>
+    <div class="meta">Chain of Responsibility<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.3</span><span class="qt">How do you prioritise the different components? Explain your prioritisation criteria.</span><span class="r">6 marks</span></div>
+    <table class="small">
+      <tr><th style="width:24%">Criterion</th><th>What it means here</th></tr>
+      <tr><td><b>Cost / speed</b></td><td>Cheap checks first (sender blacklist, sent time take microseconds); expensive ones last (content analysis, virus scanning of attachments). Most spam is stopped before the expensive filters run.</td></tr>
+      <tr><td><b>Rejection rate</b></td><td>The filter that catches the most spam goes early, saving work for the others.</td></tr>
+      <tr><td><b>Severity / security</b></td><td>A dangerous attachment (malware) may be moved earlier because the risk is high.</td></tr>
+      <tr><td><b>Accuracy</b></td><td>Filters with few false positives come before risky ones, so good mail isn't lost.</td></tr>
+    </table>
+    <p class="small mt"><b>Resulting order:</b> Sender → Time → Content → Attachment. The order is kept in configuration so it can be tuned using real statistics.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">What would be your suggestion if more sub-components need to be added?</span><span class="r">5 marks</span></div>
+    <p>Write a new class that extends <code>SpamFilter</code> and implements only its own check, for example <code>LinkReputationFilter</code> or <code>LanguageFilter</code>. Insert it into the chain with <code>setNext()</code>, or list it in the configuration file that builds the chain. The mail server and the existing filters <b>don't change</b>, which follows the Open/Closed principle. Each new filter is unit-tested on its own, and a fallback "deliver to inbox" handler stays at the end.</p>
+<pre class="code mt"><span class="k">class</span> LinkReputationFilter <span class="k">extends</span> SpamFilter {
+    <span class="k">protected boolean</span> isSpam(Email e) { <span class="k">return</span> LinkDb.hasBadLink(e.getBody()); }
+}
+sender.setNext(time).setNext(content).setNext(<span class="k">new</span> LinkReputationFilter()).setNext(attachment);</pre>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">How can you extend this design to achieve High Availability (HA) and Disaster Recovery (DR)?</span><span class="r">5 marks</span></div>
+    <p><b>HA:</b> the filters don't keep state, so the whole chain can run on <b>several servers behind a load balancer</b>, with health checks and automatic restart. Incoming mail goes into a <b>message queue</b> so nothing is lost if a server dies. If one filter times out (e.g. the virus scanner), a backup handler skips or retries it instead of blocking all mail.</p>
+    <p><b>DR:</b> blacklists, rules and the configuration are <b>backed up and replicated to a second region</b>. A defined RPO/RTO, automatic failover to the DR site, and regular DR drills.</p>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2022 Q4 ===================== -->
+<section class="page" data-sec="22">
+<div class="body">
+  <header class="ph">
+    <div class="code">22</div>
+    <div><h1>2022 · Question 4</h1><div class="lede">Five short scenarios. Name the pattern, explain it, give two reasons.</div></div>
+    <div class="meta">5 × 5 marks<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Online cake ordering: users select options such as decorations and colour. Prices and delivery times differ depending on the selections.</span><span class="r">5 marks</span></div>
+    <p><b>Decorator</b> (structural). A <code>Cake</code> interface has <code>getPrice()</code> and <code>getDeliveryDays()</code>. <code>PlainCake</code> is the base. Each option (<code>FondantDecoration</code>, <code>ChocolateColour</code>, <code>FlowerTopping</code>) is a decorator that wraps the cake and adds its own price and extra delivery days. <b>Reasons:</b> any mix of options is built at runtime without a subclass per combination (no class explosion), and a new option is just a new decorator.</p>
+    <p class="small"><code>Cake c = new FlowerTopping(new Fondant(new PlainCake()));</code> → price = 2,500 + 800 + 600; days = 1 + 1 + 0.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.2</span><span class="qt">Develop a scalable and extensible product-based framework for future needs of the cake ordering system.</span><span class="r">5 marks</span></div>
+    <p><b>Factory Method</b> (creational). A <code>Product</code> interface (cakes, cupcakes, gift boxes…) and a <code>ProductFactory.create(type)</code> that returns the right product. Client code works only with <code>Product</code>. <b>Reasons:</b> new product types are added as new classes registered with the factory, so the framework grows without changing existing code (Open/Closed), and creation logic is kept in one place. The Decorator from 4.1 can still wrap whatever the factory returns.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.3</span><span class="qt">Payroll system: salary calculation should be run by only one user, and all other connections to the salary system stopped.</span><span class="r">5 marks</span></div>
+    <p><b>Singleton</b> (creational) with a lock. <code>SalaryCalculationManager</code> has a private constructor and a static <code>getInstance()</code>, so only one calculation engine exists. Its <code>runPayroll(user)</code> is <code>synchronized</code> and sets a <code>running</code> flag; while it is set, other logins and connections are refused or queued. <b>Reasons:</b> one controller means no two payroll runs at once (no double payments or inconsistent data), and access is controlled in one place. Note that the Singleton limits objects; the lock is what blocks other users.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">4.4</span><span class="qt">LMS: when users read large content, load only a couple of pages rather than the entire document.</span><span class="r">5 marks</span></div>
+      <p class="small"><b>Proxy</b>, a <b>virtual proxy</b> (structural). <code>DocumentProxy</code> implements the same <code>Document</code> interface as <code>LargeDocument</code>. <code>getPage(n)</code> loads only the requested page (and maybe the next) and caches it; the full document is never loaded unless needed. <b>Reasons:</b> fast opening, low memory and bandwidth, and the reader code doesn't change because the interface is the same.</p>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">4.5</span><span class="qt">An LMS that needs different modules to be created depending on the user's needs.</span><span class="r">5 marks</span></div>
+      <p class="small"><b>Factory Method</b> (creational). A <code>Module</code> interface implemented by <code>QuizModule</code>, <code>ForumModule</code>, <code>AssignmentModule</code>, <code>VideoModule</code>. <code>ModuleFactory.create(userNeed)</code> returns the right one. <b>Reasons:</b> the LMS doesn't need to know concrete module classes (loose coupling), and new modules are added without changing the existing code.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2022 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p22-travel'] = {
+  items: [
+    {id:'u', k:'node', x:0, y:62, w:70, lines:['Traveller','web / mobile']},
+    {id:'w', k:'node', x:88, y:62, w:86, lines:['Travel website','booking UI']},
+    {id:'f', k:'node', x:194, y:52, w:112, h:52, lines:['TravelBookingFacade','bookTrip()','«Facade»'], shade:true},
+    {id:'a', k:'node', x:330, y:6, w:98, lines:['Air ticket service']},
+    {id:'h', k:'node', x:330, y:67, w:98, lines:['Hotel service']},
+    {id:'t', k:'node', x:330, y:128, w:98, lines:['Taxi service']},
+    {id:'a1', k:'node', x:452, y:0, w:96, h:16, lines:['AirlineAAdapter'], size:8},
+    {id:'a2', k:'node', x:452, y:20, w:96, h:16, lines:['AirlineBAdapter'], size:8},
+    {id:'h1', k:'node', x:452, y:60, w:96, h:16, lines:['HiltonAdapter'], size:8},
+    {id:'h2', k:'node', x:452, y:80, w:96, h:16, lines:['ShangriLaAdapter'], size:8},
+    {id:'t1', k:'node', x:452, y:122, w:96, h:16, lines:['UberAdapter'], size:8},
+    {id:'t2', k:'node', x:452, y:142, w:96, h:16, lines:['PickMeAdapter'], size:8},
+    {id:'x', k:'node', x:572, y:0, w:72, h:158, lines:['Third-party','web services','(SOAP / REST,','different','signatures)'], dashed:true},
+  ],
+  edges: [
+    {a:'u', as:'right', b:'w', bs:'left', type:'flow'},
+    {a:'w', as:'right', b:'f', bs:'left', bx:79, type:'flow'},
+    {a:'f', as:'right', ao:.2, b:'a', bs:'left', type:'flow', mid:318},
+    {a:'f', as:'right', ao:.5, b:'h', bs:'left', type:'flow', mid:318},
+    {a:'f', as:'right', ao:.8, b:'t', bs:'left', type:'flow', mid:318},
+    {a:'a', as:'right', b:'a1', bs:'left', type:'flow', mid:440},
+    {a:'a', as:'right', b:'a2', bs:'left', type:'flow', mid:440},
+    {a:'h', as:'right', b:'h1', bs:'left', type:'flow', mid:440},
+    {a:'h', as:'right', b:'h2', bs:'left', type:'flow', mid:440},
+    {a:'t', as:'right', b:'t1', bs:'left', type:'flow', mid:440},
+    {a:'t', as:'right', b:'t2', bs:'left', type:'flow', mid:440},
+  ]
+};
+DIAGRAMS['p22-adapter'] = {
+  items: [
+    {id:'hs', k:'class', x:0, y:10, name:'HotelService', attrs:['- providers : List<HotelProvider>'], ops:['+ findRooms(req) : List<Room>']},
+    {id:'hp', k:'class', x:260, y:0, name:'HotelProvider', stereo:'interface', ops:['+ search(city, in, out) : List<Room>', '+ book(roomId) : Booking']},
+    {id:'a1', k:'class', cx:200, y:104, w:116, name:'HiltonAdapter'},
+    {id:'a2', k:'class', cx:335, y:104, w:116, name:'ShangriLaAdapter'},
+    {id:'a3', k:'class', cx:470, y:104, w:116, name:'BookingComAdapter'},
+    {id:'v1', k:'class', cx:200, y:156, w:116, name:'HiltonSoapApi', shade:true},
+    {id:'v2', k:'class', cx:335, y:156, w:116, name:'ShangriLaRest', shade:true},
+    {id:'v3', k:'class', cx:470, y:156, w:116, name:'BookingComSdk', shade:true},
+  ],
+  edges: [
+    {a:'hs', as:'right', b:'hp', bs:'left', type:'assoc', label:'1..*'},
+    {a:'a1', as:'top', b:'hp', bs:'bottom', bo:.25, type:'realize', mid:86},
+    {a:'a2', as:'top', b:'hp', bs:'bottom', bo:.5, type:'realize', mid:86},
+    {a:'a3', as:'top', b:'hp', bs:'bottom', bo:.75, type:'realize', mid:86},
+    {a:'a1', as:'bottom', b:'v1', bs:'top', type:'assoc'},
+    {a:'a2', as:'bottom', b:'v2', bs:'top', type:'assoc'},
+    {a:'a3', as:'bottom', b:'v3', bs:'top', type:'assoc'},
+  ],
+  scale: 0.92
+};
+DIAGRAMS['p22-pay'] = {
+  items: [
+    {id:'e', k:'node', x:0, y:56, w:96, lines:['Employee','category, hours, dates']},
+    {id:'s', k:'node', x:130, y:44, w:120, h:56, lines:['Payroll system','calculate salary','same order for all'], shade:true},
+    {id:'x', k:'node', x:290, y:0, w:170, lines:['Executive','basic + bonus + exec allowance'], align:'left'},
+    {id:'d', k:'node', x:290, y:50, w:170, lines:['Daily worker','8h/day, overtime, >200h allowance'], align:'left'},
+    {id:'t', k:'node', x:290, y:100, w:170, lines:['Temporary staff','daily allowance × requested days'], align:'left'},
+    {id:'epf', k:'node', x:500, y:44, w:100, h:56, lines:['Common','EPF 8%','net = gross − EPF'], dark:true},
+  ],
+  edges: [
+    {a:'e', as:'right', b:'s', bs:'left', bx:73, type:'flow'},
+    {a:'s', as:'right', ao:.2, b:'x', bs:'left', type:'flow', mid:272},
+    {a:'s', as:'right', ao:.5, b:'d', bs:'left', type:'flow', mid:272},
+    {a:'s', as:'right', ao:.8, b:'t', bs:'left', type:'flow', mid:272},
+    {a:'x', as:'right', b:'epf', bs:'left', bo:.2, type:'flow', mid:480},
+    {a:'d', as:'right', b:'epf', bs:'left', bo:.5, type:'flow', mid:480},
+    {a:'t', as:'right', b:'epf', bs:'left', bo:.8, type:'flow', mid:480},
+  ]
+};
+DIAGRAMS['p22-payclass'] = {
+  items: [
+    {id:'f', k:'class', x:0, y:20, name:'PayrollService', ops:['+ runPayroll()']},
+    {id:'a', k:'class', cx:330, y:0, name:'SalaryCalculator', stereo:'abstract', abstract:true,
+      attrs:['# basic : double', '# EPF_RATE : double = 0.08'],
+      ops:['+ calculateNetSalary() : double {final}', '/# basicPay() : double', '# allowances() : double', '# overtime() : double', '- epf(gross) : double']},
+    {id:'x', k:'class', cx:170, y:170, w:150, name:'ExecutiveSalary', ops:['# basicPay()', '# allowances() : bonus+exec']},
+    {id:'d', k:'class', cx:330, y:170, w:150, name:'DailyWorkerSalary', ops:['# basicPay() : 8h × rate', '# overtime() : extra hrs', '# allowances() : >200h']},
+    {id:'t', k:'class', cx:490, y:170, w:150, name:'TemporaryStaffSalary', ops:['# basicPay() : 0', '# allowances() : daily×days']},
+  ],
+  edges: [
+    {a:'f', as:'right', b:'a', bs:'left', bx:39, type:'assoc', label:'uses'},
+    {a:'x', as:'top', b:'a', bs:'bottom', type:'extend', mid:152},
+    {a:'d', as:'top', b:'a', bs:'bottom', type:'extend', mid:152},
+    {a:'t', as:'top', b:'a', bs:'bottom', type:'extend', mid:152},
+  ]
+};
+DIAGRAMS['p22-spam'] = {
+  items: [
+    {id:'in', k:'node', x:0, y:8, w:72, lines:['Incoming', 'email']},
+    {id:'ms', k:'node', x:88, y:8, w:72, lines:['Mail server', 'client'], shade:true},
+    {id:'f1', k:'node', x:176, y:8, w:72, lines:['Sender', 'filter']},
+    {id:'f2', k:'node', x:264, y:8, w:72, lines:['Time', 'filter']},
+    {id:'f3', k:'node', x:352, y:8, w:72, lines:['Content', 'filter']},
+    {id:'f4', k:'node', x:440, y:8, w:72, lines:['Attachment', 'filter']},
+    {id:'ib', k:'node', x:528, y:8, w:56, lines:['Inbox']},
+    {id:'sp', k:'node', x:298, y:76, w:98, lines:['Spam folder'], dashed:true},
+  ],
+  edges: [
+    {a:'in', as:'right', b:'ms', bs:'left', type:'flow'},
+    {a:'ms', as:'right', b:'f1', bs:'left', type:'flow'},
+    {a:'f1', as:'right', b:'f2', bs:'left', type:'flow'},
+    {a:'f2', as:'right', b:'f3', bs:'left', type:'flow'},
+    {a:'f3', as:'right', b:'f4', bs:'left', type:'flow'},
+    {a:'f4', as:'right', b:'ib', bs:'left', type:'flow'},
+    {a:'f1', as:'bottom', b:'sp', bs:'left', type:'dflow', label:'spam', lx:214, ly:70},
+    {a:'f2', as:'bottom', b:'sp', bs:'top', bo:.25, type:'dflow', mid:62},
+    {a:'f3', as:'bottom', b:'sp', bs:'top', bo:.75, type:'dflow', mid:62},
+    {a:'f4', as:'bottom', b:'sp', bs:'right', type:'dflow'},
+  ]
+};
+DIAGRAMS['p22-spamclass'] = {
+  items: [
+    {id:'ms', k:'class', x:0, y:24, name:'MailServer'},
+    {id:'em', k:'class', x:0, y:84, name:'Email', attrs:['- sender, sentTime', '- body, attachments']},
+    {id:'h', k:'class', cx:300, y:0, name:'SpamFilter', stereo:'abstract', abstract:true, attrs:['# next : SpamFilter'], ops:['+ setNext(f) : SpamFilter', '+ check(e : Email) : Verdict', '/# isSpam(e : Email) : boolean']},
+    {id:'f1', k:'class', cx:150, y:150, w:110, name:'SenderFilter'},
+    {id:'f2', k:'class', cx:270, y:150, w:110, name:'TimeFilter'},
+    {id:'f3', k:'class', cx:390, y:150, w:110, name:'ContentFilter'},
+    {id:'f4', k:'class', cx:510, y:150, w:116, name:'AttachmentFilter'},
+  ],
+  edges: [
+    {a:'ms', as:'right', b:'h', bs:'left', bx:33, type:'assoc', label:'sends to first'},
+    {a:'h', as:'left', ao:.75, b:'em', bs:'right', type:'depend', label:'checks'},
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.85, type:'aggr', loop:34, label:'next  0..1'},
+    {a:'f1', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'f2', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'f3', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'f4', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+  ]
+};
+</script>
+<!-- ===================== 2023 Q1 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 1</h1><div class="lede">Salary components with deviations for executives, configurable parameters, one-user payroll run.</div></div>
+    <div class="meta">Template + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>
+    Overtime = Basic × OT hours / (30 × 8) · Attendance allowance: absent &gt; 3 days → none; 1–3 days → 50% of basic; 0 days → 75% of basic · Gross = Basic + Attendance + Overtime · EPF employee = Gross × 0.08 · EPF employer = Gross × 0.12 · ETF = Gross × 0.03 · No pay = Basic × no-pay days / 30 · Tax = (Gross − 100,000) × 0.06 · Total deduction = EPF employee + No pay + Tax · Net = Gross − Total deduction · Total EPF = EPF employee + EPF employer.<br>
+    Permanent employees use all of these; for <b>executive</b> employees there is <b>no overtime and no no-pay</b>.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Draw a diagram to indicate the above scenario.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p23-salflow"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.2</span><span class="qt">What design pattern can be employed for the sub-systems that calculate different salary components for different employees? Reasons.</span><span class="r">5 marks</span></div>
+    <p>I would use the <b>Template Method</b> pattern (behavioural). It defines the skeleton of an algorithm in a superclass and lets subclasses redefine certain steps without changing the structure.</p>
+    <p>The calculation always runs in the same order: overtime and allowance → gross → deductions → net (dashed boxes in 1.1 are 0 for executives). An abstract <code>SalaryCalculator</code> has a final <code>calculateNetSalary()</code> containing that order and every common formula. <code>overtime()</code>, <code>attendanceAllowance()</code> and <code>noPay()</code> are hook methods. <code>PermanentSalary</code> uses the standard formulas; <code>ExecutiveSalary</code> overrides <code>overtime()</code> and <code>noPay()</code> to return 0. <b>Reasons:</b> shared formulas exist <b>once</b>; the <b>same order</b> is enforced; a new type is <b>one subclass</b>.</p>
+  </div>
+  <div class="panel">
+    <h2>The design in code <span class="r">supports 1.2, write it if time allows</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> SalaryCalculator {
+  <span class="k">protected double</span> basic;
+  <span class="k">protected int</span> otHours, absentDays,
+                noPayDays;
+
+  <span class="k">public final double</span> calculateNetSalary() {
+    <span class="k">double</span> gross = basic
+        + attendanceAllowance() + overtime();
+    <span class="k">double</span> epfEmp = gross * cfg(<span class="s">"epf.emp"</span>);
+    <span class="k">double</span> taxable =
+        gross - cfg(<span class="s">"tax.threshold"</span>);
+    <span class="k">double</span> tax = Math.max(0,
+        taxable * cfg(<span class="s">"tax.rate"</span>));
+    <span class="k">return</span> gross - (epfEmp + noPay() + tax);
+  }</pre>
+<pre class="code"><span class="c">  // hooks with the standard formulas</span>
+  <span class="k">protected double</span> overtime() {
+    <span class="k">return</span> basic * otHours / (30 * 8); }
+  <span class="k">protected double</span> noPay() {
+    <span class="k">return</span> basic * noPayDays / 30; }
+  <span class="k">protected double</span> attendanceAllowance() {
+    <span class="k">if</span> (absentDays == 0)
+      <span class="k">return</span> basic * 0.75;
+    <span class="k">if</span> (absentDays &lt;= 3)
+      <span class="k">return</span> basic * 0.50;
+    <span class="k">return</span> 0; }
+}
+<span class="k">class</span> PermanentSalary
+    <span class="k">extends</span> SalaryCalculator {}
+<span class="k">class</span> ExecutiveSalary
+    <span class="k">extends</span> SalaryCalculator {
+  <span class="k">protected double</span> overtime() { <span class="k">return</span> 0; }
+  <span class="k">protected double</span> noPay()    { <span class="k">return</span> 0; }
+}</pre>
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>2023 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 1 (cont.)</h1><div class="lede">The code, challenges, configurability and a payroll run that blocks everyone else.</div></div>
+    <div class="meta">Template + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3</span><span class="qt">Challenges with the selected pattern?</span><span class="r">4 marks</span></div>
+      <ul class="small">
+        <li>The <b>order is fixed</b>; an employee type that needs a different sequence doesn't fit.</li>
+        <li><b>Rates and thresholds change</b> (8%, 12%, 3%, 100,000, 6%), and hard-coded values need a redeploy.</li>
+        <li><b>Subclasses multiply</b> as new employee types appear.</li>
+        <li>A subclass may <b>override a common formula</b> by mistake.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.4</span><span class="qt">Mechanism to overcome them?</span><span class="r">4 marks</span></div>
+      <ul class="small">
+        <li><b>Hooks</b> with default bodies for optional components; Strategy if a whole step must vary.</li>
+        <li>All rates in <b>external configuration</b> (1.5).</li>
+        <li>Shared middle classes for types with common rules.</li>
+        <li>Template method <b>final</b>; common formulas private.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.5</span><span class="qt">Many of the parameters can change over time. How would you improve configurability? State the configuration.</span><span class="r">4 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Move every rate and threshold out of the code into <b>external configuration</b>, a database table or a properties file. A <b>Singleton ConfigManager</b> loads it once; the calculator reads values through <code>cfg(key)</code>. An admin screen updates them; each change is <b>versioned with an "effective from" date</b> and audited, so old payslips can be recalculated with the old rates. No recompile or redeploy is needed.</p>
+<pre class="code"><span class="c"># salary.properties</span>
+ot.divisor.days=30
+ot.divisor.hours=8
+attendance.full=0.75
+attendance.partial=0.50
+attendance.maxAbsent=3
+epf.emp=0.08
+epf.employer=0.12
+etf=0.03
+tax.threshold=100000
+tax.rate=0.06</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.6</span><span class="qt">During salary calculation no other user should be logged in and no other process should run. Which pattern and why?</span><span class="r">4 marks</span></div>
+    <p class="small"><b>Singleton</b>, combined with a lock. <code>PayrollEngine</code> has a private constructor and a static <code>getInstance()</code>, so there is <b>only one calculation controller</b> in the system. Its <code>synchronized runPayroll()</code> sets a <code>running</code> flag; the login service and other processes check <code>PayrollEngine.getInstance().isRunning()</code> and are refused or queued until it finishes. <b>Why:</b> one controlling object means two calculations can't run at the same time, and the lock gives one place that blocks everyone else, so the data stays consistent.</p>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2023 Q2 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 2</h1><div class="lede">A supermarket that is part of a chain: purchasing, sales, warehousing.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>A supermarket has functions such as purchasing, sales and warehousing. You are hired to design a system for it. The supermarket is part of a supermarket chain.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">4 marks</span></div>
+    <svg class="dg" data-d="p23-chain"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can an organisation effectively implement and manage a microservices architecture to achieve scalability, fault isolation and ease of continuous deployment?</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Each service scales on its own. Sales/POS gets extra copies at weekends and in the festive season; Purchasing doesn't. Stateless services on Kubernetes with auto-scaling, plus a cache for the product catalogue.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Reporting crashes, branches can still sell. Circuit breakers, timeouts and retries; POS keeps working offline and syncs later.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Own repository and CI/CD pipeline per service, automated tests, Docker images, blue-green or canary releases, versioned APIs. One team per service.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, central config, and central logging, metrics and tracing.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 2 (cont.)</h1><div class="lede">Architecture, data consistency, security, and identical platforms.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a microservice architecture for the above problem.</span><span class="r">4 marks</span></div>
+    <table class="small">
+      <tr><th style="width:24%">Service</th><th>Owns</th></tr>
+      <tr><td><b>Product Catalogue</b></td><td>items, prices, promotions (shared by every branch)</td></tr>
+      <tr><td><b>Sales / POS</b></td><td>bills, payments at the till, returns</td></tr>
+      <tr><td><b>Inventory / Warehouse</b></td><td>stock per branch and per warehouse, transfers between branches</td></tr>
+      <tr><td><b>Purchasing</b></td><td>purchase orders, reorder levels, goods received</td></tr>
+      <tr><td><b>Supplier</b></td><td>supplier details, contracts, invoices</td></tr>
+      <tr><td><b>Branch</b></td><td>branches of the chain, staff, opening hours</td></tr>
+      <tr><td><b>Customer / Loyalty</b>, <b>Reporting</b>, <b>Notification</b></td><td>points, chain-wide sales reports, SMS/email alerts</td></tr>
+    </table>
+    <p class="small mt">Each service has its own database. Clients (POS terminals, head office web, mobile app) go through an <b>API gateway</b>. Services publish events to a <b>message broker</b> ("SaleCompleted" → Inventory reduces stock → Purchasing reorders when below the level). Everything runs in containers on Kubernetes.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.4</span><span class="qt">Methods to maintain data consistency in the proposed architecture?</span><span class="r">4 marks</span></div>
+    <ul class="small">
+      <li><b>Database per service</b>, so there are no shared transactions; accept <b>eventual consistency</b>.</li>
+      <li><b>Saga pattern</b>: a sale reduces stock; if the payment fails, a <b>compensating action</b> puts the stock back. Coordinated by events or by an orchestrator.</li>
+      <li><b>Event-driven updates</b> through Kafka/RabbitMQ, with a <b>transactional outbox</b> and <b>idempotent consumers</b> so a repeated event does no harm.</li>
+      <li><b>CQRS</b> read models for chain-wide reports. Two-phase commit only where it is essential.</li>
+    </ul>
+  </div>
+
+  <div class="g2">
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.5</span><span class="qt">How would you achieve security?</span><span class="r">4 marks</span></div>
+      <ul class="small">
+        <li><b>OAuth2 / OpenID Connect</b> at the gateway with <b>JWT</b>; roles for cashier, branch manager, buyer, head office (RBAC).</li>
+        <li><b>Mutual TLS</b> between services; least-privilege database users.</li>
+        <li>HTTPS everywhere, card data handled to <b>PCI-DSS</b>, secrets in a vault.</li>
+        <li>Rate limiting, input validation, audit logs.</li>
+      </ul>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">2.6</span><span class="qt">Why is it essential to provide the same hardware configurations and options for each microservice platform?</span><span class="r">4 marks</span></div>
+      <p class="small">Identical environments (containers and infrastructure-as-code) make <b>deployment, scaling and failover predictable</b>: any node can run any service, and performance is the same everywhere. <b>Capacity planning, automation, monitoring and troubleshooting</b> are simpler, it avoids "works on my machine", and a failed node can be <b>rebuilt exactly</b> for disaster recovery. (Exception: special nodes such as GPUs for ML.)</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2023 Q3 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 3</h1><div class="lede">Restaurant with many coffee flavours, event websites from other vendors, logging, HA and DR.</div></div>
+    <div class="meta">Decorator · Adapter · Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>A restaurant has different flavours of coffee. For example, Irish Coffee is hot coffee, Irish whiskey and sugar, topped with cream; Nitro Coffee is cold-brew coffee infused with nitrogen, served on tap, with a creamy texture.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Considering the many combinations that exist for coffee, what is the proposed design pattern?</span><span class="r">5 marks</span></div>
+    <p>I would use the <b>Decorator</b> pattern (structural). It attaches additional responsibilities to an object dynamically by wrapping it, which is a flexible alternative to subclassing.</p>
+    <p>The base coffees (<code>HotCoffee</code>, <code>ColdBrew</code>) are concrete components. Every ingredient (Whiskey, Sugar, Cream, Nitrogen) is a decorator that wraps a coffee and adds its own price and description. Irish Coffee = <code>new Cream(new Sugar(new Whiskey(new HotCoffee())))</code>; Nitro Coffee = <code>new Nitrogen(new ColdBrew())</code>. <b>Reasons:</b> the number of combinations is huge (n ingredients → 2ⁿ subclasses), so wrapping avoids class explosion; new recipes are made at runtime; a new ingredient is one new class (Open/Closed).</p>
+  </div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">3.2</span><span class="qt">Draw a simple class diagram to facilitate the above design pattern.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p23-coffee"></svg>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 3 (cont.)</h1><div class="lede">Integrating other vendors' websites, logging, and HA / DR.</div></div>
+    <div class="meta">Adapter · Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.3</span><span class="qt">The restaurant must connect to different websites to show events organised by different entities. They were developed with different technologies by different vendors. How do you integrate them?</span><span class="r">5 marks</span></div>
+    <p>Use the <b>Adapter</b> pattern (structural). The restaurant system owns one interface, <code>EventSource</code> with <code>getEvents()</code>, returning a common <code>Event</code> object (title, date, venue). Each website gets its own adapter (<code>RssEventAdapter</code>, <code>JsonApiEventAdapter</code>, <code>HtmlScraperAdapter</code>) that calls that site in its own technology and converts the result into <code>Event</code>. The restaurant site just loops over a list of <code>EventSource</code>. <b>Reasons:</b> the vendors' systems can't be changed; the restaurant code doesn't depend on any vendor; a new vendor is just a new adapter. A <b>Facade</b> (<code>EventFeed.getAllEvents()</code>) can then merge all sources into one list.</p>
+    <svg class="dg mt" data-d="p23-events"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">If you must implement a logging mechanism, which design pattern can you use? Give logical reasons.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Use the <b>Singleton</b> pattern for the logger. <b>Reasons:</b> (1) all parts of the system must write to <b>the same log file</b>; several logger objects would open the file several times and produce duplicate or interleaved lines; (2) one instance owns the file handle, so the format and order are consistent; (3) a global access point (<code>Logger.getInstance()</code>) from anywhere; (4) less memory. <code>log()</code> is synchronized so threads don't mix lines. (Adding logging around existing services without changing them can be done with a logging <b>Proxy</b> that calls this Singleton.)</p>
+<pre class="code"><span class="k">public final class</span> Logger {
+  <span class="k">private static final</span> Logger INSTANCE =
+      <span class="k">new</span> Logger();
+  <span class="k">private final</span> PrintWriter out;
+  <span class="k">private</span> Logger() {
+    out = Files.openAppend(<span class="s">"app.log"</span>); }
+  <span class="k">public static</span> Logger getInstance() {
+    <span class="k">return</span> INSTANCE; }
+  <span class="k">public synchronized void</span> log(String m) {
+    out.println(LocalDateTime.now()
+        + <span class="s">" "</span> + m);
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">How can you extend this design to achieve High Availability (HA) and Disaster Recovery (DR)?</span><span class="r">5 marks</span></div>
+    <p class="small"><b>HA:</b> run the ordering application as <b>several stateless copies behind a load balancer</b>, with health checks and auto-restart; the database is replicated with automatic failover. Event adapters use timeouts, retries and a <b>cache</b> of the last events, so a vendor site being down doesn't break the page. A single logger instance per server ships logs to a central, replicated log store, so the Singleton isn't a single point of failure. <b>DR:</b> regular backups, the database replicated to a <b>second region</b>, agreed RPO/RTO, automated failover, infrastructure-as-code to rebuild, and DR drills.</p>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2023 Q4 ===================== -->
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 4</h1><div class="lede">Five scenarios. Pattern, explanation and a simple class diagram for each.</div></div>
+    <div class="meta">5 × 5 marks<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Fantasy cricket: the user selects a maximum of five batsmen, five bowlers and one wicketkeeper; there should be one captain. How would you use an extended Singleton to achieve this?</span><span class="r">5 marks</span></div>
+    <p class="small">An extended Singleton is a <b>Multiton</b>: the class controls how many objects can exist, but the limit is N per key instead of 1. <code>Player</code> has a private constructor; the only way to get one is <code>addPlayer(role, name)</code>, which counts the players of that role and throws an exception once the limit (5 batsmen, 5 bowlers, 1 wicketkeeper) is reached. <code>Captain</code> is a plain Singleton (exactly one).</p>
+    <div class="g2 mt" style="align-items:start">
+      <svg class="dg" data-d="p23-cricket"></svg>
+<pre class="code"><span class="k">public static synchronized</span> Player addPlayer(
+        String role, String name) {
+  team.putIfAbsent(role, <span class="k">new</span> ArrayList&lt;&gt;());
+  <span class="k">int</span> n = team.get(role).size();
+  <span class="k">if</span> (n &gt;= LIMIT.get(role))
+    <span class="k">throw new</span> IllegalStateException(
+        <span class="s">"Max "</span> + role + <span class="s">" reached"</span>);
+  Player p = <span class="k">new</span> Player(role, name);
+  team.get(role).add(p);
+  <span class="k">return</span> p;
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.2</span><span class="qt">A banking system with different types of accounts: Current, Saving and Children accounts.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Factory Method</b> (creational). An <code>Account</code> interface with <code>deposit()</code>, <code>withdraw()</code>, <code>calculateInterest()</code>. <code>CurrentAccount</code> (overdraft, no interest), <code>SavingAccount</code> (interest) and <code>ChildrenAccount</code> (withdrawal limit, guardian) implement it. <code>AccountFactory.createAccount(type)</code> returns the right one. <b>Reasons:</b> the bank code works only with <code>Account</code> (loose coupling), creation logic is in one place, and a new account type (FixedDeposit) is added without changing existing code.</p>
+      <svg class="dg" data-d="p23-bank"></svg>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="23">
+<div class="body">
+  <header class="ph">
+    <div class="code">23</div>
+    <div><h1>2023 · Question 4 (cont.)</h1><div class="lede">Exceptions by priority, loading part of a document, and authorization options.</div></div>
+    <div class="meta">Chain · Proxy<br><b>15 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.3</span><span class="qt">An exception-handling system that can handle different priorities depending on the problem.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Chain of Responsibility</b> (behavioural). Each handler deals with the exceptions of its own priority and passes the rest to the next: <code>LowPriorityHandler</code> (validation errors: show a message) → <code>MediumPriorityHandler</code> (payment or timeout errors: retry) → <code>HighPriorityHandler</code> (system failures: log and alert the admin) → <code>DefaultHandler</code> (generic error page). <b>Reasons:</b> the code that throws doesn't need to know who handles it; handlers can be added or reordered; it works like nested try/catch blocks.</p>
+      <svg class="dg" data-d="p23-exc"></svg>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.4</span><span class="qt">LMS: when users read large content, load only a couple of pages rather than the entire document.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Proxy</b>, a <b>virtual proxy</b> (structural). <code>DocumentProxy</code> and <code>LargeDocument</code> both implement <code>Document</code>. The reader holds the proxy; <code>getPage(n)</code> loads only that page from storage and caches it, and the full document is never loaded unless needed. <b>Reasons:</b> fast opening, low memory and bandwidth; same interface, so the reader code doesn't change.</p>
+      <svg class="dg" data-d="p23-proxy"></svg>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.5</span><span class="qt">A website with different authorization options, depending on the user's need.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Proxy</b>, a <b>protection proxy</b> (structural). Each protected service (<code>ReportService</code>, <code>AdminService</code>) sits behind a proxy with the same interface. The proxy checks the user's role and permissions, logs the access and only then forwards the call. <b>Reasons:</b> security is in one place and the real services stay clean; access rules change without touching the services. If authorization is a series of checks (login → role → permission → 2FA), combine with a <b>Chain of Responsibility</b>.</p>
+      <svg class="dg" data-d="p23-auth"></svg>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2023 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p23-salflow'] = {
+  items: [
+    {id:'b', k:'node', x:0, y:46, w:72, lines:['Basic salary']},
+    {id:'ot', k:'node', x:100, y:0, w:118, lines:['Overtime','basic × OT / (30×8)'], dashed:true},
+    {id:'aa', k:'node', x:100, y:46, w:118, lines:['Attendance allow.','0 days 75%, 1–3 50%']},
+    {id:'g', k:'node', x:246, y:46, w:76, lines:['Gross','B + AA + OT'], shade:true},
+    {id:'epf', k:'node', x:350, y:0, w:112, lines:['EPF employee 8%']},
+    {id:'np', k:'node', x:350, y:34, w:112, lines:['No pay','basic × days / 30'], dashed:true},
+    {id:'tx', k:'node', x:350, y:78, w:112, lines:['Tax','(G − 100,000) × 6%']},
+    {id:'n', k:'node', x:490, y:40, w:84, h:40, lines:['Net salary','G − deductions'], dark:true},
+    {id:'er', k:'node', x:246, y:112, w:216, lines:['Employer side: EPF 12% + ETF 3% (from gross)']},
+  ],
+  edges: [
+    {a:'b', as:'right', b:'aa', bs:'left', type:'flow'},
+    {a:'b', as:'top', b:'ot', bs:'left', type:'flow'},
+    {a:'ot', as:'right', b:'g', bs:'top', type:'flow'},
+    {a:'aa', as:'right', b:'g', bs:'left', type:'flow'},
+    {a:'g', as:'right', ao:.2, b:'epf', bs:'left', type:'flow', mid:336},
+    {a:'g', as:'right', ao:.5, b:'np', bs:'left', type:'flow', mid:336},
+    {a:'g', as:'right', ao:.8, b:'tx', bs:'left', type:'flow', mid:336},
+    {a:'epf', as:'right', b:'n', bs:'left', bo:.2, type:'flow', mid:476},
+    {a:'np', as:'right', b:'n', bs:'left', bo:.5, type:'flow', mid:476},
+    {a:'tx', as:'right', b:'n', bs:'left', bo:.8, type:'flow', mid:476},
+    {a:'g', as:'bottom', b:'er', bs:'top', bx:284, type:'flow'},
+  ]
+};
+DIAGRAMS['p23-chain'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:40, w:84, h:70, lines:['Clients','branch POS','head office web','mobile app']},
+    {id:'gw', k:'node', x:104, y:50, w:96, h:50, lines:['API Gateway','auth · routing'], dark:true},
+    {id:'s1', k:'node', x:226, y:0, w:150, h:22, lines:['Product Catalogue  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:226, y:26, w:150, h:22, lines:['Sales / POS  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:226, y:52, w:150, h:22, lines:['Inventory / Warehouse  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:226, y:78, w:150, h:22, lines:['Purchasing  [DB]'], align:'left'},
+    {id:'s5', k:'node', x:226, y:104, w:150, h:22, lines:['Supplier  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:226, y:130, w:150, h:22, lines:['Branch · Reporting  [DB]'], align:'left'},
+    {id:'mb', k:'node', x:404, y:40, w:110, h:70, lines:['Message broker','SaleCompleted →','StockLow →','PurchaseOrder'], dashed:true},
+    {id:'k', k:'node', x:404, y:122, w:110, lines:['Kubernetes, CI/CD,','monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.3, b:'s2', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.5, b:'s3', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.7, b:'s4', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.8, b:'s5', bs:'left', type:'flow', mid:212},
+    {a:'gw', as:'right', ao:.9, b:'s6', bs:'left', type:'flow', mid:212},
+    {a:'s3', as:'right', b:'mb', bs:'left', bx:63, type:'dflow', label:'events', lx:390, ly:58},
+  ]
+};
+DIAGRAMS['p23-coffee'] = {
+  items: [
+    {id:'c', k:'class', cx:270, y:0, name:'Coffee', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'h', k:'class', cx:55, y:100, w:100, name:'HotCoffee', ops:['+ getCost()', '+ getDescription()']},
+    {id:'cb', k:'class', cx:170, y:100, w:100, name:'ColdBrew', ops:['+ getCost()', '+ getDescription()']},
+    {id:'d', k:'class', cx:400, y:96, name:'CoffeeDecorator', stereo:'abstract', abstract:true, attrs:['# coffee : Coffee'], ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'w', k:'class', cx:250, y:206, w:84, name:'Whiskey'},
+    {id:'s', k:'class', cx:345, y:206, w:84, name:'Sugar'},
+    {id:'cr', k:'class', cx:440, y:206, w:84, name:'Cream'},
+    {id:'n', k:'class', cx:535, y:206, w:84, name:'Nitrogen'},
+  ],
+  edges: [
+    {a:'h', as:'top', b:'c', bs:'bottom', bo:.2, type:'realize', mid:80},
+    {a:'cb', as:'top', b:'c', bs:'bottom', bo:.4, type:'realize', mid:80},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.75, type:'realize', mid:80},
+    {a:'d', as:'right', ao:.15, b:'c', bs:'right', bo:.5, type:'aggr', via:[[540,110],[540,30]], label:'wraps  1', lx:546, ly:70, lanchor:'start'},
+    {a:'w', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'cr', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+    {a:'n', as:'top', b:'d', bs:'bottom', type:'extend', mid:192},
+  ]
+};
+DIAGRAMS['p23-events'] = {
+  items: [
+    {id:'r', k:'class', x:0, y:6, name:'RestaurantSite', attrs:['- sources : List<EventSource>']},
+    {id:'i', k:'class', x:240, y:0, name:'EventSource', stereo:'interface', ops:['+ getEvents() : List<Event>']},
+    {id:'a1', k:'class', cx:150, y:86, w:128, name:'RssEventAdapter'},
+    {id:'a2', k:'class', cx:300, y:86, w:136, name:'JsonApiEventAdapter'},
+    {id:'a3', k:'class', cx:455, y:86, w:136, name:'HtmlScraperAdapter'},
+  ],
+  edges: [
+    {a:'r', as:'right', b:'i', bs:'left', type:'assoc', label:'1..*'},
+    {a:'a1', as:'top', b:'i', bs:'bottom', bo:.2, type:'realize', mid:68},
+    {a:'a2', as:'top', b:'i', bs:'bottom', bo:.5, type:'realize', mid:68},
+    {a:'a3', as:'top', b:'i', bs:'bottom', bo:.8, type:'realize', mid:68},
+  ],
+  scale: 0.9
+};
+DIAGRAMS['p23-cricket'] = {
+  items: [
+    {id:'p', k:'class', x:0, y:0, name:'Player', stereo:'Multiton', attrs:['_- team : Map<Role,List<Player>>', '_- LIMIT : Map<Role,Integer>', '- role, name : String'], ops:['- Player(role, name)', '_+ addPlayer(role, name) : Player']},
+    {id:'c', k:'class', x:0, y:150, name:'Captain', stereo:'Singleton', attrs:['_- instance : Captain'], ops:['- Captain()', '_+ getInstance() : Captain']},
+  ],
+  edges: [
+    {a:'c', as:'top', b:'p', bs:'bottom', type:'assoc', label:'is one of 1'},
+  ]
+};
+DIAGRAMS['p23-bank'] = {
+  items: [
+    {id:'f', k:'class', x:0, y:0, name:'AccountFactory', ops:['_+ createAccount(type) : Account']},
+    {id:'a', k:'class', x:0, y:62, name:'Account', stereo:'interface', ops:['+ deposit(amt)', '+ withdraw(amt)', '+ calculateInterest()']},
+    {id:'c1', k:'class', x:200, y:46, w:110, name:'CurrentAccount'},
+    {id:'c2', k:'class', x:200, y:80, w:110, name:'SavingAccount'},
+    {id:'c3', k:'class', x:200, y:114, w:110, name:'ChildrenAccount'},
+  ],
+  edges: [
+    {a:'f', as:'right', b:'c1', bs:'top', type:'depend', label:'«create»', lx:220, ly:20},
+    {a:'c1', as:'left', b:'a', bs:'right', bo:.25, type:'realize', mid:180},
+    {a:'c2', as:'left', b:'a', bs:'right', bo:.55, type:'realize', mid:180},
+    {a:'c3', as:'left', b:'a', bs:'right', bo:.85, type:'realize', mid:180},
+  ]
+};
+DIAGRAMS['p23-exc'] = {
+  items: [
+    {id:'h', k:'class', x:30, y:0, name:'ExceptionHandler', stereo:'abstract', abstract:true, attrs:['# next : ExceptionHandler'], ops:['+ handle(e : AppException)', '/# canHandle(e) : boolean']},
+    {id:'l', k:'class', x:0, y:118, w:90, name:'LowPriority'},
+    {id:'m', k:'class', x:96, y:118, w:96, name:'MediumPriority'},
+    {id:'hi', k:'class', x:198, y:118, w:90, name:'HighPriority'},
+  ],
+  edges: [
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.8, type:'aggr', loop:26, label:'next'},
+    {a:'l', as:'top', b:'h', bs:'bottom', type:'extend', mid:102},
+    {a:'m', as:'top', b:'h', bs:'bottom', type:'extend', mid:102},
+    {a:'hi', as:'top', b:'h', bs:'bottom', type:'extend', mid:102},
+  ]
+};
+DIAGRAMS['p23-proxy'] = {
+  items: [
+    {id:'s', k:'class', cx:140, y:0, name:'Document', stereo:'interface', ops:['+ getPage(n) : Page']},
+    {id:'r', k:'class', cx:50, y:82, w:100, name:'LargeDocument'},
+    {id:'p', k:'class', cx:225, y:82, name:'DocumentProxy', attrs:['- cache : Map<Integer,Page>']},
+  ],
+  edges: [
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:64},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:64},
+    {a:'p', as:'left', ao:.3, b:'r', bs:'right', type:'assoc'},
+  ]
+};
+DIAGRAMS['p23-auth'] = {
+  items: [
+    {id:'s', k:'class', cx:140, y:0, name:'ReportService', stereo:'interface', ops:['+ getReport(id)']},
+    {id:'r', k:'class', cx:50, y:82, w:100, name:'RealReportService'},
+    {id:'p', k:'class', cx:232, y:82, name:'ReportServiceProxy', attrs:['- user : User'], ops:['- hasPermission() : boolean']},
+  ],
+  edges: [
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:64},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:64},
+    {a:'p', as:'left', ao:.25, b:'r', bs:'right', type:'assoc'},
+  ]
+};
+</script>
+<!-- ===================== 2024 Q1 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 1</h1><div class="lede">Coffee shop with optional ingredients, different profit per coffee, and one shared logger.</div></div>
+    <div class="meta">Decorator + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>In a coffee shop, customers order a base coffee and add optional ingredients (milk, sugar, chocolate). The price depends on the base type and the selected additions. You need a flexible way to calculate the price dynamically without a complex hierarchy of subclasses for every combination of coffee and ingredients.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.1</span><span class="qt">What is the best design pattern for the above scenario?</span><span class="r">5 marks</span></div>
+    <p>The <b>Decorator</b> pattern (structural). It attaches additional responsibilities to an object dynamically by wrapping it, which is a flexible alternative to subclassing.</p>
+    <p>The base coffee is a concrete component; Milk, Sugar and Chocolate are decorators. Each decorator implements the same <code>Coffee</code> interface, holds the coffee it wraps, adds its own price and description, and passes the rest of the call inwards. <b>Reasons:</b> (1) no class explosion: 3 ingredients would need 2³ = 8 subclasses per base coffee, here it's one class per ingredient; (2) the price is worked out <b>at runtime</b> from whatever the customer picks; (3) a new ingredient is a new class and nothing existing changes (Open/Closed); (4) each decorator has one responsibility.</p>
+    <svg class="dg mt" data-d="p24-coffee"></svg>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2</span><span class="qt">Define a Coffee interface with getCost() and getDescription().</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="c">// Component: every coffee and every</span>
+<span class="c">// decorator has these two methods</span>
+<span class="k">public interface</span> Coffee {
+    <span class="k">double</span> getCost();
+    String getDescription();
+}</pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3</span><span class="qt">Create a BasicCoffee class implementing the Coffee interface.</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="c">// Concrete component: the base coffee</span>
+<span class="k">public class</span> BasicCoffee <span class="k">implements</span> Coffee {
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> 200.0;
+    }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> <span class="s">"Basic coffee"</span>;
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 1 (cont.)</h1><div class="lede">The decorators that make 1.2 and 1.3 work, the profit extension, and the logger.</div></div>
+    <div class="meta">Decorator + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Show the decorators too <span class="r">adds strength to 1.1–1.3</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> CoffeeDecorator
+        <span class="k">implements</span> Coffee {
+    <span class="k">protected</span> Coffee coffee;    <span class="c">// wrapped</span>
+    <span class="k">public</span> CoffeeDecorator(Coffee c) {
+        coffee = c; }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost(); }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription(); }
+}</pre>
+<pre class="code"><span class="k">public class</span> Milk <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">public</span> Milk(Coffee c) { <span class="k">super</span>(c); }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost() + 80; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription()
+               + <span class="s">", milk"</span>; }
+}
+<span class="c">// Sugar +20, Chocolate +120: same shape</span>
+Coffee c = <span class="k">new</span> BasicCoffee();
+c = <span class="k">new</span> Sugar(<span class="k">new</span> Milk(c));
+c.getCost();   <span class="c">// 200 + 80 + 20 = 300</span></pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.4</span><span class="qt">If there is a different profit for each coffee, how would you extend the above design?</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <div class="small">
+        <p><b>Option A:</b> add <code>getProfit()</code> to the <code>Coffee</code> interface. Each base coffee returns its own margin; each decorator returns <code>coffee.getProfit()</code> plus its add-on profit. Selling price = <code>getCost() + getProfit()</code>.</p>
+        <p><b>Option B (better, Open/Closed):</b> add a new <code>ProfitMargin</code> decorator that wraps the finished drink and adds a percentage. No existing class changes, and each coffee can get a different rate: <code>new ProfitMargin(espresso, 0.25)</code>, <code>new ProfitMargin(latte, 0.35)</code>. The rates can be read from configuration.</p>
+      </div>
+<pre class="code"><span class="k">public class</span> ProfitMargin
+        <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">private final double</span> rate;
+    <span class="k">public</span> ProfitMargin(Coffee c, <span class="k">double</span> r) {
+        <span class="k">super</span>(c);
+        rate = r;
+    }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost() * (1 + rate);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.5</span><span class="qt">A logger must write all logs to the same file or output stream; multiple instances would cause duplicate or inconsistent output. Propose a design pattern.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Use the <b>Singleton</b> pattern (creational). It ensures a class has only one instance and provides a global point of access to it. The Logger has a private constructor and a static <code>getInstance()</code>, so every class gets the <b>same</b> logger, which owns the <b>one</b> file handle. <b>Reasons:</b> no duplicate or interleaved lines, one consistent format and order, less memory, and easy access from anywhere. <code>log()</code> is <code>synchronized</code> so lines from different threads don't mix.</p>
+<pre class="code"><span class="k">public final class</span> Logger {
+  <span class="k">private static volatile</span> Logger instance;
+  <span class="k">private final</span> PrintWriter out;
+  <span class="k">private</span> Logger() {
+    out = Files.openAppend(<span class="s">"app.log"</span>); }
+  <span class="k">public static</span> Logger getInstance() {
+    <span class="k">if</span> (instance == <span class="k">null</span>) {
+      <span class="k">synchronized</span> (Logger.<span class="k">class</span>) {
+        <span class="k">if</span> (instance == <span class="k">null</span>)
+          instance = <span class="k">new</span> Logger();
+      }
+    }
+    <span class="k">return</span> instance;
+  }
+  <span class="k">public synchronized void</span> log(String m) {
+    out.println(m); }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2024 Q2 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 2</h1><div class="lede">Library management system using microservices.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>Develop a scalable, maintainable library management system using microservices. Requirements: <b>Book management</b> (add, update, search by title, author, genre, ISBN) · <b>User management</b> (register, accounts, borrowing history) · <b>Borrowing and returning</b> (borrow, renew, return, due dates) · <b>Notifications</b> (due dates, new arrivals, system updates) · <b>Catalog search</b> (advanced filters, real-time availability).</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p24-lib"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can an organisation effectively implement and manage microservices to achieve scalability, fault isolation and ease of continuous deployment in this scenario?</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Scale each service on its own. <b>Catalog Search</b> gets the most traffic, so it gets more copies and a search index; Borrowing scales near semester start; User and Notification stay small. Stateless services, Kubernetes auto-scaling, a cache for popular searches.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Notification is down, borrowing still works and messages wait in the queue. Circuit breakers, timeouts, retries; search falls back to cached results.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Separate repository and CI/CD pipeline per service with automated tests, Docker images, blue-green or canary releases, and versioned APIs, so the Book service can be updated without touching Borrowing.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, central config, and central logging, metrics and tracing.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 2 (cont.)</h1><div class="lede">Architecture, data consistency and security for the library.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a microservice architecture for the above problem.</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><th style="width:21%">Service</th><th style="width:44%">Responsibility</th><th>Data / tech</th></tr>
+      <tr><td><b>Book</b></td><td>add / update books, copies, ISBN</td><td>own SQL DB</td></tr>
+      <tr><td><b>User</b></td><td>registration, accounts, membership</td><td>own DB</td></tr>
+      <tr><td><b>Borrowing</b></td><td>borrow, renew, return, due dates, fines</td><td>own DB</td></tr>
+      <tr><td><b>Notification</b></td><td>due-date reminders, new arrivals, updates (email/SMS)</td><td>consumes events</td></tr>
+      <tr><td><b>Catalog Search</b></td><td>advanced filters, real-time availability</td><td>Elasticsearch index built from Book and Borrowing events (CQRS)</td></tr>
+    </table>
+    <p class="small mt">Web and mobile clients go through an <b>API gateway</b>. Services call each other with REST when they need an answer now (Borrowing asks User "is the membership valid?") and publish events to <b>Kafka/RabbitMQ</b> otherwise ("BookBorrowed" → Search marks it unavailable, Notification schedules a reminder). Containers on Kubernetes, with a registry, config server and monitoring.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.4</span><span class="qt">Methods to maintain data consistency in the proposed architecture?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Database per service</b>, so no shared transactions; we accept <b>eventual consistency</b> (search may show a book as available for a second).</li>
+      <li><b>Saga</b> for borrowing: reserve the copy → record the loan → update the user's history. If a step fails, <b>compensating actions</b> undo the earlier ones (release the copy).</li>
+      <li><b>Event-driven updates</b> with a <b>transactional outbox</b> and <b>idempotent consumers</b>.</li>
+      <li><b>CQRS</b>: the search index is a read model rebuilt from events; the Borrowing service is the source of truth for availability at checkout.</li>
+    </ul>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you achieve security in the proposed architecture?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Users:</b> login with OAuth2 / OpenID Connect at the gateway, which issues JWT tokens. Roles: member, librarian, admin (only librarians add or update books).</li>
+      <li><b>Service to service:</b> mutual TLS (service mesh), short-lived tokens, each service only allowed to call what it needs.</li>
+      <li><b>Data:</b> HTTPS everywhere, personal data and borrowing history encrypted at rest, secrets in a vault, least-privilege DB users.</li>
+      <li><b>Attacks:</b> rate limiting on search, input validation, a web application firewall, audit logs.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2024 Q3 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 3</h1><div class="lede">Document workflow: Draft → Moderation → Published → Archived.</div></div>
+    <div class="meta">State<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span><b>Draft:</b> created and editable; can move to Moderation. <b>Moderation:</b> under review; approved → Published, or rejected → back to Draft. <b>Published:</b> final, can't be edited; can only move to Archived. <b>Archived:</b> stored permanently, no further transitions.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Define the state diagram for the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p24-sd"></svg>
+    <p class="tip">Start dot, a rounded box per state, every arrow labelled with its event, and a bullseye after Archived because it is final.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.2</span><span class="qt">What is the best design pattern for this scenario? Provide reasons.</span><span class="r">5 marks</span></div>
+    <p>The <b>State</b> pattern (behavioural). It allows an object to change its behaviour when its internal state changes; the object appears to change its class.</p>
+    <p><b>Reasons:</b> (1) the document has a <b>fixed set of four states</b>, and the <b>same action behaves differently</b> in each: <code>edit()</code> works in Draft but is refused in Published, <code>approve()</code> only works in Moderation; (2) without the pattern, every method would need an if/else on a status field, growing with each state; (3) each state class holds its own rules and decides the <b>next state</b>, so illegal moves (Archived → Draft) are refused cleanly; (4) a new state (e.g. "Under Legal Review") is a new class, and nothing else changes (Open/Closed).</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Explain the use of interfaces (OOP concept) in the above design.</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><code>DocumentState</code> is a <b>contract</b>: every state must implement every event (<code>edit</code>, <code>submit</code>, <code>approve</code>, <code>reject</code>, <code>archive</code>), so nothing is forgotten.</li>
+      <li><code>Document</code> holds a <code>DocumentState</code> reference and calls <code>state.submit(this)</code> without knowing which state it is: <b>polymorphism</b>, programming to an interface.</li>
+      <li>New states plug in without changing <code>Document</code> (<b>Open/Closed</b>, <b>Dependency Inversion</b>); states can be swapped at runtime and mocked in tests.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 3 (cont.)</h1><div class="lede">The 10-mark class diagram, with code that matches it.</div></div>
+    <div class="meta">State<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <div class="ql"><span class="w">3.3</span><span class="qt">Create a class diagram illustrating the use of the identified design pattern in the workflow system.</span><span class="r">10 marks</span></div>
+    <svg class="dg" data-d="p24-cd"></svg>
+    <p class="tip">For 10 marks show: the context with its state field and <code>setState()</code>, the interface with every event, all four concrete states, realisation arrows (dashed + hollow triangle), the has-a diamond on the context, and the client.</p>
+  </div>
+
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> DocumentState {
+  <span class="k">void</span> edit(Document d, String text);
+  <span class="k">void</span> submit(Document d);
+  <span class="k">void</span> approve(Document d);
+  <span class="k">void</span> reject(Document d);
+  <span class="k">void</span> archive(Document d);
+}
+<span class="k">public class</span> Document {
+  <span class="k">private</span> DocumentState state =
+      <span class="k">new</span> DraftState();
+  <span class="k">void</span> setState(DocumentState s) {
+    state = s; }
+  <span class="k">public void</span> submit() {
+    state.submit(<span class="k">this</span>); }
+  <span class="c">// edit, approve, reject, archive:</span>
+  <span class="c">// same, each delegates to state</span>
+}</pre>
+<pre class="code"><span class="k">public class</span> ModerationState
+        <span class="k">implements</span> DocumentState {
+  <span class="k">public void</span> approve(Document d) {
+    d.setState(<span class="k">new</span> PublishedState()); }
+  <span class="k">public void</span> reject(Document d) {
+    d.setState(<span class="k">new</span> DraftState()); }
+  <span class="k">public void</span> edit(Document d, String t) {
+    System.out.println(<span class="s">"Under review"</span>); }
+  <span class="k">public void</span> submit(Document d) { }
+  <span class="k">public void</span> archive(Document d) {
+    System.out.println(<span class="s">"Publish first"</span>); }
+}
+<span class="c">// PublishedState.edit():</span>
+<span class="c">//   "Published documents can't be edited"</span>
+<span class="c">// ArchivedState: every method refuses</span></pre>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2024 Q4 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 4</h1><div class="lede">E-commerce checkout: standard steps, exceptions, abstract classes, authorization levels.</div></div>
+    <div class="meta">Template · Chain · Proxy<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>A standard checkout process: <b>Validate cart</b> (valid items, enough stock) → <b>Process payment</b> (credit card, PayPal, cash on delivery) → <b>Arrange delivery</b> (varies: domestic or international) → <b>Send confirmation</b> (email or SMS).</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p24-flow"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.2</span><span class="qt">What is the best design pattern for this case? Explain.</span><span class="r">5 marks</span></div>
+    <p>The <b>Template Method</b> pattern (behavioural). The checkout always has the same four steps in the same order; only payment and delivery differ. An abstract <code>CheckoutProcess</code> has a final <code>checkout(order)</code> that runs validate cart → process payment → arrange delivery → send confirmation. Validate cart and send confirmation are written once; <code>processPayment()</code> and <code>arrangeDelivery()</code> are abstract and implemented by subclasses such as <code>DomesticCheckout</code> and <code>InternationalCheckout</code>. <b>Reasons:</b> the order is enforced for every order, common steps aren't duplicated, and a new delivery type is just a subclass. (To avoid a subclass for every payment × delivery pair, the payment can be a separate object created by a Factory.)</p>
+    <svg class="dg mt" data-d="p24-tm"></svg>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 4 (cont.)</h1><div class="lede">Exceptions, abstract classes and authorization levels.</div></div>
+    <div class="meta">Chain · Template · Proxy<br><b>15 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.3</span><span class="qt">An exception-handling system is to be included. How would you handle the different types of exceptions?</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Use <b>Chain of Responsibility</b>. Each handler deals with one type of exception and passes the rest on: <code>OutOfStockHandler</code> (tell the customer, suggest alternatives) → <code>PaymentFailedHandler</code> (retry or offer another method) → <code>DeliveryErrorHandler</code> (re-schedule, notify the courier) → <code>SystemErrorHandler</code> (log, alert the admin, show a friendly error). Ordered by how common and how severe they are. <b>Reasons:</b> the checkout code doesn't need to know who handles each error; a new type of exception is a new handler; it works like try/catch.</p>
+<pre class="code"><span class="k">abstract class</span> CheckoutErrorHandler {
+  <span class="k">protected</span> CheckoutErrorHandler next;
+  <span class="k">public void</span> handle(CheckoutException e) {
+    <span class="k">if</span> (canHandle(e)) resolve(e);
+    <span class="k">else if</span> (next != <span class="k">null</span>) next.handle(e);
+  }
+  <span class="k">abstract boolean</span> canHandle(
+      CheckoutException e);
+  <span class="k">abstract void</span> resolve(
+      CheckoutException e);
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.4</span><span class="qt">How can abstract classes be used in the above scenario?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><code>CheckoutProcess</code> is <b>abstract</b> because it must hold <b>real code</b> (the fixed order in the final <code>checkout()</code>, and the common steps validate cart and send confirmation) <b>and</b> declare <b>abstract steps</b> (<code>processPayment()</code>, <code>arrangeDelivery()</code>) that each subclass must write.</li>
+      <li>It <b>can't be instantiated</b> on its own, because a "general" checkout makes no sense; only <code>DomesticCheckout</code> or <code>InternationalCheckout</code> can be created.</li>
+      <li>An interface couldn't do this: it can't enforce the order or share the common code. Subclasses are used through the abstract type (<b>polymorphism</b>), and <code>final</code> stops them changing the order.</li>
+      <li><code>CheckoutErrorHandler</code> in 4.3 is also abstract: it holds the shared <code>next</code> link and passing logic.</li>
+    </ul>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.5</span><span class="qt">How would you incorporate different levels of authorization?</span><span class="r">5 marks</span></div>
+    <p class="small"><b>Protection Proxy.</b> Sensitive operations (refunds, price changes, viewing all orders) sit behind proxies with the same interface; the proxy checks the user's role (customer, support agent, manager, admin) before forwarding, and logs the access. If an action needs approval that escalates with the amount (support can refund up to 5,000, a manager up to 50,000, above that an admin), use a <b>Chain of Responsibility</b> of approvers, each handling its level and passing larger requests up. Roles come from the JWT token issued at login (RBAC).</p>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p24-coffee'] = {
+  items: [
+    {id:'c', k:'class', cx:230, y:0, name:'Coffee', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'b', k:'class', cx:70, y:96, name:'BasicCoffee', ops:['+ getCost()', '+ getDescription()']},
+    {id:'d', k:'class', cx:370, y:92, name:'CoffeeDecorator', stereo:'abstract', abstract:true, attrs:['# coffee : Coffee'], ops:['+ getCost()', '+ getDescription()']},
+    {id:'m', k:'class', cx:270, y:196, w:84, name:'Milk'},
+    {id:'s', k:'class', cx:370, y:196, w:84, name:'Sugar'},
+    {id:'h', k:'class', cx:470, y:196, w:84, name:'Chocolate'},
+  ],
+  edges: [
+    {a:'b', as:'top', b:'c', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.7, type:'realize', mid:76},
+    {a:'d', as:'right', ao:.15, b:'c', bs:'right', bo:.5, type:'aggr', via:[[490,106],[490,30]], label:'wraps  1', lx:496, ly:70, lanchor:'start'},
+    {a:'m', as:'top', b:'d', bs:'bottom', type:'extend', mid:182},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:182},
+    {a:'h', as:'top', b:'d', bs:'bottom', type:'extend', mid:182},
+  ],
+  scale: 0.9
+};
+DIAGRAMS['p24-lib'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:54, w:76, h:44, lines:['Members, librarians','web · mobile']},
+    {id:'gw', k:'node', x:100, y:46, w:100, h:60, lines:['API Gateway','OAuth2 / JWT','routing · rate limit'], dark:true},
+    {id:'s1', k:'node', x:228, y:0, w:150, h:24, lines:['Book service  [SQL DB]'], align:'left'},
+    {id:'s2', k:'node', x:228, y:32, w:150, h:24, lines:['User service  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:228, y:64, w:150, h:24, lines:['Borrowing service  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:228, y:96, w:150, h:24, lines:['Catalog Search  [Elastic]'], align:'left'},
+    {id:'s5', k:'node', x:228, y:128, w:150, h:24, lines:['Notification  [DB]'], align:'left'},
+    {id:'mb', k:'node', x:406, y:46, w:108, h:60, lines:['Message broker','BookBorrowed,','BookReturned…'], dashed:true},
+    {id:'k', k:'node', x:406, y:118, w:108, lines:['Kubernetes, CI/CD,','registry, monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:76, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.3, b:'s2', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.5, b:'s3', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.7, b:'s4', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.9, b:'s5', bs:'left', type:'flow', mid:214},
+    {a:'s3', as:'right', b:'mb', bs:'left', bx:76, type:'dflow', label:'events', lx:392, ly:72},
+  ]
+};
+DIAGRAMS['p24-sd'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'d', k:'state', x:30, y:30, w:70, label:'Draft'},
+    {id:'m', k:'state', x:152, y:30, w:92, label:'Moderation'},
+    {id:'p', k:'state', x:300, y:30, w:86, label:'Published'},
+    {id:'a', k:'state', x:440, y:30, w:80, label:'Archived'},
+    {id:'f', k:'final', cx:552, cy:42},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'d', bs:'left', type:'trans'},
+    {a:'d', as:'right', b:'m', bs:'left', type:'trans', label:'submit()'},
+    {a:'m', as:'right', b:'p', bs:'left', type:'trans', label:'approve()'},
+    {a:'p', as:'right', b:'a', bs:'left', type:'trans', label:'archive()'},
+    {a:'a', as:'right', b:'f', bs:'left', type:'trans'},
+    {a:'m', as:'bottom', b:'d', bs:'bottom', type:'trans', loop:20, label:'reject()'},
+    {a:'d', as:'top', ao:.3, b:'d', bs:'top', bo:.7, type:'trans', loop:18, label:'edit()'},
+  ]
+};
+DIAGRAMS['p24-cd'] = {
+  items: [
+    {id:'e', k:'class', x:0, y:40, name:'Editor'},
+    {id:'c', k:'class', x:90, y:0, name:'Document', stereo:'Context', attrs:['- state : DocumentState', '- content : String'], ops:['+ edit(text) : void', '+ submit() : void', '+ approve() : void', '+ reject() : void', '+ archive() : void', '+ setState(s : DocumentState)']},
+    {id:'s', k:'class', x:370, y:6, name:'DocumentState', stereo:'interface', ops:['+ edit(d : Document, text)', '+ submit(d : Document)', '+ approve(d : Document)', '+ reject(d : Document)', '+ archive(d : Document)']},
+    {id:'s1', k:'class', cx:90, y:182, w:116, name:'DraftState', ops:['+ edit() : saves', '+ submit() → Moderation']},
+    {id:'s2', k:'class', cx:225, y:182, w:132, name:'ModerationState', ops:['+ approve() → Published', '+ reject() → Draft']},
+    {id:'s3', k:'class', cx:375, y:182, w:132, name:'PublishedState', ops:['+ archive() → Archived', '+ edit() : refused']},
+    {id:'s4', k:'class', cx:520, y:182, w:120, name:'ArchivedState', ops:['all : refused']},
+  ],
+  edges: [
+    {a:'e', as:'right', b:'c', bs:'left', bx:49, type:'assoc'},
+    {a:'c', as:'right', ao:.2, b:'s', bs:'left', type:'aggr', label:'current  1'},
+    {a:'s1', as:'top', b:'s', bs:'bottom', bo:.15, type:'realize', mid:162},
+    {a:'s2', as:'top', b:'s', bs:'bottom', bo:.38, type:'realize', mid:162},
+    {a:'s3', as:'top', b:'s', bs:'bottom', bo:.62, type:'realize', mid:162},
+    {a:'s4', as:'top', b:'s', bs:'bottom', bo:.85, type:'realize', mid:162},
+  ]
+};
+DIAGRAMS['p24-flow'] = {
+  items: [
+    {id:'cu', k:'node', x:0, y:40, w:70, lines:['Customer','places order']},
+    {id:'v', k:'node', x:92, y:40, w:92, lines:['Validate cart','items + stock'], shade:true},
+    {id:'p1', k:'node', x:208, y:0, w:96, h:20, lines:['Credit card'], size:8.5},
+    {id:'p2', k:'node', x:208, y:44, w:96, h:20, lines:['PayPal'], size:8.5},
+    {id:'p3', k:'node', x:208, y:88, w:96, h:20, lines:['Cash on delivery'], size:8.5},
+    {id:'d1', k:'node', x:330, y:20, w:90, h:20, lines:['Domestic'], size:8.5},
+    {id:'d2', k:'node', x:330, y:68, w:90, h:20, lines:['International'], size:8.5},
+    {id:'c', k:'node', x:446, y:40, w:100, lines:['Send confirmation','email / SMS'], shade:true},
+    {k:'text', x:208, y:126, lines:['Process payment (varies)'], size:8, italic:true},
+    {k:'text', x:330, y:104, lines:['Arrange delivery (varies)'], size:8, italic:true},
+  ],
+  edges: [
+    {a:'cu', as:'right', b:'v', bs:'left', type:'flow'},
+    {a:'v', as:'right', b:'p1', bs:'left', type:'flow', mid:196},
+    {a:'v', as:'right', b:'p2', bs:'left', type:'flow', mid:196},
+    {a:'v', as:'right', b:'p3', bs:'left', type:'flow', mid:196},
+    {a:'p1', as:'right', b:'d1', bs:'left', type:'flow', mid:317},
+    {a:'p2', as:'right', b:'d1', bs:'left', type:'flow', mid:317},
+    {a:'p2', as:'right', b:'d2', bs:'left', type:'flow', mid:317},
+    {a:'p3', as:'right', b:'d2', bs:'left', type:'flow', mid:317},
+    {a:'d1', as:'right', b:'c', bs:'left', type:'flow', mid:433},
+    {a:'d2', as:'right', b:'c', bs:'left', type:'flow', mid:433},
+  ]
+};
+DIAGRAMS['p24-tm'] = {
+  items: [
+    {id:'a', k:'class', cx:230, y:0, name:'CheckoutProcess', stereo:'abstract', abstract:true, ops:['+ checkout(o : Order) : void {final}', '- validateCart(o) : boolean', '/# processPayment(o) : void', '/# arrangeDelivery(o) : void', '- sendConfirmation(o) : void']},
+    {id:'d', k:'class', cx:120, y:112, w:170, name:'DomesticCheckout', ops:['# processPayment(o)', '# arrangeDelivery(o)']},
+    {id:'i', k:'class', cx:340, y:112, w:170, name:'InternationalCheckout', ops:['# processPayment(o)', '# arrangeDelivery(o)']},
+  ],
+  edges: [
+    {a:'d', as:'top', b:'a', bs:'bottom', type:'extend', mid:98},
+    {a:'i', as:'top', b:'a', bs:'bottom', type:'extend', mid:98},
+  ],
+  scale: 0.92
+};
+</script>
+<!-- ===================== 2025 Q1 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 1</h1><div class="lede">Supermarket self-checkout kiosk: states, add-ons and one global tax calculator.</div></div>
+    <div class="meta">State · Decorator · Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>A supermarket introduces a self-checkout kiosk. Customers scan items, apply optional add-ons (gift-wrap, eco-bag, express packing) and pay. The kiosk operates in the states Idle, Scanning, Payment and Completed. An item's price can have dynamic add-ons without subclasses for every combination. A single global tax calculator must be used across all checkout counters for consistent tax.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Identify suitable design patterns with reasons for: (a) managing kiosk states, (b) applying optional add-ons and calculating the final price dynamically, (c) ensuring only one tax calculator instance.</span><span class="r">6 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>(a)</b> kiosk states</td><td style="width:14%"><b>State</b></td><td>The kiosk behaves differently in each state (scanning is ignored when Completed, paying is refused when Idle). Each state is its own class that handles the actions and decides the next state, so there is no if/else on a status flag, and a new state is just a new class.</td></tr>
+      <tr><td><b>(b)</b> add-ons</td><td><b>Decorator</b></td><td>Each add-on wraps the item and adds its own cost and description, so any combination is built at runtime without 2ⁿ subclasses. A new add-on is a new class (Open/Closed).</td></tr>
+      <tr><td><b>(c)</b> one tax calculator</td><td><b>Singleton</b></td><td>A private constructor and a static <code>getInstance()</code> give one shared instance, so every counter uses the same rate and rules, and a rate change applies everywhere at once.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2</span><span class="qt">Define an interface CheckoutItem with getCost() and getDescription().</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="c">// Component: items and add-ons</span>
+<span class="c">// share this interface</span>
+<span class="k">public interface</span> CheckoutItem {
+    <span class="k">double</span> getCost();
+    String getDescription();
+}</pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3</span><span class="qt">Create a concrete class GroceryItem implementing CheckoutItem.</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public class</span> GroceryItem
+        <span class="k">implements</span> CheckoutItem {
+    <span class="k">private final</span> String name;
+    <span class="k">private final double</span> price;
+    <span class="k">public</span> GroceryItem(String name,
+                       <span class="k">double</span> price) {
+        <span class="k">this</span>.name = name;
+        <span class="k">this</span>.price = price;
+    }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> price; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> name; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>An add-on decorator <span class="r">shows 1.2 and 1.3 in use, worth adding</span></h2>
+<pre class="code"><span class="k">public abstract class</span> AddOnDecorator <span class="k">implements</span> CheckoutItem {
+    <span class="k">protected final</span> CheckoutItem item;                  <span class="c">// the wrapped item</span>
+    <span class="k">public</span> AddOnDecorator(CheckoutItem i) { item = i; }
+}
+<span class="k">public class</span> GiftWrap <span class="k">extends</span> AddOnDecorator {         <span class="c">// EcoBag, ExpressPacking: same shape</span>
+    <span class="k">public</span> GiftWrap(CheckoutItem i) { <span class="k">super</span>(i); }
+    <span class="k">public double</span> getCost()        { <span class="k">return</span> item.getCost() + 150; }
+    <span class="k">public</span> String getDescription() { <span class="k">return</span> item.getDescription() + <span class="s">" + gift wrap"</span>; }
+}
+CheckoutItem it = <span class="k">new</span> GiftWrap(<span class="k">new</span> EcoBag(<span class="k">new</span> GroceryItem(<span class="s">"Rice 5kg"</span>, 1200)));  <span class="c">// 1200+50+150</span></pre>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 1 (cont.)</h1><div class="lede">Kiosk states with an example transition, and the Singleton in the pricing flow.</div></div>
+    <div class="meta">State · Singleton<br><b>9 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.4</span><span class="qt">Explain how you would incorporate the kiosk states (Idle → Scanning → Payment → Completed) using a design pattern. Provide an example transition.</span><span class="r">5 marks</span></div>
+    <p>Use the <b>State</b> pattern. <code>Kiosk</code> is the context and holds a <code>KioskState</code>. <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code> and <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code> and <code>cancel()</code>. The kiosk passes every button press to its current state, and the state calls <code>kiosk.setState(next)</code> to move on.</p>
+    <svg class="dg mt" data-d="p25-kiosk"></svg>
+    <p class="small mt"><b>Example transition:</b> in <code>ScanningState</code>, the customer presses Checkout. <code>checkout()</code> adds up the items' <code>getCost()</code>, adds tax through the Singleton, stores the total and calls <code>kiosk.setState(new PaymentState())</code>. If the customer presses Pay while still Idle, <code>IdleState.pay()</code> refuses: "scan items first".</p>
+<pre class="code mt"><span class="k">public class</span> ScanningState <span class="k">implements</span> KioskState {
+    <span class="k">public void</span> scanItem(Kiosk k, CheckoutItem i) { k.addItem(i); }      <span class="c">// stay</span>
+    <span class="k">public void</span> checkout(Kiosk k) {
+        <span class="k">double</span> total = TaxCalculator.getInstance().applyTax(k.subtotal());
+        k.setTotal(total);
+        k.setState(<span class="k">new</span> PaymentState());                                     <span class="c">// transition</span>
+    }
+    <span class="k">public void</span> pay(Kiosk k, <span class="k">double</span> amt) { System.out.println(<span class="s">"Press checkout first"</span>); }
+}</pre>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.5</span><span class="qt">Describe how the Singleton tax calculator can be integrated into the pricing flow.</span><span class="r">4 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Each scanned item is wrapped with its add-ons, so <code>item.getCost()</code> is already the final item price. When the kiosk moves to the Payment state it adds up the item costs and calls <code>TaxCalculator.getInstance().applyTax(subtotal)</code>. Because every counter calls <code>getInstance()</code>, they all get the <b>same</b> calculator with the same rate and rules, so tax is consistent across the store. When the rate changes, it is updated once (from configuration) and every counter uses it immediately.</p>
+<pre class="code"><span class="k">public final class</span> TaxCalculator {
+  <span class="k">private static final</span> TaxCalculator INSTANCE
+      = <span class="k">new</span> TaxCalculator();
+  <span class="k">private double</span> rate = Config.get(<span class="s">"vat"</span>);
+  <span class="k">private</span> TaxCalculator() { }
+  <span class="k">public static</span> TaxCalculator getInstance() {
+    <span class="k">return</span> INSTANCE; }
+  <span class="k">public double</span> applyTax(<span class="k">double</span> subtotal) {
+    <span class="k">return</span> subtotal * (1 + rate); }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2025 Q2 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 2</h1><div class="lede">Media streaming platform on microservices.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>A media streaming platform wants a scalable, resilient microservices system. <b>User profile management</b> (register, accounts, preferences, viewing history, profiles) · <b>Content delivery</b> (store, transcode and stream video with a CDN) · <b>Recommendations</b> (personalised, ML/AI models) · <b>Billing &amp; subscriptions</b> (plans, payments, invoices, renewals) · <b>Analytics</b> (streams, playback errors, engagement, insights). Each microservice should run independently while the user experience stays seamless.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the microservices scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p25-stream"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can the organisation implement and manage microservices to achieve scalability, fault isolation and continuous deployment for this platform?</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Scale each service on its own. <b>Content Delivery</b> carries most of the load at peak evening hours, so it auto-scales and serves video from <b>CDN edge servers</b>; transcoding runs as a scalable worker queue; Recommendation runs on GPU nodes; Billing stays small. Stateless services on Kubernetes.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Recommendations fails, the home page shows a "popular now" list (graceful degradation); if Analytics fails, playback continues and events wait in the queue. Circuit breakers, timeouts, retries and bulkheads.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>One repository and CI/CD pipeline per service, automated tests, Docker images, canary releases (new recommendation model to 5% of users first), versioned APIs, one team per service.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, config server, and central logging, metrics and tracing to spot playback errors fast.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 2 (cont.)</h1><div class="lede">Architecture, data consistency and security for the streaming platform.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a suitable microservices architecture for the platform.</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><th style="width:22%">Service</th><th style="width:44%">Responsibility</th><th>Data / tech</th></tr>
+      <tr><td><b>User Profile</b></td><td>accounts, profiles, preferences, viewing history</td><td>own DB</td></tr>
+      <tr><td><b>Content Catalogue</b></td><td>titles, metadata, rights by country</td><td>own DB + search index</td></tr>
+      <tr><td><b>Content Delivery</b></td><td>upload, transcode to several resolutions, stream</td><td>object storage + CDN</td></tr>
+      <tr><td><b>Recommendation</b></td><td>personalised lists from ML models</td><td>feature store, GPU nodes</td></tr>
+      <tr><td><b>Billing &amp; Subscription</b></td><td>plans, payments, invoices, renewals</td><td>own DB, payment gateway</td></tr>
+      <tr><td><b>Analytics</b></td><td>streams, errors, engagement, insights</td><td>event stream → data warehouse</td></tr>
+      <tr><td><b>Notification</b></td><td>renewal reminders, new releases</td><td>consumes events</td></tr>
+    </table>
+    <p class="small mt">Clients (TV, mobile, web) go through an <b>API gateway</b>. Services use REST/gRPC for direct requests ("is this subscription active?") and publish events to <b>Kafka</b> ("PlaybackStarted", "PaymentFailed") for Analytics, Recommendation and Notification. Containers on Kubernetes, with a registry, config and monitoring.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.4</span><span class="qt">What methods can be used to maintain data consistency across the microservices?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Database per service</b> with <b>eventual consistency</b>: viewing history and recommendations can catch up a few seconds later.</li>
+      <li><b>Saga</b> for subscribing: create subscription → charge payment → activate the profile's plan. If the payment fails, a <b>compensating action</b> cancels the subscription.</li>
+      <li><b>Event-driven updates</b> with a <b>transactional outbox</b> and <b>idempotent consumers</b>, so a repeated "PaymentSucceeded" doesn't extend the plan twice.</li>
+      <li><b>CQRS</b> read models for analytics dashboards; strong consistency only where it matters (billing).</li>
+    </ul>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you ensure security of user data and of service-to-service communication?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Users:</b> OAuth2 / OpenID Connect login at the gateway with JWT tokens; roles (viewer, profile owner, admin); limits on devices per account.</li>
+      <li><b>User data:</b> encrypted at rest and in transit (HTTPS), card data handled to <b>PCI-DSS</b> by the payment gateway, privacy rules for viewing history, secrets in a vault.</li>
+      <li><b>Service to service:</b> <b>mutual TLS</b> through a service mesh, short-lived service tokens, least-privilege access.</li>
+      <li><b>Content:</b> DRM and signed, expiring CDN URLs so streams can't be shared; rate limiting and a WAF.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2025 Q3 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 3</h1><div class="lede">Library book-borrowing workflow: checks in order, book types, rare books, optional services.</div></div>
+    <div class="meta">Chain · Factory · Proxy · Decorator<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>When a user requests a book, the system checks in order: membership validity, book availability, pending fines. The checks must run in order and be easy to extend. Different categories of book (Fiction, Research, Magazine) must be created depending on the request. Rare books are in a restricted archive; users must not access them directly; access is controlled through permission checks. Optional services (Extended Borrow Period, SMS Notification, Email Receipt) should be applied without subclasses for each combination.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Identify the design patterns, with reasons, for: (a) sequential validation checks, (b) creating different types of book, (c) controlling access to rare books, (d) adding optional services to the borrow transaction.</span><span class="r">8 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>(a)</b> checks in order</td><td style="width:17%"><b>Chain of Responsibility</b></td><td>Each check is a handler linked to the next; a failure stops the request with a reason. A new check is one class and one link, and the others don't change.</td></tr>
+      <tr><td><b>(b)</b> book types</td><td><b>Factory Method</b></td><td><code>BookFactory.createBook(type, title)</code> decides which class to create, so the client never uses <code>new</code> and new categories are easy to add.</td></tr>
+      <tr><td><b>(c)</b> rare books</td><td><b>Protection Proxy</b></td><td>The proxy has the same interface as the archive and checks permissions (and logs access) before forwarding, so users can't reach the real archive directly.</td></tr>
+      <tr><td><b>(d)</b> optional services</td><td><b>Decorator</b></td><td>Each service wraps the borrow transaction and adds its own behaviour or fee, in any combination, without a subclass per mix.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">3.2</span><span class="qt">Create a Book interface with getTitle() and getCategory().</span><span class="r">2 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public interface</span> Book {
+    String getTitle();
+    String getCategory();
+}
+
+<span class="k">public class</span> FictionBook <span class="k">implements</span> Book {
+    <span class="k">private final</span> String title;
+    <span class="k">public</span> FictionBook(String t) {
+        title = t; }
+    <span class="k">public</span> String getTitle() {
+        <span class="k">return</span> title; }
+    <span class="k">public</span> String getCategory() {
+        <span class="k">return</span> <span class="s">"Fiction"</span>; }
+}
+<span class="c">// ResearchBook, Magazine: same shape</span></pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">3.3</span><span class="qt">Write a simple BookFactory outline returning FictionBook, ResearchBook or Magazine.</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public class</span> BookFactory {
+  <span class="k">public static</span> Book createBook(
+          String type, String title) {
+    <span class="k">switch</span> (type.toUpperCase()) {
+      <span class="k">case</span> <span class="s">"FICTION"</span>:
+        <span class="k">return new</span> FictionBook(title);
+      <span class="k">case</span> <span class="s">"RESEARCH"</span>:
+        <span class="k">return new</span> ResearchBook(title);
+      <span class="k">case</span> <span class="s">"MAGAZINE"</span>:
+        <span class="k">return new</span> Magazine(title);
+      <span class="k">default</span>:
+        <span class="k">throw new</span> IllegalArgumentException(
+            <span class="s">"Unknown type: "</span> + type);
+    }
+  }
+}
+<span class="c">// client</span>
+Book b = BookFactory.createBook(
+    <span class="s">"RESEARCH"</span>, <span class="s">"AI Ethics"</span>);</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 3 (cont.)</h1><div class="lede">The check chain and the rare-book proxy.</div></div>
+    <div class="meta">Chain · Proxy<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Explain how you would handle the membership check → availability check → fine check.</span><span class="r">5 marks</span></div>
+    <p>With <b>Chain of Responsibility</b>. An abstract <code>BorrowCheck</code> holds a link to the next check. <code>MembershipCheck</code>, <code>AvailabilityCheck</code> and <code>FineCheck</code> each implement only their own test. The chain is built once in this order and every request goes to the first check. If a check fails, the chain stops and returns the reason ("membership expired", "book not available", "pending fine Rs. 200"); if all pass, the borrow goes ahead. A new rule (e.g. <code>BorrowLimitCheck</code>) is one new class added with one link.</p>
+    <div class="g2 mt" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> BorrowCheck {
+  <span class="k">private</span> BorrowCheck next;
+  <span class="k">public</span> BorrowCheck linkWith(BorrowCheck n) {
+    next = n;
+    <span class="k">return</span> n;
+  }
+  <span class="k">public</span> String check(Request r) {
+    String err = test(r);
+    <span class="k">if</span> (err != <span class="k">null</span>) <span class="k">return</span> err;   <span class="c">// stop</span>
+    <span class="k">return</span> next == <span class="k">null</span> ? <span class="k">null</span>
+                        : next.check(r);
+  }
+  <span class="k">protected abstract</span> String test(Request r);
+}</pre>
+<pre class="code"><span class="k">class</span> MembershipCheck <span class="k">extends</span> BorrowCheck {
+  <span class="k">protected</span> String test(Request r) {
+    <span class="k">return</span> r.getUser().isMember() ? <span class="k">null</span>
+        : <span class="s">"Membership expired"</span>;
+  }
+}
+<span class="c">// AvailabilityCheck, FineCheck: same shape</span>
+
+BorrowCheck chain = <span class="k">new</span> MembershipCheck();
+chain.linkWith(<span class="k">new</span> AvailabilityCheck())
+     .linkWith(<span class="k">new</span> FineCheck());
+String err = chain.check(request);
+<span class="k">if</span> (err == <span class="k">null</span>) borrowService.issue(request);
+<span class="k">else</span> System.out.println(err);</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">Explain the method(s) for controlling access to rare books and give one example.</span><span class="r">5 marks</span></div>
+    <p>A <b>Protection Proxy</b>. <code>ArchiveAccessProxy</code> and <code>RestrictedArchive</code> both implement <code>BookArchive</code>, and users are only ever given the proxy. Its <code>getBook(id)</code> first checks the user's role and permission (for example a researcher with an approved request and a valid membership), records the access in an audit log, and only then forwards to the real archive; otherwise it throws <code>AccessDeniedException</code>. The proxy can also make the access <b>read-only</b> or limit it to the reading room.</p>
+    <div class="g2 mt" style="align-items:start">
+      <p class="small"><b>Example:</b> a first-year student requests an 1820 manuscript: the proxy sees no approval and refuses. A researcher approved by the chief librarian requests it: the proxy allows it, logs "researcher R102 viewed MS-1820 at 10:42", and returns the book from the archive.</p>
+<pre class="code"><span class="k">public</span> RareBook getBook(String id) {
+  <span class="k">if</span> (!user.hasRole(<span class="s">"RESEARCHER"</span>)
+      || !user.isApproved(id))
+    <span class="k">throw new</span>
+      AccessDeniedException(<span class="s">"No permission"</span>);
+  AuditLog.record(user, id);
+  <span class="k">return</span> archive.getBook(id);  <span class="c">// forward</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="shade small"><b>(d) in code, if asked:</b> <code>BorrowTransaction t = new EmailReceipt(new SmsNotification(new ExtendedPeriod(new BasicBorrow(book, user))));</code> Each decorator adds its fee or extra step and calls the transaction it wraps.</div>
+</div>
+<div class="foot"><span>2025 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2025 Q4 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 4</h1><div class="lede">E-commerce orders: payment workflow, automated checks, global order IDs, payment objects.</div></div>
+    <div class="meta">Template · Chain · Singleton · Factory<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>Payment methods (credit card, PayPal, cash on delivery) follow a common workflow: validate payment details → process payment → send receipt; each method varies in step 2. The company wants to standardise the workflow while allowing custom behaviour per payment type. Orders go through automated checks (inventory, fraud, delivery-area validation) that must be maintainable and extendable. A single global OrderID generator must give every order a unique ID.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Which design patterns fit? Valid reasons for: (a) payment workflow with common steps but different implementations, (b) sequential automated validations, (c) consistent global order IDs, (d) creating different payment objects.</span><span class="r">8 marks</span></div>
+    <table class="small">
+      <tr><td style="width:20%"><b>(a)</b> payment workflow</td><td style="width:16%"><b>Template Method</b></td><td>A final <code>handlePayment()</code> fixes validate → process → receipt; only <code>processPayment()</code> differs per method, so the workflow is standardised and the common steps aren't duplicated.</td></tr>
+      <tr><td><b>(b)</b> validations</td><td><b>Chain of Responsibility</b></td><td>Inventory → fraud → delivery area as linked handlers; a failure stops the order; a new check is one new class and one link.</td></tr>
+      <tr><td><b>(c)</b> order IDs</td><td><b>Singleton</b></td><td>One generator with one thread-safe counter, shared system-wide, so IDs are never duplicated.</td></tr>
+      <tr><td><b>(d)</b> payment objects</td><td><b>Factory Method</b></td><td><code>PaymentFactory.create(method)</code> returns the right processor from the customer's choice, so the client has no <code>new</code> or if-else.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">4.2</span><span class="qt">Define an abstract PaymentProcessor class (with the appropriate pattern) with validate(), processPayment(), sendReceipt() and handlePayment().</span><span class="r">4 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public abstract class</span> PaymentProcessor {
+  <span class="c">// template method: fixed order</span>
+  <span class="k">public final void</span> handlePayment(Order o) {
+    o.setId(OrderIdGenerator
+        .getInstance().nextId());
+    <span class="k">if</span> (!validate(o)) {
+      System.out.println(<span class="s">"Invalid"</span>);
+      <span class="k">return</span>;
+    }
+    processPayment(o);
+    sendReceipt(o);
+  }
+  <span class="k">protected boolean</span> validate(Order o) {
+    <span class="k">return</span> o.getAmount() &gt; 0; }
+  <span class="k">protected abstract void</span>
+      processPayment(Order o);
+  <span class="k">protected void</span> sendReceipt(Order o) {
+    System.out.println(<span class="s">"Receipt "</span>
+        + o.getId()); }
+}</pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">3.3</span><span class="qt">Implement a concrete class CreditCardPaymentProcessor extending PaymentProcessor.</span><span class="r">3 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public class</span> CreditCardPaymentProcessor
+        <span class="k">extends</span> PaymentProcessor {
+
+  <span class="k">protected boolean</span> validate(Order o) {
+    <span class="k">return super</span>.validate(o)
+        &amp;&amp; CardValidator.isValid(
+               o.getCardNo());
+  }
+
+  <span class="k">protected void</span> processPayment(Order o) {
+    System.out.println(<span class="s">"Charging card"</span>);
+    BankGateway.charge(o.getCardNo(),
+                       o.getAmount());
+  }
+}</pre>
+      <p class="tip">The paper numbers these as 3.3–3.5 by mistake; they belong to Question 4.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 4 (cont.)</h1><div class="lede">The validation flow, the OrderID generator, and how all four patterns fit together.</div></div>
+    <div class="meta">Chain · Singleton<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Briefly outline how a design pattern can be used for the validation flow (inventory → fraud → delivery area).</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Chain of Responsibility</b> (pipeline form). An abstract <code>Validator</code> holds <code>next</code>; <code>InventoryCheck</code>, <code>FraudCheck</code> and <code>DeliveryAreaCheck</code> each implement <code>check(order)</code>. The chain is built once in this order and the order service sends each order to the first validator. A failed check stops the chain and rejects the order with a reason; if all pass, payment starts. Cheap checks go first (inventory) and the expensive fraud scoring later. A new check (e.g. <code>AddressFormatCheck</code>) is one class and one link, and nothing else changes.</p>
+<pre class="code"><span class="k">abstract class</span> Validator {
+  <span class="k">private</span> Validator next;
+  Validator linkWith(Validator n) {
+    next = n; <span class="k">return</span> n; }
+  <span class="k">boolean</span> validate(Order o) {
+    <span class="k">if</span> (!check(o)) <span class="k">return false</span>;
+    <span class="k">return</span> next == <span class="k">null</span>
+        || next.validate(o);
+  }
+  <span class="k">abstract boolean</span> check(Order o);
+}
+Validator v = <span class="k">new</span> InventoryCheck();
+v.linkWith(<span class="k">new</span> FraudCheck())
+ .linkWith(<span class="k">new</span> DeliveryAreaCheck());</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">Explain how you will design an OrderID generator and how it integrates with payment processing.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">An <b>eager Singleton</b>: private constructor, one static final instance, and a thread-safe <code>AtomicLong</code> counter, so two orders placed at the same moment can never get the same ID. <b>Integration:</b> the first step of the template method <code>PaymentProcessor.handlePayment()</code> calls <code>OrderIdGenerator.getInstance().nextId()</code> and stores the ID on the order, then validate → process → send receipt (which prints the ID). Every payment type (card, PayPal, COD) inherits that step, so all share the one generator. For HA across several servers, the counter is backed by a database sequence.</p>
+<pre class="code"><span class="k">public final class</span> OrderIdGenerator {
+  <span class="k">private static final</span> OrderIdGenerator
+      INSTANCE = <span class="k">new</span> OrderIdGenerator();
+  <span class="k">private final</span> AtomicLong counter =
+      <span class="k">new</span> AtomicLong(1000);
+  <span class="k">private</span> OrderIdGenerator() { }
+  <span class="k">public static</span> OrderIdGenerator
+      getInstance() { <span class="k">return</span> INSTANCE; }
+  <span class="k">public</span> String nextId() {
+    <span class="k">return</span> <span class="s">"ORD-"</span>
+        + counter.incrementAndGet();
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">How the four patterns fit together</h2><span class="tiny">draw it if you have time; it ties all the parts together</span></div>
+    <svg class="dg" data-d="p25-q4"></svg>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p25-kiosk'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'id', k:'state', x:28, y:30, w:60, label:'Idle'},
+    {id:'sc', k:'state', x:150, y:30, w:80, label:'Scanning'},
+    {id:'py', k:'state', x:296, y:30, w:78, label:'Payment'},
+    {id:'co', k:'state', x:436, y:30, w:88, label:'Completed'},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'id', bs:'left', type:'trans'},
+    {a:'id', as:'right', b:'sc', bs:'left', type:'trans', label:'scanItem()'},
+    {a:'sc', as:'right', b:'py', bs:'left', type:'trans', label:'checkout()'},
+    {a:'py', as:'right', b:'co', bs:'left', type:'trans', label:'pay() ok'},
+    {a:'sc', as:'top', ao:.3, b:'sc', bs:'top', bo:.7, type:'trans', loop:14, label:'scanItem()'},
+    {a:'py', as:'top', b:'sc', bs:'top', bo:.85, type:'trans', loop:42, label:'cancel / payment failed'},
+    {a:'co', as:'bottom', b:'id', bs:'bottom', type:'trans', loop:22, label:'printReceipt() / timeout'},
+  ]
+};
+DIAGRAMS['p25-stream'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:52, w:74, h:44, lines:['Viewers','TV · mobile · web']},
+    {id:'gw', k:'node', x:96, y:44, w:100, h:60, lines:['API Gateway','OAuth2 / JWT','routing · rate limit'], dark:true},
+    {id:'s1', k:'node', x:222, y:0, w:156, h:22, lines:['User Profile  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:222, y:26, w:156, h:22, lines:['Content Catalogue  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:222, y:52, w:156, h:22, lines:['Content Delivery  [storage]'], align:'left'},
+    {id:'s4', k:'node', x:222, y:78, w:156, h:22, lines:['Recommendation  [ML]'], align:'left'},
+    {id:'s5', k:'node', x:222, y:104, w:156, h:22, lines:['Billing / Subscription  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:222, y:130, w:156, h:22, lines:['Analytics  [warehouse]'], align:'left'},
+    {id:'cdn', k:'node', x:406, y:0, w:104, lines:['CDN edge servers','video segments'], shade:true},
+    {id:'mb', k:'node', x:406, y:52, w:104, h:52, lines:['Kafka','PlaybackStarted,','PaymentFailed…'], dashed:true},
+    {id:'k', k:'node', x:406, y:118, w:104, lines:['Kubernetes, CI/CD,','monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:74, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.25, b:'s2', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.45, b:'s3', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.6, b:'s4', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.75, b:'s5', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.9, b:'s6', bs:'left', type:'flow', mid:209},
+    {a:'s3', as:'right', b:'cdn', bs:'bottom', type:'flow'},
+    {a:'s4', as:'right', b:'mb', bs:'left', bx:89, type:'dflow', label:'events', lx:392, ly:86},
+  ]
+};
+DIAGRAMS['p25-q4'] = {
+  items: [
+    {id:'os', k:'class', x:0, y:100, name:'OrderService', ops:['+ placeOrder(o : Order)']},
+    {id:'v', k:'class', x:210, y:0, name:'Validator', stereo:'abstract · Chain', abstract:true, attrs:['- next : Validator'], ops:['+ linkWith(v) : Validator', '+ validate(o) : boolean']},
+    {id:'c1', k:'node', x:210, y:94, w:170, round:0, lines:['InventoryCheck','FraudCheck · DeliveryAreaCheck']},
+    {id:'pf', k:'class', x:210, y:148, name:'PaymentFactory', stereo:'Factory', ops:['_+ create(method) : PaymentProcessor']},
+    {id:'g', k:'class', x:470, y:30, name:'OrderIdGenerator', stereo:'Singleton', ops:['_+ getInstance()', '+ nextId() : String']},
+    {id:'pp', k:'class', x:470, y:134, name:'PaymentProcessor', stereo:'abstract · Template', abstract:true, ops:['+ handlePayment(o) {final}', '/# processPayment(o)']},
+    {id:'c2', k:'node', x:470, y:212, w:150, round:0, lines:['CreditCard · PayPal · COD','processors']},
+  ],
+  edges: [
+    {a:'os', as:'right', ao:.25, b:'v', bs:'left', type:'assoc', label:'1. validate', mid:150},
+    {a:'os', as:'right', ao:.75, b:'pf', bs:'left', type:'assoc', label:'2. create', mid:150},
+    {a:'c1', as:'top', ax:290, b:'v', bs:'bottom', bx:290, type:'extend'},
+    {a:'pf', as:'right', b:'pp', bs:'left', type:'depend', label:'«create»'},
+    {a:'pp', as:'top', b:'g', bs:'bottom', type:'depend', label:'3. nextId()'},
+    {a:'c2', as:'top', b:'pp', bs:'bottom', type:'extend'},
+  ]
+};
+</script>
+
+<script>/* Tiny UML / diagram renderer for the exam note.
+   Diagrams are declared in DIAGRAMS[name] = {items:[...], edges:[...]}
+   and drawn into <svg class="dg" data-d="name"></svg>.
+   All sizes are in px of the viewBox; SCALE converts px -> mm on paper. */
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const INK = '#111', GREY = '#555';
+  const SANS = '"IBM Plex Sans", Arial, sans-serif';
+  const MONO = '"IBM Plex Mono", Menlo, monospace';
+  const SCALE = 0.3;            // mm per px
+  const REPORT = [];
+  const ctx = document.createElement('canvas').getContext('2d');
+  const tw = (s, font) => { ctx.font = font; return ctx.measureText(s).width; };
+
+  function E(tag, a, p) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in a) if (a[k] !== undefined && a[k] !== null) e.setAttribute(k, a[k]);
+    if (p) p.appendChild(e);
+    return e;
+  }
+  function T(p, x, y, s, o = {}) {
+    const t = E('text', {
+      x, y, 'font-family': o.mono ? MONO : SANS, 'font-size': o.size || 9,
+      'font-weight': o.bold ? 700 : (o.semi ? 600 : 400), 'font-style': o.italic ? 'italic' : 'normal',
+      'text-anchor': o.anchor || 'start', fill: o.fill || INK,
+      'text-decoration': o.underline ? 'underline' : null
+    }, p);
+    if (o.halo) { t.setAttribute('stroke', '#fff'); t.setAttribute('stroke-width', 3.2); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke-linejoin', 'round'); }
+    t.textContent = s;
+    return t;
+  }
+
+  function defs(svg, id) {
+    const d = E('defs', {}, svg);
+    const mk = (n, w, h, rx, ry, path, fill) => {
+      const m = E('marker', { id: id + n, viewBox: `0 0 ${w} ${h}`, refX: rx, refY: ry, markerWidth: w, markerHeight: h, markerUnits: 'userSpaceOnUse', orient: 'auto' }, d);
+      E('path', { d: path, fill, stroke: INK, 'stroke-width': 1, 'stroke-linejoin': 'miter' }, m);
+    };
+    mk('tri', 14, 13, 13.4, 6.5, 'M0.6,0.6 L13.4,6.5 L0.6,12.4 Z', '#fff');   // generalisation / realisation
+    mk('open', 11, 10, 10.4, 5, 'M0.6,0.6 L10.4,5 L0.6,9.4', 'none');          // association / dependency
+    mk('fill', 10, 8, 10, 4, 'M0,0 L10,4 L0,8 Z', INK);                          // state transition / flow
+    mk('dia', 18, 10, 0.6, 5, 'M0.6,5 L9,0.6 L17.4,5 L9,9.4 Z', '#fff');      // aggregation (at the whole)
+    mk('fdia', 18, 10, 0.6, 5, 'M0.6,5 L9,0.6 L17.4,5 L9,9.4 Z', INK);         // composition (at the whole)
+  }
+
+  /* ---------- items ---------- */
+  const LH = 11.6, PAD = 7;
+  const F_NAME = `700 10px ${SANS}`, F_STEREO = `italic 8px ${SANS}`, F_MEM = `8.4px ${MONO}`;
+
+  function mem(s) { // '_' prefix = static (underlined), '/' prefix = abstract (italic)
+    let underline = false, italic = false;
+    while (s[0] === '_' || s[0] === '/') { if (s[0] === '_') underline = true; else italic = true; s = s.slice(1); }
+    return { s, underline, italic };
+  }
+
+  function drawClass(g, c, name) {
+    const ws = [tw(c.name, F_NAME)];
+    if (c.stereo) ws.push(tw('«' + c.stereo + '»', F_STEREO));
+    [...(c.attrs || []), ...(c.ops || [])].forEach(m => ws.push(tw(mem(m).s, F_MEM)));
+    const need = Math.ceil(Math.max(...ws) + PAD * 2);
+    const w = Math.max(c.w || 0, need);
+    if (c.w && need > c.w + 0.5) REPORT.push(`diagram ${name}: class ${c.name} grew ${c.w}->${need}`);
+    const headH = (c.stereo ? 11 : 0) + 18;
+    const sec = arr => arr ? (arr.length ? arr.length * LH + 5 : 7) : 0;
+    const h = headH + sec(c.attrs) + sec(c.ops);
+    const x = c.cx !== undefined ? c.cx - w / 2 : c.x, y = c.y;
+    E('rect', { x, y, width: w, height: h, fill: c.shade ? '#ececec' : '#fff', stroke: INK, 'stroke-width': 1 }, g);
+    let ty = y + 13;
+    if (c.stereo) { T(g, x + w / 2, ty - 1, '«' + c.stereo + '»', { size: 8, italic: true, anchor: 'middle', fill: GREY }); ty += 11; }
+    T(g, x + w / 2, ty, c.name, { size: 10, bold: true, anchor: 'middle', italic: !!c.abstract });
+    let yy = y + headH;
+    for (const arr of [c.attrs, c.ops]) {
+      if (!arr) continue;
+      E('line', { x1: x, y1: yy, x2: x + w, y2: yy, stroke: INK, 'stroke-width': 1 }, g);
+      let ly = yy + 2;
+      arr.forEach(m => { const o = mem(m); ly += LH; T(g, x + PAD, ly - 2, o.s, { mono: true, size: 8.4, underline: o.underline, italic: o.italic }); });
+      yy += sec(arr);
+    }
+    return { x, y, w, h };
+  }
+
+  function drawNode(g, n) { // generic box with lines; first line bold
+    const lines = n.lines || [n.label];
+    const fonts = lines.map((_, i) => i === 0 ? `700 ${n.size || 9.5}px ${SANS}` : `${n.small || 8}px ${SANS}`);
+    const need = Math.ceil(Math.max(...lines.map((l, i) => tw(l, fonts[i]))) + 16);
+    const w = Math.max(n.w || 0, need);
+    const h = n.h || (10 + lines.length * 11.5);
+    const x = n.cx !== undefined ? n.cx - w / 2 : n.x, y = n.y;
+    E('rect', { x, y, width: w, height: h, rx: n.round === undefined ? 4 : n.round, fill: n.dark ? INK : (n.shade ? '#ececec' : '#fff'), stroke: INK, 'stroke-width': n.dark ? 1 : 1, 'stroke-dasharray': n.dashed ? '4 3' : null }, g);
+    const top = n.top ? y + 13 : y + h / 2 - (lines.length * 11.5) / 2 + 9;
+    lines.forEach((l, i) => T(g, n.align === 'left' ? x + 8 : x + w / 2, top + i * 11.5, l, { size: i === 0 ? (n.size || 9.5) : (n.small || 8), bold: i === 0, anchor: n.align === 'left' ? 'start' : 'middle', fill: n.dark ? '#fff' : (i === 0 ? INK : GREY) }));
+    return { x, y, w, h };
+  }
+
+  function drawState(g, s) {
+    const w = Math.max(s.w || 0, Math.ceil(tw(s.label, `600 9.5px ${SANS}`) + 22));
+    const h = s.h || 24;
+    const x = s.cx !== undefined ? s.cx - w / 2 : s.x, y = s.y;
+    E('rect', { x, y, width: w, height: h, rx: 10, fill: s.shade ? '#ececec' : '#fff', stroke: INK, 'stroke-width': 1.1 }, g);
+    T(g, x + w / 2, y + h / 2 + 3.4, s.label, { size: 9.5, semi: true, anchor: 'middle' });
+    return { x, y, w, h };
+  }
+
+  function drawInit(g, s) { E('circle', { cx: s.cx, cy: s.cy, r: 5, fill: INK }, g); return { x: s.cx - 5, y: s.cy - 5, w: 10, h: 10 }; }
+  function drawFinal(g, s) {
+    E('circle', { cx: s.cx, cy: s.cy, r: 7.5, fill: '#fff', stroke: INK, 'stroke-width': 1.1 }, g);
+    E('circle', { cx: s.cx, cy: s.cy, r: 4.3, fill: INK }, g);
+    return { x: s.cx - 7.5, y: s.cy - 7.5, w: 15, h: 15 };
+  }
+  function drawText(g, t) {
+    (t.lines || [t.text]).forEach((l, i) => T(g, t.x, t.y + i * (t.lh || 11), l, { size: t.size || 8.5, italic: t.italic, bold: t.bold && i === 0, anchor: t.anchor, fill: t.fill || GREY, mono: t.mono }));
+    return null;
+  }
+
+  /* ---------- edges ---------- */
+  function anchor(b, side, o, abs) {
+    o = o === undefined ? 0.5 : o;
+    if (side === 'top') return { x: abs !== undefined ? abs : b.x + b.w * o, y: b.y };
+    if (side === 'bottom') return { x: abs !== undefined ? abs : b.x + b.w * o, y: b.y + b.h };
+    if (side === 'left') return { x: b.x, y: abs !== undefined ? abs : b.y + b.h * o };
+    return { x: b.x + b.w, y: abs !== undefined ? abs : b.y + b.h * o };
+  }
+  const vert = s => s === 'top' || s === 'bottom';
+
+  function route(p1, s1, p2, s2, e) {
+    if (e.loop) { // self-association: out and back on the same side
+      const d = e.loop;
+      if (vert(s1)) { const y = s1 === 'top' ? Math.min(p1.y, p2.y) - d : Math.max(p1.y, p2.y) + d; return [p1, { x: p1.x, y }, { x: p2.x, y }, p2]; }
+      const x = s1 === 'left' ? Math.min(p1.x, p2.x) - d : Math.max(p1.x, p2.x) + d;
+      return [p1, { x, y: p1.y }, { x, y: p2.y }, p2];
+    }
+    if (e.via) return [p1, ...e.via.map(([x, y]) => ({ x, y })), p2];
+    if (vert(s1) && vert(s2)) {
+      if (Math.abs(p1.x - p2.x) < 0.5) return [p1, p2];
+      const my = e.mid !== undefined ? e.mid : (p1.y + p2.y) / 2;
+      return [p1, { x: p1.x, y: my }, { x: p2.x, y: my }, p2];
+    }
+    if (!vert(s1) && !vert(s2)) {
+      if (Math.abs(p1.y - p2.y) < 0.5) return [p1, p2];
+      const mx = e.mid !== undefined ? e.mid : (p1.x + p2.x) / 2;
+      return [p1, { x: mx, y: p1.y }, { x: mx, y: p2.y }, p2];
+    }
+    if (vert(s1)) return [p1, { x: p1.x, y: p2.y }, p2];
+    return [p1, { x: p2.x, y: p1.y }, p2];
+  }
+
+  const STYLE = {
+    realize: { dash: '5 3', end: 'tri' },
+    extend: { end: 'tri' },
+    assoc: { end: 'open' },
+    line: {},
+    depend: { dash: '5 3', end: 'open' },
+    aggr: { start: 'dia' },
+    comp: { start: 'fdia' },
+    trans: { end: 'fill' },
+    flow: { end: 'fill' },
+    dflow: { end: 'fill', dash: '4 3' }
+  };
+
+  function drawEdge(g, e, boxes, id, name) {
+    const A = boxes[e.a], B = boxes[e.b];
+    if (!A || !B) { REPORT.push(`diagram ${name}: missing item ${e.a} or ${e.b}`); return; }
+    const p1 = anchor(A, e.as || 'bottom', e.ao, e.ax), p2 = anchor(B, e.bs || 'top', e.bo, e.bx);
+    const pts = route(p1, e.as || 'bottom', p2, e.bs || 'top', e);
+    const st = STYLE[e.type || 'assoc'];
+    E('path', {
+      d: 'M' + pts.map(p => `${p.x},${p.y}`).join(' L'), fill: 'none', stroke: INK, 'stroke-width': 1.05,
+      'stroke-dasharray': st.dash || null, 'marker-start': st.start ? `url(#${id}${st.start})` : null,
+      'marker-end': st.end ? `url(#${id}${st.end})` : null, 'stroke-linejoin': 'round'
+    }, g);
+    if (e.label) {
+      let lx = e.lx, ly = e.ly, anchorTxt = e.lanchor || 'middle';
+      if (lx === undefined) {
+        let best = 0, seg = [pts[0], pts[1]];
+        for (let i = 0; i < pts.length - 1; i++) { const L = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); if (L > best) { best = L; seg = [pts[i], pts[i + 1]]; } }
+        lx = (seg[0].x + seg[1].x) / 2; ly = (seg[0].y + seg[1].y) / 2;
+        if (Math.abs(seg[0].y - seg[1].y) < 0.5) ly -= 4; else { lx += 5; ly += 3; anchorTxt = 'start'; }
+      }
+      T(g, lx, ly, e.label, { size: e.lsize || 8.2, italic: !!e.litalic, anchor: anchorTxt, fill: e.lfill || INK, halo: true, semi: !e.litalic });
+    }
+    if (e.m1) T(g, p1.x + (e.m1x || 4), p1.y + (e.m1y || 10), e.m1, { size: 8, fill: GREY });
+    if (e.m2) T(g, p2.x + (e.m2x || 4), p2.y + (e.m2y || -4), e.m2, { size: 8, fill: GREY });
+  }
+
+  function render(svg, name, spec, idx) {
+    const id = 'd' + idx + '_';
+    defs(svg, id);
+    const g = E('g', {}, svg);
+    const ge = E('g', {}, g);           // edges below boxes
+    const gi = E('g', {}, g);
+    const boxes = {};
+    for (const it of spec.items) {
+      const k = it.k || 'class';
+      const b = k === 'class' ? drawClass(gi, it, name) : k === 'node' ? drawNode(gi, it) : k === 'state' ? drawState(gi, it)
+        : k === 'init' ? drawInit(gi, it) : k === 'final' ? drawFinal(gi, it) : drawText(gi, it);
+      if (it.id) boxes[it.id] = b;
+    }
+    for (const e of spec.edges || []) drawEdge(ge, e, boxes, id, name);
+    // overlap check between boxes
+    const ids = Object.keys(boxes);
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+      const a = boxes[ids[i]], b = boxes[ids[j]];
+      if (a.x < b.x + b.w - 0.5 && b.x < a.x + a.w - 0.5 && a.y < b.y + b.h - 0.5 && b.y < a.y + a.h - 0.5) REPORT.push(`diagram ${name}: ${ids[i]} overlaps ${ids[j]}`);
+    }
+    const bb = g.getBBox(), m = 4;
+    svg.setAttribute('viewBox', `${bb.x - m} ${bb.y - m} ${bb.width + 2 * m} ${bb.height + 2 * m}`);
+    const wmm = (bb.width + 2 * m) * SCALE * (spec.scale || 1);
+    svg.style.width = wmm + 'mm';
+    svg.style.maxWidth = '100%';
+    svg.style.display = 'block';
+    if (spec.center !== false) { svg.style.marginLeft = 'auto'; svg.style.marginRight = 'auto'; }
+    svg._check = () => {
+      const real = svg.getBoundingClientRect().width / 3.7795;
+      if (real < wmm - 1) REPORT.push(`diagram ${name}: scaled down ${wmm.toFixed(0)}mm -> ${real.toFixed(0)}mm`);
+    };
+  }
+
+  function checkPages() {
+    const pages = [...document.querySelectorAll('.page')];
+    pages.forEach((p, i) => {
+      const pn = i + 1;
+      const f = p.querySelector('.pnum'); if (f) f.textContent = pn;
+      const b = p.querySelector('.body');
+      if (!b) return;
+      const br = b.getBoundingClientRect();
+      let bottom = br.top;
+      [...b.children].forEach(c => { bottom = Math.max(bottom, c.getBoundingClientRect().bottom); });
+      const free = (br.bottom - bottom) / 3.7795;
+      if (free < -0.5) REPORT.push(`PAGE ${pn} OVERFLOW by ${(-free).toFixed(1)}mm`);
+      else REPORT.push(`page ${pn} free ${free.toFixed(1)}mm`);
+      b.querySelectorAll('*').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.width && r.right > br.right + 1) REPORT.push(`PAGE ${pn} H-OVERFLOW ${el.tagName}.${el.className} +${((r.right - br.right) / 3.78).toFixed(1)}mm`);
+      });
+      b.querySelectorAll('pre').forEach(el => { if (el.scrollWidth > el.clientWidth + 1) REPORT.push(`PAGE ${pn} CODE TOO WIDE by ${((el.scrollWidth - el.clientWidth) / 3.78).toFixed(1)}mm: ${el.textContent.slice(0, 40).replace(/\n/g, ' ')}`); });
+      b.querySelectorAll('td, th, .cell').forEach(el => { if (el.scrollWidth > el.clientWidth + 1) REPORT.push(`PAGE ${pn} CELL OVERFLOW: ${el.textContent.slice(0, 40)}`); });
+    });
+    const pre = document.createElement('pre'); pre.id = 'report'; pre.textContent = REPORT.join('\n');
+    document.body.appendChild(pre);
+    console.log(REPORT.join('\n'));
+  }
+
+  function buildTabs() {
+    const secs = window.SECTIONS || [];
+    document.querySelectorAll('.page').forEach(p => {
+      const cur = p.dataset.sec;
+      const lad = document.createElement('div'); lad.className = 'ladder';
+      secs.forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'rung' + (s.code === cur ? ' on' : '');
+        d.innerHTML = `<b>${s.code}</b>`;
+        lad.appendChild(d);
+      });
+      p.appendChild(lad);
+    });
+  }
+
+  window.addEventListener('load', () => {
+    buildTabs();
+    document.fonts.ready.then(() => {
+      document.querySelectorAll('svg.dg').forEach((svg, i) => {
+        const name = svg.dataset.d, spec = (window.DIAGRAMS || {})[name];
+        if (!spec) { REPORT.push('missing diagram ' + name); return; }
+        render(svg, name, spec, i);
+      });
+      setTimeout(() => {
+        document.querySelectorAll('svg.dg').forEach(s => s._check && s._check());
+        checkPages();
+      }, 300);
+    });
+  });
+})();
+</script>
+</body></html>

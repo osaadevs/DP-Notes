@@ -1,0 +1,400 @@
+<!-- ======================= PRACTICE PAPER 2 ======================= -->
+
+<!-- ---------- P2 Q1 ---------- -->
+<div class="chunk" data-sec="P2" data-code="1" data-title="Paper 2 · Question 1" data-lede="Ride-hailing app" data-meta="Practice paper 2<br><b>25 marks</b>" data-foot="Practice paper 2 · Question 1">
+  <div class="examhead"><b>PRACTICE PAPER 2</b><br>INTE 22313 – Software Design Patterns and Frameworks · No. of questions: 4 · Time: 2½ hours<br>Answer ALL questions. Allocate time by the marks. State any assumptions you make. This is an OPEN BOOK exam.</div>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>
+    <b>GoLanka</b> is a ride-hailing app. A trip goes from <b>Requested</b> → <b>Driver assigned</b> → <b>In progress</b> → <b>Completed</b>. A trip can be <b>Cancelled</b> while Requested or Driver assigned, but not once it is in progress. A passenger chooses a vehicle type when booking (<b>Tuk</b>, <b>Car</b> or <b>Van</b>), and each type has its own base fare and capacity.<br>
+    The final fare is the base fare plus any extras that apply to that trip, in any combination: <b>surge pricing</b>, <b>highway toll</b>, <b>night charge</b>, <b>extra luggage</b>. The company does not want a class for every combination.<br>
+    Surge multipliers and night rates are changed by the operations team during the day, and every part of the system must use the <b>same current values</b>.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Identify suitable design patterns, with reasons, for: (a) trip stages, (b) creating vehicle types, (c) fare extras, (d) the shared current rates.</span><span class="r">8 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:22%"><b>(a)</b> trip stages</td><td style="width:15%"><b>State</b></td><td>Cancel is allowed only in the first two stages, and "start trip" only after a driver is assigned. Each stage is a class with its own rules and next stage, so there is no if/else on a status field.</td></tr>
+      <tr><td><b>(b)</b> vehicle types</td><td><b>Factory Method</b></td><td><code>VehicleFactory.create(type)</code> returns a Tuk, Car or Van from the passenger's choice; booking code never uses <code>new</code>, and adding "Bike" is one class.</td></tr>
+      <tr><td><b>(c)</b> fare extras</td><td><b>Decorator</b></td><td>Each extra wraps the fare and adds its amount, so any combination is built per trip at runtime without 2⁴ = 16 subclasses.</td></tr>
+      <tr><td><b>(d)</b> shared rates</td><td><b>Singleton</b></td><td>One <code>FareConfig</code> instance holds the current surge and night rates, so every service reads the same values; an update applies everywhere at once.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.2</span><span class="qt">Define a Fare interface with getAmount() and getBreakdown(), a BaseFare class, and one extra.</span><span class="r">6 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> Fare {
+  <span class="k">double</span> getAmount();
+  String getBreakdown();
+}
+<span class="k">public class</span> BaseFare <span class="k">implements</span> Fare {
+  <span class="k">private final</span> Vehicle v;
+  <span class="k">private final double</span> km;
+  <span class="k">public</span> BaseFare(Vehicle v, <span class="k">double</span> km) {
+    <span class="k">this</span>.v = v; <span class="k">this</span>.km = km; }
+  <span class="k">public double</span> getAmount() {
+    <span class="k">return</span> v.getBaseRate() * km; }
+  <span class="k">public</span> String getBreakdown() {
+    <span class="k">return</span> v.getType() + <span class="s">" "</span> + km + <span class="s">"km"</span>; }
+}</pre>
+<pre class="code"><span class="k">public abstract class</span> FareExtra
+        <span class="k">implements</span> Fare {
+  <span class="k">protected final</span> Fare fare;   <span class="c">// wrapped</span>
+  <span class="k">public</span> FareExtra(Fare f) { fare = f; }
+}
+<span class="k">public class</span> NightCharge <span class="k">extends</span> FareExtra {
+  <span class="k">public</span> NightCharge(Fare f) { <span class="k">super</span>(f); }
+  <span class="k">public double</span> getAmount() {
+    <span class="k">return</span> fare.getAmount() * (1 +
+      FareConfig.getInstance().nightRate());
+  }
+  <span class="k">public</span> String getBreakdown() {
+    <span class="k">return</span> fare.getBreakdown()
+           + <span class="s">" + night"</span>; }
+}
+Fare f = <span class="k">new</span> NightCharge(<span class="k">new</span> Toll(
+           <span class="k">new</span> BaseFare(car, 12)));</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.3</span><span class="qt">Draw a state diagram for a trip.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp2-sd"></svg></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.4</span><span class="qt">Explain how the shared rates object is created and used safely when many requests arrive at the same time.</span><span class="r">6 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><code>FareConfig</code> is a <b>Singleton</b>: private constructor, a private static <code>volatile</code> instance, and a public static <code>getInstance()</code> using <b>double-checked locking</b>, so two threads arriving at once can't create two objects. The rates themselves are held in thread-safe fields (<code>volatile</code>, or an <code>AtomicReference</code> to an immutable <code>Rates</code> object), so a reader never sees half an update. The operations team updates the rates through <code>update()</code>, which swaps in a new object in one step. Every <code>SurgeCharge</code> and <code>NightCharge</code> decorator reads <code>FareConfig.getInstance()</code> when it calculates, so every fare uses the same current values.</p>
+<pre class="code"><span class="k">public final class</span> FareConfig {
+  <span class="k">private static volatile</span> FareConfig inst;
+  <span class="k">private volatile</span> Rates rates =
+      Rates.loadFromDb();
+  <span class="k">private</span> FareConfig() { }
+  <span class="k">public static</span> FareConfig getInstance() {
+    <span class="k">if</span> (inst == <span class="k">null</span>) {
+      <span class="k">synchronized</span> (FareConfig.<span class="k">class</span>) {
+        <span class="k">if</span> (inst == <span class="k">null</span>)
+          inst = <span class="k">new</span> FareConfig();
+      }
+    }
+    <span class="k">return</span> inst;
+  }
+  <span class="k">public double</span> nightRate() {
+    <span class="k">return</span> rates.night; }
+  <span class="k">public void</span> update(Rates r) {
+    rates = r; }     <span class="c">// one atomic swap</span>
+}</pre>
+    </div></div>
+  </div>
+</div>
+
+<!-- ---------- P2 Q2 ---------- -->
+<div class="chunk" data-sec="P2" data-code="2" data-title="Paper 2 · Question 2" data-lede="Online banking platform" data-meta="Practice paper 2<br><b>25 marks</b>" data-foot="Practice paper 2 · Question 2">
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>
+    A bank is replacing its core online banking system with <b>microservices</b>. Key functional requirements:
+    <b>Customer management</b> (KYC, profiles, login devices) · <b>Accounts</b> (savings, current, fixed deposits, balances) · <b>Transactions</b> (transfers between accounts and to other banks, bill payments) · <b>Loans</b> (applications, approvals, repayment schedules) · <b>Fraud detection</b> (real-time checks on transactions) · <b>Notifications</b> (SMS/email alerts for every transaction).</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the scenario.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp2-bank"></svg></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can the bank implement and manage microservices to achieve scalability, fault isolation and continuous deployment?</span><span class="r">5 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Transactions and Fraud carry the load on salary day and month-end, so they auto-scale independently; Loans stays small. Stateless services on Kubernetes; balance reads cached.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Own process and database per service. If Notification fails, transfers still work and alerts queue up; if the Loans service fails, payments are unaffected. Circuit breakers, timeouts, bulkheads; a fraud-check timeout falls back to a safe rule (hold large transfers).</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Pipeline per service with automated and security tests, canary releases to a small share of customers, versioned APIs, quick rollback. Changes are audited for regulators.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, config server, central logging, metrics and tracing (follow one transfer across services).</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a suitable microservices architecture.</span><span class="r">5 marks</span></div>
+    <div class="a"><p class="small">Services, each with its <b>own database</b>: <b>Customer</b> (KYC, devices), <b>Account</b> (balances, account types), <b>Transaction</b> (transfers, bill payments; talks to other banks through a CEFTS/SWIFT <b>adapter</b>), <b>Loan</b>, <b>Fraud</b> (real-time scoring, ML), <b>Notification</b>. Mobile and web banking go through an <b>API gateway</b> with strong authentication. Transaction calls Fraud synchronously (it needs an answer before the money moves) and publishes events to <b>Kafka</b> ("TransferCompleted" → Notification sends an SMS; Account updates statements). Kubernetes, service mesh, registry, config and monitoring, deployed across two data centres.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.4</span><span class="qt">How would you maintain data consistency, especially for money transfers?</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Database per service</b>, so no distributed transactions across services by default.</li>
+      <li><b>Saga</b> for a transfer: debit the sender → credit the receiver → record the transaction. If the credit fails, a <b>compensating action</b> reverses the debit. An <b>orchestrator</b> in the Transaction service tracks each step.</li>
+      <li><b>Idempotency keys</b> on every transfer request, so a retried request never debits twice; a <b>transactional outbox</b> for events.</li>
+      <li>Money movements inside one account database use normal ACID transactions; balances are <b>strongly consistent</b>, while alerts and statements are eventually consistent.</li>
+      <li>Daily <b>reconciliation</b> jobs to catch any mismatch.</li>
+    </ul></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you secure customer data and service-to-service communication?</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Customers:</b> OAuth2 / OpenID Connect with <b>multi-factor authentication</b> (OTP), device binding, short-lived JWTs, automatic logout.</li>
+      <li><b>Data:</b> encryption at rest and in transit, card data to <b>PCI-DSS</b>, keys in a hardware security module or vault, data masking in logs.</li>
+      <li><b>Service to service:</b> mutual TLS through a service mesh, least privilege per service (Notification can't read balances).</li>
+      <li><b>Monitoring:</b> rate limits, a WAF, fraud alerts, full audit trail for regulators.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ---------- P2 Q3 ---------- -->
+<div class="chunk" data-sec="P2" data-code="3" data-title="Paper 2 · Question 3" data-lede="Insurance claim processing" data-meta="Practice paper 2<br><b>25 marks</b>" data-foot="Practice paper 2 · Question 3">
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>
+    An insurance company approves claims by amount: an <b>Agent</b> can approve up to Rs. 50,000, a <b>Supervisor</b> up to Rs. 500,000, a <b>Manager</b> up to Rs. 2,000,000, and anything above goes to the <b>Claims Board</b>. New approval levels may be added.<br>
+    Every claim is processed in the same order: <b>register → assess → approve → pay → notify</b>. Assessment differs for vehicle, health and property claims (a vehicle claim needs a garage estimate; a health claim needs hospital bills checked; a property claim needs a site visit).<br>
+    Payments are made through the bank's old mainframe system, which only offers <code>TRNPAY(String acctNo, long cents, String refCode)</code>. The claims system expects <code>pay(Claim c)</code>.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Identify the design patterns, with reasons, for: (a) approval by amount, (b) the processing order, (c) the mainframe payment.</span><span class="r">6 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:22%"><b>(a)</b> approval levels</td><td style="width:17%"><b>Chain of Responsibility</b></td><td>The claim is passed up Agent → Supervisor → Manager → Board until a level with a high enough limit approves it; the sender doesn't need to know who approves, and new levels are new handlers.</td></tr>
+      <tr><td><b>(b)</b> processing order</td><td><b>Template Method</b></td><td>A final <code>process()</code> fixes register → assess → approve → pay → notify; only <code>assess()</code> differs by claim type, so the order is enforced and common steps are written once.</td></tr>
+      <tr><td><b>(c)</b> mainframe</td><td><b>Adapter</b></td><td><code>MainframePaymentAdapter</code> implements <code>PaymentService.pay(Claim)</code> and converts it into <code>TRNPAY(acct, cents, ref)</code>; the mainframe can't be changed.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.2</span><span class="qt">Draw a class diagram for the approval levels.</span><span class="r">6 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp2-chain"></svg></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.3</span><span class="qt">Write Java showing how a claim of Rs. 750,000 is processed through the approval levels.</span><span class="r">6 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> Approver {
+  <span class="k">protected</span> Approver next;
+  <span class="k">private final double</span> limit;
+  <span class="k">protected</span> Approver(<span class="k">double</span> limit) {
+    <span class="k">this</span>.limit = limit; }
+  <span class="k">public</span> Approver setNext(Approver n) {
+    next = n; <span class="k">return</span> n; }
+
+  <span class="k">public void</span> approve(Claim c) {
+    <span class="k">if</span> (c.getAmount() &lt;= limit) {
+      System.out.println(getClass()
+        .getSimpleName() + <span class="s">" approved "</span>
+        + c.getAmount());
+    } <span class="k">else if</span> (next != <span class="k">null</span>) {
+      next.approve(c);     <span class="c">// pass it up</span>
+    }
+  }
+}</pre>
+<pre class="code"><span class="k">class</span> Agent <span class="k">extends</span> Approver {
+  Agent() { <span class="k">super</span>(50_000); } }
+<span class="k">class</span> Supervisor <span class="k">extends</span> Approver {
+  Supervisor() { <span class="k">super</span>(500_000); } }
+<span class="k">class</span> Manager <span class="k">extends</span> Approver {
+  Manager() { <span class="k">super</span>(2_000_000); } }
+<span class="k">class</span> ClaimsBoard <span class="k">extends</span> Approver {
+  ClaimsBoard() {
+    <span class="k">super</span>(Double.MAX_VALUE); } } <span class="c">// fallback</span>
+
+<span class="c">// client</span>
+Approver chain = <span class="k">new</span> Agent();
+chain.setNext(<span class="k">new</span> Supervisor())
+     .setNext(<span class="k">new</span> Manager())
+     .setNext(<span class="k">new</span> ClaimsBoard());
+chain.approve(<span class="k">new</span> Claim(750_000));
+<span class="c">// Agent: no → Supervisor: no</span>
+<span class="c">// → "Manager approved 750000.0"</span></pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Every approval level must log the claim, record its decision and log the result. How would you enforce this?</span><span class="r">3 marks</span></div>
+    <div class="a"><p class="small">Combine <b>Template Method</b> with the chain: make <code>approve()</code> in <code>Approver</code> <b>final</b> and have it call <code>logReceived()</code> → <code>decide(c)</code> (abstract, written by each level) → <code>logResult()</code>, then pass the claim on if not approved. Levels only write <code>decide()</code>, so none can skip the logging.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.5</span><span class="qt">Show how the claims system can pay through the mainframe without changing either system.</span><span class="r">4 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><b>Adapter.</b> <code>PaymentService</code> is the target interface the claims system already uses. <code>MainframePaymentAdapter</code> implements it, holds the mainframe client (adaptee), and translates: rupees → cents, claim → account number and reference code, and the mainframe's return code → an exception on failure. The <code>pay()</code> step in the template calls <code>paymentService.pay(c)</code> and never sees the mainframe.</p>
+<pre class="code"><span class="k">class</span> MainframePaymentAdapter
+      <span class="k">implements</span> PaymentService {
+  <span class="k">private final</span> Mainframe mf;
+  <span class="k">public void</span> pay(Claim c) {
+    <span class="k">long</span> cents =
+      Math.round(c.getAmount() * 100);
+    <span class="k">int</span> rc = mf.TRNPAY(c.getAccountNo(),
+                       cents, c.getRef());
+    <span class="k">if</span> (rc != 0) <span class="k">throw new</span>
+      PaymentException(<span class="s">"code "</span> + rc);
+  }
+}</pre>
+    </div></div>
+  </div>
+</div>
+
+<!-- ---------- P2 Q4 ---------- -->
+<div class="chunk" data-sec="P2" data-code="4" data-title="Paper 2 · Question 4" data-lede="Five short cases" data-meta="Practice paper 2<br><b>25 marks</b>" data-foot="Practice paper 2 · Question 4">
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>For each case, explain the design pattern you would suggest and why, and give a simple class diagram or code outline.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.1</span><span class="qt">A hospital system: patient records must only be opened by doctors and nurses assigned to that patient, and every access must be recorded.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><b>Protection Proxy</b> (structural). <code>PatientRecordProxy</code> implements the same <code>PatientRecord</code> interface as the real record. <code>view()</code> first checks the user's role and whether they are assigned to the patient, writes an audit entry, and only then forwards to the real record; otherwise it refuses. <b>Reasons:</b> sensitive data is never reached directly; the security rule is in one place; the record class stays free of security code.</p>
+      <svg class="dg" data-d="pp2-rec"></svg>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.2</span><span class="qt">A reporting module exports the same report as PDF, Excel or CSV, depending on what the user selects; more formats will be added.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><b>Factory Method</b> (creational). A <code>ReportExporter</code> interface with <code>export(report)</code>; <code>PdfExporter</code>, <code>ExcelExporter</code> and <code>CsvExporter</code> implement it. <code>ExporterFactory.create(format)</code> returns the right one from the user's choice. <b>Reasons:</b> the report screen depends only on the interface, creation logic is in one place, and a new format (JSON) is one new class.</p>
+<pre class="code"><span class="k">class</span> ExporterFactory {
+  <span class="k">static</span> ReportExporter create(String f) {
+    <span class="k">switch</span> (f) {
+      <span class="k">case</span> <span class="s">"PDF"</span>:   <span class="k">return new</span> PdfExporter();
+      <span class="k">case</span> <span class="s">"EXCEL"</span>:
+        <span class="k">return new</span> ExcelExporter();
+      <span class="k">case</span> <span class="s">"CSV"</span>:   <span class="k">return new</span> CsvExporter();
+      <span class="k">default</span>: <span class="k">throw new</span>
+        IllegalArgumentException(f);
+    }
+  }
+}</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.3</span><span class="qt">A vending machine behaves differently when it is idle, has a coin inserted, is dispensing, or is out of stock.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><b>State</b> (behavioural). <code>VendingMachine</code> (context) holds a <code>MachineState</code>; <code>IdleState</code>, <code>HasCoinState</code>, <code>DispensingState</code> and <code>OutOfStockState</code> implement <code>insertCoin()</code>, <code>selectItem()</code>, <code>dispense()</code> and <code>refund()</code>. Inserting a coin in Idle moves to HasCoin; in OutOfStock the coin is refunded. <b>Reasons:</b> the same button behaves differently by state, the if/else on a status flag disappears, and each state controls its own transitions. Stateless states can be shared Singletons.</p>
+      <svg class="dg" data-d="pp2-vend"></svg>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.4</span><span class="qt">An application sends SMS through an old gateway class with sendText(number, text). A new provider offers dispatch(Message m, int priority). Hundreds of calls to sendText() exist.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><b>Adapter</b> (structural). Keep <code>SmsGateway</code> with <code>sendText()</code> as the target. <code>NewProviderAdapter</code> implements it, holds the new provider (adaptee), builds a <code>Message</code> from the number and text, and calls <code>dispatch(m, NORMAL)</code>. <b>Reasons:</b> the hundreds of existing calls don't change (no risk to tested code), the provider's API isn't ours to change, and switching providers later means one new adapter.</p>
+<pre class="code"><span class="k">class</span> NewProviderAdapter
+      <span class="k">implements</span> SmsGateway {
+  <span class="k">private final</span> NewSmsProvider p;
+  NewProviderAdapter(NewSmsProvider p) {
+    <span class="k">this</span>.p = p; }
+  <span class="k">public void</span> sendText(String no,
+                       String text) {
+    p.dispatch(<span class="k">new</span> Message(no, text), 1);
+  }
+}</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.5</span><span class="qt">A pizza shop: customers choose a base pizza and add toppings (cheese, chicken, olives, extra sauce) in any combination; the price must be calculated automatically.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small"><b>Decorator</b> (structural). <code>Pizza</code> interface with <code>getPrice()</code> and <code>getDescription()</code>; <code>PlainPizza</code> is the base; <code>Cheese</code>, <code>Chicken</code>, <code>Olives</code> and <code>ExtraSauce</code> extend an abstract <code>ToppingDecorator</code> that holds a <code>Pizza</code>. Each topping adds its price and passes the rest of the call on. <b>Reasons:</b> no subclass per combination, toppings are picked at runtime, and new toppings don't change existing classes.</p>
+<pre class="code">Pizza p = <span class="k">new</span> PlainPizza();     <span class="c">// 1200</span>
+p = <span class="k">new</span> Cheese(p);              <span class="c">// +300</span>
+p = <span class="k">new</span> Chicken(p);             <span class="c">// +450</span>
+p = <span class="k">new</span> Olives(p);              <span class="c">// +150</span>
+p.getPrice();                    <span class="c">// 2100</span>
+
+<span class="k">class</span> Cheese <span class="k">extends</span> ToppingDecorator {
+  Cheese(Pizza p) { <span class="k">super</span>(p); }
+  <span class="k">public double</span> getPrice() {
+    <span class="k">return</span> pizza.getPrice() + 300; }
+}</pre>
+    </div></div>
+  </div>
+</div>
+
+<script>
+DIAGRAMS['pp2-sd'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'rq', k:'state', x:28, y:30, w:84, label:'Requested'},
+    {id:'da', k:'state', x:162, y:30, w:110, label:'Driver assigned'},
+    {id:'ip', k:'state', x:326, y:30, w:92, label:'In progress'},
+    {id:'co', k:'state', x:470, y:30, w:88, label:'Completed'},
+    {id:'ca', k:'state', x:162, y:104, w:84, label:'Cancelled'},
+    {id:'f1', k:'final', cx:594, cy:42},
+    {id:'f2', k:'final', cx:280, cy:116},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'rq', bs:'left', type:'trans'},
+    {a:'rq', as:'right', b:'da', bs:'left', type:'trans', label:'assign()'},
+    {a:'da', as:'right', b:'ip', bs:'left', type:'trans', label:'startTrip()'},
+    {a:'ip', as:'right', b:'co', bs:'left', type:'trans', label:'endTrip()'},
+    {a:'co', as:'right', b:'f1', bs:'left', type:'trans', label:'pay()'},
+    {a:'rq', as:'bottom', b:'ca', bs:'left', type:'trans', label:'cancel()', lx:70, ly:98},
+    {a:'da', as:'bottom', b:'ca', bs:'top', ax:204, bx:204, type:'trans', label:'cancel()'},
+    {a:'ca', as:'right', b:'f2', bs:'left', type:'trans'},
+    {a:'da', as:'top', b:'rq', bs:'top', type:'trans', loop:20, label:'driver declines'},
+  ]
+};
+DIAGRAMS['pp2-bank'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:50, w:78, h:44, lines:['Customers','mobile · web']},
+    {id:'gw', k:'node', x:100, y:42, w:96, h:60, lines:['API Gateway','OAuth2 + MFA','rate limit'], dark:true},
+    {id:'s1', k:'node', x:222, y:0, w:144, h:22, lines:['Customer / KYC  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:222, y:26, w:144, h:22, lines:['Account  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:222, y:52, w:144, h:22, lines:['Transaction  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:222, y:78, w:144, h:22, lines:['Fraud detection  [ML]'], align:'left'},
+    {id:'s5', k:'node', x:222, y:104, w:144, h:22, lines:['Loan  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:222, y:130, w:144, h:22, lines:['Notification  [DB]'], align:'left'},
+    {id:'mb', k:'node', x:394, y:40, w:108, h:52, lines:['Kafka','TransferCompleted,','LoanApproved…'], dashed:true},
+    {id:'ob', k:'node', x:394, y:104, w:108, lines:['Other banks','CEFTS via adapter'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:72, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.3, b:'s2', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.5, b:'s3', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.7, b:'s5', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.9, b:'s6', bs:'left', type:'flow', mid:209},
+    {a:'s3', as:'right', b:'mb', bs:'left', bx:63, type:'dflow', label:'events', lx:380, ly:58},
+    {a:'s3', as:'bottom', ax:300, b:'s4', bs:'top', bx:300, type:'flow'},
+    {a:'s4', as:'right', b:'ob', bs:'left', bx:115, type:'flow'},
+  ]
+};
+DIAGRAMS['pp2-chain'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:24, name:'ClaimService'},
+    {id:'cm', k:'class', x:0, y:84, name:'Claim', attrs:['- amount : double', '- type : ClaimType']},
+    {id:'h', k:'class', cx:300, y:0, name:'Approver', stereo:'abstract', abstract:true, attrs:['# next : Approver', '- limit : double'], ops:['+ setNext(a) : Approver', '+ approve(c : Claim) : void']},
+    {id:'l1', k:'class', cx:150, y:150, w:100, name:'Agent'},
+    {id:'l2', k:'class', cx:260, y:150, w:100, name:'Supervisor'},
+    {id:'l3', k:'class', cx:370, y:150, w:100, name:'Manager'},
+    {id:'l4', k:'class', cx:480, y:150, w:100, name:'ClaimsBoard'},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'h', bs:'left', bx:33, type:'assoc', label:'sends to first'},
+    {a:'h', as:'left', ao:.8, b:'cm', bs:'right', type:'depend', label:'approves'},
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.85, type:'aggr', loop:34, label:'next  0..1'},
+    {a:'l1', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l2', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l3', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+    {a:'l4', as:'top', b:'h', bs:'bottom', type:'extend', mid:134},
+  ]
+};
+DIAGRAMS['pp2-rec'] = {
+  items: [
+    {id:'s', k:'class', cx:140, y:0, name:'PatientRecord', stereo:'interface', ops:['+ view(user) : Record']},
+    {id:'r', k:'class', cx:50, y:82, w:100, name:'RealPatientRecord'},
+    {id:'p', k:'class', cx:236, y:82, name:'PatientRecordProxy', attrs:['- real : RealPatientRecord'], ops:['- isAssigned(user) : boolean']},
+  ],
+  edges: [
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:64},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:64},
+    {a:'p', as:'left', ao:.25, b:'r', bs:'right', type:'assoc'},
+  ]
+};
+DIAGRAMS['pp2-vend'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, name:'VendingMachine', stereo:'Context', attrs:['- state : MachineState'], ops:['+ insertCoin()', '+ setState(s)']},
+    {id:'s', k:'class', x:180, y:0, name:'MachineState', stereo:'interface', ops:['+ insertCoin(m)', '+ selectItem(m)', '+ dispense(m)']},
+    {id:'a', k:'class', cx:40, y:116, w:80, name:'Idle'},
+    {id:'b', k:'class', cx:128, y:116, w:80, name:'HasCoin'},
+    {id:'d', k:'class', cx:216, y:116, w:80, name:'Dispensing'},
+    {id:'o', k:'class', cx:304, y:116, w:80, name:'OutOfStock'},
+  ],
+  edges: [
+    {a:'c', as:'right', ao:.4, b:'s', bs:'left', type:'aggr'},
+    {a:'a', as:'top', b:'s', bs:'bottom', bo:.15, type:'realize', mid:100},
+    {a:'b', as:'top', b:'s', bs:'bottom', bo:.38, type:'realize', mid:100},
+    {a:'d', as:'top', b:'s', bs:'bottom', bo:.62, type:'realize', mid:100},
+    {a:'o', as:'top', b:'s', bs:'bottom', bo:.85, type:'realize', mid:100},
+  ]
+};
+</script>

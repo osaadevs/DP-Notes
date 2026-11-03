@@ -1,0 +1,477 @@
+<!-- ===================== 2024 Q1 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 1</h1><div class="lede">Coffee shop with optional ingredients, different profit per coffee, and one shared logger.</div></div>
+    <div class="meta">Decorator + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>In a coffee shop, customers order a base coffee and add optional ingredients (milk, sugar, chocolate). The price depends on the base type and the selected additions. You need a flexible way to calculate the price dynamically without a complex hierarchy of subclasses for every combination of coffee and ingredients.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.1</span><span class="qt">What is the best design pattern for the above scenario?</span><span class="r">5 marks</span></div>
+    <p>The <b>Decorator</b> pattern (structural). It attaches additional responsibilities to an object dynamically by wrapping it, which is a flexible alternative to subclassing.</p>
+    <p>The base coffee is a concrete component; Milk, Sugar and Chocolate are decorators. Each decorator implements the same <code>Coffee</code> interface, holds the coffee it wraps, adds its own price and description, and passes the rest of the call inwards. <b>Reasons:</b> (1) no class explosion: 3 ingredients would need 2³ = 8 subclasses per base coffee, here it's one class per ingredient; (2) the price is worked out <b>at runtime</b> from whatever the customer picks; (3) a new ingredient is a new class and nothing existing changes (Open/Closed); (4) each decorator has one responsibility.</p>
+    <svg class="dg mt" data-d="p24-coffee"></svg>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2</span><span class="qt">Define a Coffee interface with getCost() and getDescription().</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="c">// Component: every coffee and every</span>
+<span class="c">// decorator has these two methods</span>
+<span class="k">public interface</span> Coffee {
+    <span class="k">double</span> getCost();
+    String getDescription();
+}</pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3</span><span class="qt">Create a BasicCoffee class implementing the Coffee interface.</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="c">// Concrete component: the base coffee</span>
+<span class="k">public class</span> BasicCoffee <span class="k">implements</span> Coffee {
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> 200.0;
+    }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> <span class="s">"Basic coffee"</span>;
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 1 (cont.)</h1><div class="lede">The decorators that make 1.2 and 1.3 work, the profit extension, and the logger.</div></div>
+    <div class="meta">Decorator + Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Show the decorators too <span class="r">adds strength to 1.1–1.3</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> CoffeeDecorator
+        <span class="k">implements</span> Coffee {
+    <span class="k">protected</span> Coffee coffee;    <span class="c">// wrapped</span>
+    <span class="k">public</span> CoffeeDecorator(Coffee c) {
+        coffee = c; }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost(); }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription(); }
+}</pre>
+<pre class="code"><span class="k">public class</span> Milk <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">public</span> Milk(Coffee c) { <span class="k">super</span>(c); }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost() + 80; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription()
+               + <span class="s">", milk"</span>; }
+}
+<span class="c">// Sugar +20, Chocolate +120: same shape</span>
+Coffee c = <span class="k">new</span> BasicCoffee();
+c = <span class="k">new</span> Sugar(<span class="k">new</span> Milk(c));
+c.getCost();   <span class="c">// 200 + 80 + 20 = 300</span></pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.4</span><span class="qt">If there is a different profit for each coffee, how would you extend the above design?</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <div class="small">
+        <p><b>Option A:</b> add <code>getProfit()</code> to the <code>Coffee</code> interface. Each base coffee returns its own margin; each decorator returns <code>coffee.getProfit()</code> plus its add-on profit. Selling price = <code>getCost() + getProfit()</code>.</p>
+        <p><b>Option B (better, Open/Closed):</b> add a new <code>ProfitMargin</code> decorator that wraps the finished drink and adds a percentage. No existing class changes, and each coffee can get a different rate: <code>new ProfitMargin(espresso, 0.25)</code>, <code>new ProfitMargin(latte, 0.35)</code>. The rates can be read from configuration.</p>
+      </div>
+<pre class="code"><span class="k">public class</span> ProfitMargin
+        <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">private final double</span> rate;
+    <span class="k">public</span> ProfitMargin(Coffee c, <span class="k">double</span> r) {
+        <span class="k">super</span>(c);
+        rate = r;
+    }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost() * (1 + rate);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.5</span><span class="qt">A logger must write all logs to the same file or output stream; multiple instances would cause duplicate or inconsistent output. Propose a design pattern.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Use the <b>Singleton</b> pattern (creational). It ensures a class has only one instance and provides a global point of access to it. The Logger has a private constructor and a static <code>getInstance()</code>, so every class gets the <b>same</b> logger, which owns the <b>one</b> file handle. <b>Reasons:</b> no duplicate or interleaved lines, one consistent format and order, less memory, and easy access from anywhere. <code>log()</code> is <code>synchronized</code> so lines from different threads don't mix.</p>
+<pre class="code"><span class="k">public final class</span> Logger {
+  <span class="k">private static volatile</span> Logger instance;
+  <span class="k">private final</span> PrintWriter out;
+  <span class="k">private</span> Logger() {
+    out = Files.openAppend(<span class="s">"app.log"</span>); }
+  <span class="k">public static</span> Logger getInstance() {
+    <span class="k">if</span> (instance == <span class="k">null</span>) {
+      <span class="k">synchronized</span> (Logger.<span class="k">class</span>) {
+        <span class="k">if</span> (instance == <span class="k">null</span>)
+          instance = <span class="k">new</span> Logger();
+      }
+    }
+    <span class="k">return</span> instance;
+  }
+  <span class="k">public synchronized void</span> log(String m) {
+    out.println(m); }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2024 Q2 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 2</h1><div class="lede">Library management system using microservices.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>Develop a scalable, maintainable library management system using microservices. Requirements: <b>Book management</b> (add, update, search by title, author, genre, ISBN) · <b>User management</b> (register, accounts, borrowing history) · <b>Borrowing and returning</b> (borrow, renew, return, due dates) · <b>Notifications</b> (due dates, new arrivals, system updates) · <b>Catalog search</b> (advanced filters, real-time availability).</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p24-lib"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can an organisation effectively implement and manage microservices to achieve scalability, fault isolation and ease of continuous deployment in this scenario?</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Scale each service on its own. <b>Catalog Search</b> gets the most traffic, so it gets more copies and a search index; Borrowing scales near semester start; User and Notification stay small. Stateless services, Kubernetes auto-scaling, a cache for popular searches.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Notification is down, borrowing still works and messages wait in the queue. Circuit breakers, timeouts, retries; search falls back to cached results.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Separate repository and CI/CD pipeline per service with automated tests, Docker images, blue-green or canary releases, and versioned APIs, so the Book service can be updated without touching Borrowing.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, central config, and central logging, metrics and tracing.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 2 (cont.)</h1><div class="lede">Architecture, data consistency and security for the library.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a microservice architecture for the above problem.</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><th style="width:21%">Service</th><th style="width:44%">Responsibility</th><th>Data / tech</th></tr>
+      <tr><td><b>Book</b></td><td>add / update books, copies, ISBN</td><td>own SQL DB</td></tr>
+      <tr><td><b>User</b></td><td>registration, accounts, membership</td><td>own DB</td></tr>
+      <tr><td><b>Borrowing</b></td><td>borrow, renew, return, due dates, fines</td><td>own DB</td></tr>
+      <tr><td><b>Notification</b></td><td>due-date reminders, new arrivals, updates (email/SMS)</td><td>consumes events</td></tr>
+      <tr><td><b>Catalog Search</b></td><td>advanced filters, real-time availability</td><td>Elasticsearch index built from Book and Borrowing events (CQRS)</td></tr>
+    </table>
+    <p class="small mt">Web and mobile clients go through an <b>API gateway</b>. Services call each other with REST when they need an answer now (Borrowing asks User "is the membership valid?") and publish events to <b>Kafka/RabbitMQ</b> otherwise ("BookBorrowed" → Search marks it unavailable, Notification schedules a reminder). Containers on Kubernetes, with a registry, config server and monitoring.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.4</span><span class="qt">Methods to maintain data consistency in the proposed architecture?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Database per service</b>, so no shared transactions; we accept <b>eventual consistency</b> (search may show a book as available for a second).</li>
+      <li><b>Saga</b> for borrowing: reserve the copy → record the loan → update the user's history. If a step fails, <b>compensating actions</b> undo the earlier ones (release the copy).</li>
+      <li><b>Event-driven updates</b> with a <b>transactional outbox</b> and <b>idempotent consumers</b>.</li>
+      <li><b>CQRS</b>: the search index is a read model rebuilt from events; the Borrowing service is the source of truth for availability at checkout.</li>
+    </ul>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you achieve security in the proposed architecture?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Users:</b> login with OAuth2 / OpenID Connect at the gateway, which issues JWT tokens. Roles: member, librarian, admin (only librarians add or update books).</li>
+      <li><b>Service to service:</b> mutual TLS (service mesh), short-lived tokens, each service only allowed to call what it needs.</li>
+      <li><b>Data:</b> HTTPS everywhere, personal data and borrowing history encrypted at rest, secrets in a vault, least-privilege DB users.</li>
+      <li><b>Attacks:</b> rate limiting on search, input validation, a web application firewall, audit logs.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2024 Q3 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 3</h1><div class="lede">Document workflow: Draft → Moderation → Published → Archived.</div></div>
+    <div class="meta">State<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span><b>Draft:</b> created and editable; can move to Moderation. <b>Moderation:</b> under review; approved → Published, or rejected → back to Draft. <b>Published:</b> final, can't be edited; can only move to Archived. <b>Archived:</b> stored permanently, no further transitions.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Define the state diagram for the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p24-sd"></svg>
+    <p class="tip">Start dot, a rounded box per state, every arrow labelled with its event, and a bullseye after Archived because it is final.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.2</span><span class="qt">What is the best design pattern for this scenario? Provide reasons.</span><span class="r">5 marks</span></div>
+    <p>The <b>State</b> pattern (behavioural). It allows an object to change its behaviour when its internal state changes; the object appears to change its class.</p>
+    <p><b>Reasons:</b> (1) the document has a <b>fixed set of four states</b>, and the <b>same action behaves differently</b> in each: <code>edit()</code> works in Draft but is refused in Published, <code>approve()</code> only works in Moderation; (2) without the pattern, every method would need an if/else on a status field, growing with each state; (3) each state class holds its own rules and decides the <b>next state</b>, so illegal moves (Archived → Draft) are refused cleanly; (4) a new state (e.g. "Under Legal Review") is a new class, and nothing else changes (Open/Closed).</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Explain the use of interfaces (OOP concept) in the above design.</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><code>DocumentState</code> is a <b>contract</b>: every state must implement every event (<code>edit</code>, <code>submit</code>, <code>approve</code>, <code>reject</code>, <code>archive</code>), so nothing is forgotten.</li>
+      <li><code>Document</code> holds a <code>DocumentState</code> reference and calls <code>state.submit(this)</code> without knowing which state it is: <b>polymorphism</b>, programming to an interface.</li>
+      <li>New states plug in without changing <code>Document</code> (<b>Open/Closed</b>, <b>Dependency Inversion</b>); states can be swapped at runtime and mocked in tests.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 3 (cont.)</h1><div class="lede">The 10-mark class diagram, with code that matches it.</div></div>
+    <div class="meta">State<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel">
+    <div class="ql"><span class="w">3.3</span><span class="qt">Create a class diagram illustrating the use of the identified design pattern in the workflow system.</span><span class="r">10 marks</span></div>
+    <svg class="dg" data-d="p24-cd"></svg>
+    <p class="tip">For 10 marks show: the context with its state field and <code>setState()</code>, the interface with every event, all four concrete states, realisation arrows (dashed + hollow triangle), the has-a diamond on the context, and the client.</p>
+  </div>
+
+  <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> DocumentState {
+  <span class="k">void</span> edit(Document d, String text);
+  <span class="k">void</span> submit(Document d);
+  <span class="k">void</span> approve(Document d);
+  <span class="k">void</span> reject(Document d);
+  <span class="k">void</span> archive(Document d);
+}
+<span class="k">public class</span> Document {
+  <span class="k">private</span> DocumentState state =
+      <span class="k">new</span> DraftState();
+  <span class="k">void</span> setState(DocumentState s) {
+    state = s; }
+  <span class="k">public void</span> submit() {
+    state.submit(<span class="k">this</span>); }
+  <span class="c">// edit, approve, reject, archive:</span>
+  <span class="c">// same, each delegates to state</span>
+}</pre>
+<pre class="code"><span class="k">public class</span> ModerationState
+        <span class="k">implements</span> DocumentState {
+  <span class="k">public void</span> approve(Document d) {
+    d.setState(<span class="k">new</span> PublishedState()); }
+  <span class="k">public void</span> reject(Document d) {
+    d.setState(<span class="k">new</span> DraftState()); }
+  <span class="k">public void</span> edit(Document d, String t) {
+    System.out.println(<span class="s">"Under review"</span>); }
+  <span class="k">public void</span> submit(Document d) { }
+  <span class="k">public void</span> archive(Document d) {
+    System.out.println(<span class="s">"Publish first"</span>); }
+}
+<span class="c">// PublishedState.edit():</span>
+<span class="c">//   "Published documents can't be edited"</span>
+<span class="c">// ArchivedState: every method refuses</span></pre>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2024 Q4 ===================== -->
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 4</h1><div class="lede">E-commerce checkout: standard steps, exceptions, abstract classes, authorization levels.</div></div>
+    <div class="meta">Template · Chain · Proxy<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>A standard checkout process: <b>Validate cart</b> (valid items, enough stock) → <b>Process payment</b> (credit card, PayPal, cash on delivery) → <b>Arrange delivery</b> (varies: domestic or international) → <b>Send confirmation</b> (email or SMS).</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Draw a diagram to depict the above scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p24-flow"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.2</span><span class="qt">What is the best design pattern for this case? Explain.</span><span class="r">5 marks</span></div>
+    <p>The <b>Template Method</b> pattern (behavioural). The checkout always has the same four steps in the same order; only payment and delivery differ. An abstract <code>CheckoutProcess</code> has a final <code>checkout(order)</code> that runs validate cart → process payment → arrange delivery → send confirmation. Validate cart and send confirmation are written once; <code>processPayment()</code> and <code>arrangeDelivery()</code> are abstract and implemented by subclasses such as <code>DomesticCheckout</code> and <code>InternationalCheckout</code>. <b>Reasons:</b> the order is enforced for every order, common steps aren't duplicated, and a new delivery type is just a subclass. (To avoid a subclass for every payment × delivery pair, the payment can be a separate object created by a Factory.)</p>
+    <svg class="dg mt" data-d="p24-tm"></svg>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="24">
+<div class="body">
+  <header class="ph">
+    <div class="code">24</div>
+    <div><h1>2024 · Question 4 (cont.)</h1><div class="lede">Exceptions, abstract classes and authorization levels.</div></div>
+    <div class="meta">Chain · Template · Proxy<br><b>15 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.3</span><span class="qt">An exception-handling system is to be included. How would you handle the different types of exceptions?</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Use <b>Chain of Responsibility</b>. Each handler deals with one type of exception and passes the rest on: <code>OutOfStockHandler</code> (tell the customer, suggest alternatives) → <code>PaymentFailedHandler</code> (retry or offer another method) → <code>DeliveryErrorHandler</code> (re-schedule, notify the courier) → <code>SystemErrorHandler</code> (log, alert the admin, show a friendly error). Ordered by how common and how severe they are. <b>Reasons:</b> the checkout code doesn't need to know who handles each error; a new type of exception is a new handler; it works like try/catch.</p>
+<pre class="code"><span class="k">abstract class</span> CheckoutErrorHandler {
+  <span class="k">protected</span> CheckoutErrorHandler next;
+  <span class="k">public void</span> handle(CheckoutException e) {
+    <span class="k">if</span> (canHandle(e)) resolve(e);
+    <span class="k">else if</span> (next != <span class="k">null</span>) next.handle(e);
+  }
+  <span class="k">abstract boolean</span> canHandle(
+      CheckoutException e);
+  <span class="k">abstract void</span> resolve(
+      CheckoutException e);
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.4</span><span class="qt">How can abstract classes be used in the above scenario?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><code>CheckoutProcess</code> is <b>abstract</b> because it must hold <b>real code</b> (the fixed order in the final <code>checkout()</code>, and the common steps validate cart and send confirmation) <b>and</b> declare <b>abstract steps</b> (<code>processPayment()</code>, <code>arrangeDelivery()</code>) that each subclass must write.</li>
+      <li>It <b>can't be instantiated</b> on its own, because a "general" checkout makes no sense; only <code>DomesticCheckout</code> or <code>InternationalCheckout</code> can be created.</li>
+      <li>An interface couldn't do this: it can't enforce the order or share the common code. Subclasses are used through the abstract type (<b>polymorphism</b>), and <code>final</code> stops them changing the order.</li>
+      <li><code>CheckoutErrorHandler</code> in 4.3 is also abstract: it holds the shared <code>next</code> link and passing logic.</li>
+    </ul>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.5</span><span class="qt">How would you incorporate different levels of authorization?</span><span class="r">5 marks</span></div>
+    <p class="small"><b>Protection Proxy.</b> Sensitive operations (refunds, price changes, viewing all orders) sit behind proxies with the same interface; the proxy checks the user's role (customer, support agent, manager, admin) before forwarding, and logs the access. If an action needs approval that escalates with the amount (support can refund up to 5,000, a manager up to 50,000, above that an admin), use a <b>Chain of Responsibility</b> of approvers, each handling its level and passing larger requests up. Roles come from the JWT token issued at login (RBAC).</p>
+  </div>
+</div>
+<div class="foot"><span>2024 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p24-coffee'] = {
+  items: [
+    {id:'c', k:'class', cx:230, y:0, name:'Coffee', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'b', k:'class', cx:70, y:96, name:'BasicCoffee', ops:['+ getCost()', '+ getDescription()']},
+    {id:'d', k:'class', cx:370, y:92, name:'CoffeeDecorator', stereo:'abstract', abstract:true, attrs:['# coffee : Coffee'], ops:['+ getCost()', '+ getDescription()']},
+    {id:'m', k:'class', cx:270, y:196, w:84, name:'Milk'},
+    {id:'s', k:'class', cx:370, y:196, w:84, name:'Sugar'},
+    {id:'h', k:'class', cx:470, y:196, w:84, name:'Chocolate'},
+  ],
+  edges: [
+    {a:'b', as:'top', b:'c', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.7, type:'realize', mid:76},
+    {a:'d', as:'right', ao:.15, b:'c', bs:'right', bo:.5, type:'aggr', via:[[490,106],[490,30]], label:'wraps  1', lx:496, ly:70, lanchor:'start'},
+    {a:'m', as:'top', b:'d', bs:'bottom', type:'extend', mid:182},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:182},
+    {a:'h', as:'top', b:'d', bs:'bottom', type:'extend', mid:182},
+  ],
+  scale: 0.9
+};
+DIAGRAMS['p24-lib'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:54, w:76, h:44, lines:['Members, librarians','web · mobile']},
+    {id:'gw', k:'node', x:100, y:46, w:100, h:60, lines:['API Gateway','OAuth2 / JWT','routing · rate limit'], dark:true},
+    {id:'s1', k:'node', x:228, y:0, w:150, h:24, lines:['Book service  [SQL DB]'], align:'left'},
+    {id:'s2', k:'node', x:228, y:32, w:150, h:24, lines:['User service  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:228, y:64, w:150, h:24, lines:['Borrowing service  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:228, y:96, w:150, h:24, lines:['Catalog Search  [Elastic]'], align:'left'},
+    {id:'s5', k:'node', x:228, y:128, w:150, h:24, lines:['Notification  [DB]'], align:'left'},
+    {id:'mb', k:'node', x:406, y:46, w:108, h:60, lines:['Message broker','BookBorrowed,','BookReturned…'], dashed:true},
+    {id:'k', k:'node', x:406, y:118, w:108, lines:['Kubernetes, CI/CD,','registry, monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:76, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.3, b:'s2', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.5, b:'s3', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.7, b:'s4', bs:'left', type:'flow', mid:214},
+    {a:'gw', as:'right', ao:.9, b:'s5', bs:'left', type:'flow', mid:214},
+    {a:'s3', as:'right', b:'mb', bs:'left', bx:76, type:'dflow', label:'events', lx:392, ly:72},
+  ]
+};
+DIAGRAMS['p24-sd'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'d', k:'state', x:30, y:30, w:70, label:'Draft'},
+    {id:'m', k:'state', x:152, y:30, w:92, label:'Moderation'},
+    {id:'p', k:'state', x:300, y:30, w:86, label:'Published'},
+    {id:'a', k:'state', x:440, y:30, w:80, label:'Archived'},
+    {id:'f', k:'final', cx:552, cy:42},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'d', bs:'left', type:'trans'},
+    {a:'d', as:'right', b:'m', bs:'left', type:'trans', label:'submit()'},
+    {a:'m', as:'right', b:'p', bs:'left', type:'trans', label:'approve()'},
+    {a:'p', as:'right', b:'a', bs:'left', type:'trans', label:'archive()'},
+    {a:'a', as:'right', b:'f', bs:'left', type:'trans'},
+    {a:'m', as:'bottom', b:'d', bs:'bottom', type:'trans', loop:20, label:'reject()'},
+    {a:'d', as:'top', ao:.3, b:'d', bs:'top', bo:.7, type:'trans', loop:18, label:'edit()'},
+  ]
+};
+DIAGRAMS['p24-cd'] = {
+  items: [
+    {id:'e', k:'class', x:0, y:40, name:'Editor'},
+    {id:'c', k:'class', x:90, y:0, name:'Document', stereo:'Context', attrs:['- state : DocumentState', '- content : String'], ops:['+ edit(text) : void', '+ submit() : void', '+ approve() : void', '+ reject() : void', '+ archive() : void', '+ setState(s : DocumentState)']},
+    {id:'s', k:'class', x:370, y:6, name:'DocumentState', stereo:'interface', ops:['+ edit(d : Document, text)', '+ submit(d : Document)', '+ approve(d : Document)', '+ reject(d : Document)', '+ archive(d : Document)']},
+    {id:'s1', k:'class', cx:90, y:182, w:116, name:'DraftState', ops:['+ edit() : saves', '+ submit() → Moderation']},
+    {id:'s2', k:'class', cx:225, y:182, w:132, name:'ModerationState', ops:['+ approve() → Published', '+ reject() → Draft']},
+    {id:'s3', k:'class', cx:375, y:182, w:132, name:'PublishedState', ops:['+ archive() → Archived', '+ edit() : refused']},
+    {id:'s4', k:'class', cx:520, y:182, w:120, name:'ArchivedState', ops:['all : refused']},
+  ],
+  edges: [
+    {a:'e', as:'right', b:'c', bs:'left', bx:49, type:'assoc'},
+    {a:'c', as:'right', ao:.2, b:'s', bs:'left', type:'aggr', label:'current  1'},
+    {a:'s1', as:'top', b:'s', bs:'bottom', bo:.15, type:'realize', mid:162},
+    {a:'s2', as:'top', b:'s', bs:'bottom', bo:.38, type:'realize', mid:162},
+    {a:'s3', as:'top', b:'s', bs:'bottom', bo:.62, type:'realize', mid:162},
+    {a:'s4', as:'top', b:'s', bs:'bottom', bo:.85, type:'realize', mid:162},
+  ]
+};
+DIAGRAMS['p24-flow'] = {
+  items: [
+    {id:'cu', k:'node', x:0, y:40, w:70, lines:['Customer','places order']},
+    {id:'v', k:'node', x:92, y:40, w:92, lines:['Validate cart','items + stock'], shade:true},
+    {id:'p1', k:'node', x:208, y:0, w:96, h:20, lines:['Credit card'], size:8.5},
+    {id:'p2', k:'node', x:208, y:44, w:96, h:20, lines:['PayPal'], size:8.5},
+    {id:'p3', k:'node', x:208, y:88, w:96, h:20, lines:['Cash on delivery'], size:8.5},
+    {id:'d1', k:'node', x:330, y:20, w:90, h:20, lines:['Domestic'], size:8.5},
+    {id:'d2', k:'node', x:330, y:68, w:90, h:20, lines:['International'], size:8.5},
+    {id:'c', k:'node', x:446, y:40, w:100, lines:['Send confirmation','email / SMS'], shade:true},
+    {k:'text', x:208, y:126, lines:['Process payment (varies)'], size:8, italic:true},
+    {k:'text', x:330, y:104, lines:['Arrange delivery (varies)'], size:8, italic:true},
+  ],
+  edges: [
+    {a:'cu', as:'right', b:'v', bs:'left', type:'flow'},
+    {a:'v', as:'right', b:'p1', bs:'left', type:'flow', mid:196},
+    {a:'v', as:'right', b:'p2', bs:'left', type:'flow', mid:196},
+    {a:'v', as:'right', b:'p3', bs:'left', type:'flow', mid:196},
+    {a:'p1', as:'right', b:'d1', bs:'left', type:'flow', mid:317},
+    {a:'p2', as:'right', b:'d1', bs:'left', type:'flow', mid:317},
+    {a:'p2', as:'right', b:'d2', bs:'left', type:'flow', mid:317},
+    {a:'p3', as:'right', b:'d2', bs:'left', type:'flow', mid:317},
+    {a:'d1', as:'right', b:'c', bs:'left', type:'flow', mid:433},
+    {a:'d2', as:'right', b:'c', bs:'left', type:'flow', mid:433},
+  ]
+};
+DIAGRAMS['p24-tm'] = {
+  items: [
+    {id:'a', k:'class', cx:230, y:0, name:'CheckoutProcess', stereo:'abstract', abstract:true, ops:['+ checkout(o : Order) : void {final}', '- validateCart(o) : boolean', '/# processPayment(o) : void', '/# arrangeDelivery(o) : void', '- sendConfirmation(o) : void']},
+    {id:'d', k:'class', cx:120, y:112, w:170, name:'DomesticCheckout', ops:['# processPayment(o)', '# arrangeDelivery(o)']},
+    {id:'i', k:'class', cx:340, y:112, w:170, name:'InternationalCheckout', ops:['# processPayment(o)', '# arrangeDelivery(o)']},
+  ],
+  edges: [
+    {a:'d', as:'top', b:'a', bs:'bottom', type:'extend', mid:98},
+    {a:'i', as:'top', b:'a', bs:'bottom', type:'extend', mid:98},
+  ],
+  scale: 0.92
+};
+</script>

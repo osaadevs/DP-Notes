@@ -1,0 +1,352 @@
+<!-- ===================== 09 STATE : understand ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State</h1><div class="lede">An object behaves differently depending on which state it is in. Each state gets its own class.</div></div>
+    <div class="meta">Behavioural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">can move through the following states</span><span class="chip">operates in different states: Idle, Scanning, Payment, Completed</span>
+      <span class="chip">transitions to</span><span class="chip">the behaviour depends on its current state</span><span class="chip">define / draw the state diagram</span>
+      <span class="chip">behaviour changes through flags and conditions</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Press "mute" on a TV remote. If the TV is on, it mutes. If it's off, nothing happens. Same button, different result, because of the <b>state</b>.</p>
+      <p class="small">Without the pattern, every method is a big <code>if (state == ON) … else if (state == OFF) …</code>, and it grows with every new state. With State, each state is a class that knows what to do for each action and which state comes next. The main object (the <b>context</b>) just says "current state, you handle this".</p>
+    </div>
+    <div class="panel">
+      <h2>TV remote state table <span class="r">lecture example</span></h2>
+      <table class="tight small">
+        <tr><th>State</th><th>Event</th><th>Does</th><th>Next</th></tr>
+        <tr><td>OFF</td><td>on</td><td>turn TV on</td><td>ON</td></tr>
+        <tr><td>OFF</td><td>off / mute</td><td>nothing</td><td>OFF</td></tr>
+        <tr><td>ON</td><td>mute</td><td>sound off</td><td>MUTE</td></tr>
+        <tr><td>ON</td><td>off</td><td>turn TV off</td><td>OFF</td></tr>
+        <tr><td>MUTE</td><td>on</td><td>sound back</td><td>ON</td></tr>
+        <tr><td>MUTE</td><td>off</td><td>turn TV off</td><td>OFF</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The parts</h2>
+    <table class="small">
+      <tr><th style="width:22%">Part</th><th style="width:44%">Job</th><th>Document workflow (2024 Q3)</th></tr>
+      <tr><td><b>Context</b></td><td>Holds the current state, passes every request to it, has <code>setState()</code></td><td><code>Document</code></td></tr>
+      <tr><td><b>State</b> «interface»</td><td>One method per event; every state must have them all</td><td><code>DocumentState</code></td></tr>
+      <tr><td><b>Concrete states</b></td><td>The behaviour for that state; they call <code>context.setState(next)</code> to move on</td><td><code>DraftState</code>, <code>ModerationState</code>, <code>PublishedState</code>, <code>ArchivedState</code></td></tr>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Designing it in 5 steps</h2>
+      <ol class="small">
+        <li>Draw the <b>state diagram</b> (states and events).</li>
+        <li>Make the <b>state table</b>: state + event → what happens + next state.</li>
+        <li>State <b>interface</b> = one method per event.</li>
+        <li><b>One class per state</b> implementing it.</li>
+        <li>The <b>context delegates</b>: <code>state.submit(this)</code>.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs Chain</b>: State asks "how should I behave now?" and the object delegates to its current state. Chain asks "who handles this?" and the request moves along handlers.</li>
+        <li><b>vs Strategy</b>: same structure, but the client picks a strategy and it doesn't change itself. States switch themselves.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y">2024</span> Q3 document workflow (state diagram 5, pattern 5, class diagram 10, interfaces 5) · <span class="y">2025</span> Q1.1(a), 1.4 kiosk states · <span class="y q">Quiz 1</span> smart parking (why, state diagram, UML, context code). <b>Rule of thumb:</b> long chains of <code>if (state == …)</code> mean State.</div>
+</div>
+<div class="foot"><span>09 State · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE : write ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: write</h1><div class="lede">The document workflow from 2024 Q3 (25 marks). Swap the states for the ones in your question.</div></div>
+    <div class="meta">Behavioural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>State</b> pattern, which is a behavioural pattern. It allows an object to <b>change its behaviour when its internal state changes</b>; the object appears to change its class.</div>
+    <p class="small"><b>Reasons:</b> (1) the document has a <b>fixed set of states</b> and the same action behaves differently in each (edit works in Draft but is refused in Published); (2) it <b>removes the if/else on a status field</b> from every method; (3) each state's rules and <b>transitions live in one class</b>, and a new state is just a new class (Open/Closed).</p>
+    <p class="small"><b>Mapping:</b> context = <b>Document</b> · state interface = <b>DocumentState</b> · concrete states = <b>Draft, Moderation, Published, Archived</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2a</span> State diagram <span class="tiny" style="font-weight:400">· 2024 Q3.1, 5m</span></h2><span class="tiny">label every arrow with its event; Archived is final</span></div>
+    <svg class="dg" data-d="state-doc"></svg>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2b</span> Class diagram <span class="tiny" style="font-weight:400">· 2024 Q3.3, 10m</span></h2><span class="tiny">the diamond sits on the context: it has a current state</span></div>
+    <svg class="dg" data-d="state-class"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> DocumentState {
+  <span class="k">void</span> edit(Document d, String text);
+  <span class="k">void</span> submit(Document d);
+  <span class="k">void</span> approve(Document d);
+  <span class="k">void</span> reject(Document d);
+  <span class="k">void</span> archive(Document d);
+}
+<span class="k">public class</span> Document {          <span class="c">// CONTEXT</span>
+  <span class="k">private</span> DocumentState state =
+      <span class="k">new</span> DraftState();
+  <span class="k">private</span> String content = <span class="s">""</span>;
+  <span class="k">void</span> setState(DocumentState s) { state = s; }
+  <span class="k">public void</span> edit(String t) {
+    state.edit(<span class="k">this</span>, t); }
+  <span class="k">public void</span> submit()  { state.submit(<span class="k">this</span>); }
+  <span class="k">public void</span> approve() { state.approve(<span class="k">this</span>); }
+  <span class="k">public void</span> reject()  { state.reject(<span class="k">this</span>); }
+  <span class="k">public void</span> archive() { state.archive(<span class="k">this</span>); }
+}</pre>
+<pre class="code"><span class="k">public class</span> ModerationState
+        <span class="k">implements</span> DocumentState {
+  <span class="k">public void</span> approve(Document d) {
+    d.setState(<span class="k">new</span> PublishedState()); }
+  <span class="k">public void</span> reject(Document d) {
+    d.setState(<span class="k">new</span> DraftState()); }
+  <span class="k">public void</span> edit(Document d, String t) {
+    System.out.println(<span class="s">"Under review"</span>); }
+  <span class="k">public void</span> submit(Document d) {
+    System.out.println(<span class="s">"Already submitted"</span>); }
+  <span class="k">public void</span> archive(Document d) {
+    System.out.println(<span class="s">"Publish first"</span>); }
+}
+<span class="c">// Draft: edit ok, submit → Moderation</span>
+<span class="c">// Published: archive → Archived only</span>
+<span class="c">// Archived: everything refused</span></pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>09 State · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE : answers parking ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: smart parking</h1><div class="lede">Quiz 1, the lecturer's own State question: why, state diagram, UML, context code, then an Adapter twist.</div></div>
+    <div class="meta">Behavioural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Q1 Why State is appropriate <span class="r">4m</span></h2>
+    <p class="small">A parking session has a <b>fixed set of well-defined states</b> (Available, Reserved, Occupied, Payment Due, Closed), and the <b>same action behaves differently in each</b>: <code>enter()</code> is allowed when Reserved but refused when Closed, and <code>pay()</code> only works in Payment Due. Without the pattern every method needs a growing if/switch on the status. With State, each state's rules live in one class, transitions are explicit, invalid actions are refused cleanly, and a new state (e.g. Overstay) is just a new class.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Q2 State diagram <span class="tiny" style="font-weight:400">· 4m</span></h2></div>
+    <svg class="dg" data-d="state-park"></svg>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Q3 UML class diagram <span class="tiny" style="font-weight:400">· 6m</span></h2></div>
+    <svg class="dg" data-d="park-class"></svg>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div>
+      <div class="codecap">Q4 Context class · 3m</div>
+<pre class="code"><span class="k">public class</span> ParkingSession {
+  <span class="k">private</span> ParkingState state =
+      <span class="k">new</span> AvailableState();
+  <span class="k">private</span> String vehicleNo;
+  <span class="k">private double</span> fee;
+
+  <span class="k">public void</span> setState(ParkingState s) {
+    state = s; }
+  <span class="k">public void</span> reserve() { state.reserve(<span class="k">this</span>); }
+  <span class="k">public void</span> enter()   { state.enter(<span class="k">this</span>); }
+  <span class="k">public void</span> exit()    { state.exit(<span class="k">this</span>); }
+  <span class="k">public void</span> pay(<span class="k">double</span> amt) {
+    state.pay(<span class="k">this</span>, amt); }
+}</pre>
+    </div>
+    <div class="panel">
+      <h2>Q5 Legacy payment machine</h2>
+      <p class="small">The vendor's machine can't be modified, so use an <b>Adapter</b>. <code>LegacyPaymentAdapter</code> implements the <code>PaymentProcessor</code> interface the system expects and calls the vendor's method inside. <code>PaymentDueState.pay()</code> calls <code>processor.pay(amount)</code>; if it succeeds it moves the session to Closed. Code: tab 04, W4.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>09 State · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 09 STATE : answers kiosk ===================== -->
+<section class="page" data-sec="09">
+<div class="body">
+  <header class="ph">
+    <div class="code">09</div>
+    <div><h1>State: kiosk and interfaces</h1><div class="lede">2025 Q1 kiosk states with an example transition, 2024 Q3.4 on interfaces, and the challenges.</div></div>
+    <div class="meta">Behavioural<br><b>Answers</b></div>
+  </header>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">Self-checkout kiosk states <span class="tiny" style="font-weight:400">· 2025 Q1.1(a), 1.4, 5m</span></h2></div>
+    <svg class="dg" data-d="state-kiosk"></svg>
+  </div>
+
+  <div class="panel">
+    <h2>How to incorporate the states, with an example transition</h2>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>State pattern.</b> <code>Kiosk</code> is the context and holds a <code>KioskState</code>. <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code> and <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code> and <code>cancel()</code>.<br><br><b>Example:</b> in <code>ScanningState</code>, pressing Checkout adds up the decorated items' <code>getCost()</code>, adds tax with <code>TaxCalculator.getInstance()</code> (Singleton) and moves to <code>PaymentState</code>. In <code>IdleState</code>, <code>pay()</code> is refused: "scan items first".</p>
+<pre class="code"><span class="k">public class</span> ScanningState
+        <span class="k">implements</span> KioskState {
+  <span class="k">public void</span> scanItem(Kiosk k,
+                       CheckoutItem i) {
+    k.addItem(i); }        <span class="c">// stay here</span>
+  <span class="k">public void</span> checkout(Kiosk k) {
+    <span class="k">double</span> total = TaxCalculator
+        .getInstance()
+        .applyTax(k.subtotal());
+    k.setTotal(total);
+    k.setState(<span class="k">new</span> PaymentState());
+  }
+  <span class="k">public void</span> pay(Kiosk k, <span class="k">double</span> a) {
+    System.out.println(<span class="s">"Checkout first"</span>); }
+}</pre>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Use of interfaces in this design <span class="r"><span class="y">2024</span> Q3.4, 5m</span></h2>
+      <ul class="small">
+        <li><code>DocumentState</code> is a <b>contract</b>: every state must implement every event, so nothing is forgotten.</li>
+        <li>The context calls <code>state.submit(this)</code> without knowing which state it has: <b>polymorphism</b>, programming to an interface.</li>
+        <li>New states plug in without changing <code>Document</code> (<b>Open/Closed</b>, <b>Dependency Inversion</b>).</li>
+        <li>States are <b>interchangeable at runtime</b> and easy to mock in tests.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2><span class="w">W5</span> Challenges → fix</h2>
+      <ul class="small">
+        <li><b>Many classes</b> (one per state) → only use it when states are finite and behaviour really differs.</li>
+        <li><b>Transitions spread across classes</b> → keep the state diagram and table as documentation; validate in <code>setState()</code>.</li>
+        <li><b>A new event changes every state</b> → abstract base state with default "invalid action" methods.</li>
+        <li><b>Many state objects</b> → share stateless states as Singletons.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="shade small"><b>Mistakes that lose marks:</b> the context still has <code>if (state == …)</code> · state diagram without a start dot or event labels · no <code>setState()</code> in the context · association instead of realisation from the states to the interface · transitions to states that aren't in the scenario.</div>
+</div>
+<div class="foot"><span>09 State · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['state-doc'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'d', k:'state', x:30, y:30, w:70, label:'Draft'},
+    {id:'m', k:'state', x:152, y:30, w:92, label:'Moderation'},
+    {id:'p', k:'state', x:300, y:30, w:86, label:'Published'},
+    {id:'a', k:'state', x:440, y:30, w:80, label:'Archived'},
+    {id:'f', k:'final', cx:552, cy:42},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'d', bs:'left', type:'trans'},
+    {a:'d', as:'right', b:'m', bs:'left', type:'trans', label:'submit()'},
+    {a:'m', as:'right', b:'p', bs:'left', type:'trans', label:'approve()'},
+    {a:'p', as:'right', b:'a', bs:'left', type:'trans', label:'archive()'},
+    {a:'a', as:'right', b:'f', bs:'left', type:'trans'},
+    {a:'m', as:'bottom', b:'d', bs:'bottom', type:'trans', loop:20, label:'reject()'},
+    {a:'d', as:'top', ao:.3, b:'d', bs:'top', bo:.7, type:'trans', loop:18, label:'edit()'},
+  ]
+};
+DIAGRAMS['state-class'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, name:'Document', stereo:'Context', attrs:['- state : DocumentState', '- content : String'], ops:['+ edit(text) / submit()', '+ approve() / reject()', '+ archive()', '+ setState(s : DocumentState)']},
+    {id:'s', k:'class', x:270, y:6, name:'DocumentState', stereo:'interface', ops:['+ edit(d, text)', '+ submit(d)', '+ approve(d)', '+ reject(d)', '+ archive(d)']},
+    {id:'s1', k:'class', cx:55, y:132, w:104, name:'DraftState'},
+    {id:'s2', k:'class', cx:180, y:132, w:116, name:'ModerationState'},
+    {id:'s3', k:'class', cx:310, y:132, w:112, name:'PublishedState'},
+    {id:'s4', k:'class', cx:435, y:132, w:106, name:'ArchivedState'},
+  ],
+  edges: [
+    {a:'c', as:'right', ao:.25, b:'s', bs:'left', type:'aggr', label:'current  1'},
+    {a:'s1', as:'top', b:'s', bs:'bottom', bo:.2, type:'realize', mid:118},
+    {a:'s2', as:'top', b:'s', bs:'bottom', bo:.4, type:'realize', mid:118},
+    {a:'s3', as:'top', b:'s', bs:'bottom', bo:.6, type:'realize', mid:118},
+    {a:'s4', as:'top', b:'s', bs:'bottom', bo:.8, type:'realize', mid:118},
+  ]
+};
+DIAGRAMS['state-park'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:52},
+    {id:'av', k:'state', x:28, y:40, w:76, label:'Available'},
+    {id:'re', k:'state', x:150, y:40, w:76, label:'Reserved'},
+    {id:'oc', k:'state', x:264, y:40, w:76, label:'Occupied'},
+    {id:'pd', k:'state', x:378, y:40, w:96, label:'Payment Due'},
+    {id:'cl', k:'state', x:518, y:40, w:66, label:'Closed'},
+    {id:'f', k:'final', cx:612, cy:52},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'av', bs:'left', type:'trans'},
+    {a:'av', as:'right', b:'re', bs:'left', type:'trans', label:'reserve()'},
+    {a:'re', as:'right', b:'oc', bs:'left', type:'trans', label:'enter()'},
+    {a:'oc', as:'right', b:'pd', bs:'left', type:'trans', label:'exit()'},
+    {a:'pd', as:'right', b:'cl', bs:'left', type:'trans', label:'pay()'},
+    {a:'cl', as:'right', b:'f', bs:'left', type:'trans'},
+    {a:'re', as:'top', b:'av', bs:'top', type:'trans', loop:22, label:'cancel() / timeout'},
+    {a:'av', as:'bottom', b:'oc', bs:'bottom', type:'trans', loop:22, label:'enter()  (walk-in)'},
+  ]
+};
+DIAGRAMS['park-class'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, name:'ParkingSession', stereo:'Context', attrs:['- state : ParkingState', '- vehicleNo : String', '- fee : double'], ops:['+ reserve() / enter() / exit()', '+ pay(amount : double)', '+ setState(s : ParkingState)']},
+    {id:'s', k:'class', x:250, y:6, name:'ParkingState', stereo:'interface', ops:['+ reserve(s : ParkingSession)', '+ enter(s : ParkingSession)', '+ exit(s : ParkingSession)', '+ pay(s, amount : double)']},
+    {id:'a', k:'class', cx:50, y:150, w:100, name:'AvailableState'},
+    {id:'b', k:'class', cx:158, y:150, w:100, name:'ReservedState'},
+    {id:'o', k:'class', cx:266, y:150, w:100, name:'OccupiedState'},
+    {id:'p', k:'class', cx:380, y:150, w:112, name:'PaymentDueState'},
+    {id:'x', k:'class', cx:490, y:150, w:92, name:'ClosedState'},
+  ],
+  edges: [
+    {a:'c', as:'right', ao:.3, b:'s', bs:'left', type:'aggr', label:'current  1'},
+    {a:'a', as:'top', b:'s', bs:'bottom', bo:.1, type:'realize', mid:132},
+    {a:'b', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:132},
+    {a:'o', as:'top', b:'s', bs:'bottom', bo:.5, type:'realize', mid:132},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:132},
+    {a:'x', as:'top', b:'s', bs:'bottom', bo:.9, type:'realize', mid:132},
+  ]
+};
+DIAGRAMS['state-kiosk'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'id', k:'state', x:28, y:30, w:60, label:'Idle'},
+    {id:'sc', k:'state', x:150, y:30, w:80, label:'Scanning'},
+    {id:'py', k:'state', x:296, y:30, w:78, label:'Payment'},
+    {id:'co', k:'state', x:436, y:30, w:88, label:'Completed'},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'id', bs:'left', type:'trans'},
+    {a:'id', as:'right', b:'sc', bs:'left', type:'trans', label:'scanItem()'},
+    {a:'sc', as:'right', b:'py', bs:'left', type:'trans', label:'checkout()'},
+    {a:'py', as:'right', b:'co', bs:'left', type:'trans', label:'pay() ok'},
+    {a:'sc', as:'top', ao:.3, b:'sc', bs:'top', bo:.7, type:'trans', loop:14, label:'scanItem()'},
+    {a:'py', as:'top', b:'sc', bs:'top', bo:.85, type:'trans', loop:42, label:'cancel / payment failed'},
+    {a:'co', as:'bottom', b:'id', bs:'bottom', type:'trans', loop:22, label:'printReceipt() / timeout'},
+  ]
+};
+</script>

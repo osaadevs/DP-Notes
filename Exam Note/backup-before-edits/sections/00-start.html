@@ -1,0 +1,179 @@
+<!-- ===================== 00 START : page 1 — finder ===================== -->
+<section class="page" data-sec="00">
+<div class="body">
+  <header class="ph">
+    <div class="code">00</div>
+    <div><h1>Find the pattern</h1><div class="lede">Start here for every question. The words in the question tell you which pattern they want.</div></div>
+    <div class="meta">Start<br><b>Read this first</b></div>
+  </header>
+
+  <div class="steps">
+    <div class="step"><span class="n">STEP 1</span><b>Underline the problem words</b><span class="small muted">"optional add-ons", "only one", "states", "in order", "can't modify"…</span></div>
+    <div class="step"><span class="n">STEP 2</span><b>Find them in the table</b><span class="small muted">Each phrase points to one pattern and its tab on the right edge.</span></div>
+    <div class="step"><span class="n">STEP 3</span><b>Open the tab, check "Spot it"</b><span class="small muted">The first page of each pattern lists more phrases. If they match, you're right.</span></div>
+    <div class="step"><span class="n">STEP 4</span><b>Write from the W blocks</b><span class="small muted">W1, W2, W3… are in the order you write. Swap in the names from the question.</span></div>
+  </div>
+
+  <table>
+    <tr><th style="width:57%">If the question says something like…</th><th>It wants</th><th style="width:9%">Tab</th></tr>
+    <tr><td>"only <span class="mark">one</span> instance", "a single global tax calculator / logger / ID generator", "only one user can run it", "a new object is created every time and causes duplicates"</td><td><b>Singleton</b><br><span class="tiny">creational</span></td><td class="go">01</td></tr>
+    <tr><td>"a <span class="mark">maximum of N</span>": five batsmen, three printers, N gates</td><td><b>Multiton</b> (extended Singleton)<br><span class="tiny">creational</span></td><td class="go">01</td></tr>
+    <tr><td>"create <span class="mark">different types</span> of X depending on the user's request", "too many if-else blocks to create objects", "extensible, product-based framework"</td><td><b>Factory Method</b><br><span class="tiny">creational</span></td><td class="go">02</td></tr>
+    <tr><td>"<span class="mark">one simple interface</span> that internally calls login, inventory, payment…", "combine air tickets, hotels and taxis", "hide the complexity"</td><td><b>Facade</b><br><span class="tiny">structural</span></td><td class="go">03</td></tr>
+    <tr><td>"legacy", "supplied by an external vendor", "<span class="mark">can't modify</span>", "the new device has a different method", "third-party services with different method signatures"</td><td><b>Adapter</b><br><span class="tiny">structural</span></td><td class="go">04</td></tr>
+    <tr><td>"load <span class="mark">only a couple of pages</span>", "users should not access it directly", "restricted archive", "permissions", "authorization options", "cache"</td><td><b>Proxy</b><br><span class="tiny">structural</span></td><td class="go">05</td></tr>
+    <tr><td>"<span class="mark">optional add-ons</span> / extras / toppings", "without creating subclasses for every combination", "price depends on the base and the selected additions"</td><td><b>Decorator</b><br><span class="tiny">structural</span></td><td class="go">06</td></tr>
+    <tr><td>"all types <span class="mark">follow the same overall process</span>, but step X is different", "standardise the workflow", "every level must follow the same procedure"</td><td><b>Template Method</b><br><span class="tiny">behavioural</span></td><td class="go">07</td></tr>
+    <tr><td>"checks that must happen <span class="mark">in order</span> and be easy to extend", "levels of support / approval", "sub-filters", "different priorities", "exception handling"</td><td><b>Chain of Responsibility</b><br><span class="tiny">behavioural</span></td><td class="go">08</td></tr>
+    <tr><td>"operates in different <span class="mark">states</span>", "transitions to", "behaviour depends on its current state", "draw the state diagram"</td><td><b>State</b><br><span class="tiny">behavioural</span></td><td class="go">09</td></tr>
+    <tr><td>"which design principle…", "explain how this follows Open/Closed", "depend on abstractions"</td><td><b>SOLID</b></td><td class="go">10</td></tr>
+    <tr><td>"<span class="mark">microservices</span>", "scalability, fault isolation and continuous deployment", "data consistency", "security"</td><td><b>Microservices kit</b><br><span class="tiny">always Question 2</span></td><td class="go">11</td></tr>
+    <tr><td>"High Availability", "Disaster Recovery", "configurability", "use of interfaces / abstract classes", a pattern you weren't taught (Strategy, Observer…)</td><td><b>Answer bank</b></td><td class="go">12</td></tr>
+  </table>
+
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Start · page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 00 START : page 2 — how to answer ===================== -->
+<section class="page" data-sec="00">
+<div class="body">
+  <header class="ph">
+    <div class="code">00</div>
+    <div><h1>How to answer</h1><div class="lede">The same answer shape works for almost every part of every question.</div></div>
+    <div class="meta">Start<br><b>Answer routine</b></div>
+  </header>
+
+  <div class="g3">
+    <div class="shade"><div class="tiny">THE PAPER</div><div style="font-size:15pt;font-weight:700;line-height:1.15">4 questions × 25</div><div class="small">Answer all four. 2½ hours. Open book.</div></div>
+    <div class="shade"><div class="tiny">YOUR CLOCK</div><div style="font-size:15pt;font-weight:700;line-height:1.15">35 min each</div><div class="small">About 1½ minutes per mark. Keep 10 minutes spare.</div></div>
+    <div class="shade"><div class="tiny">BEFORE YOU START</div><div style="font-size:15pt;font-weight:700;line-height:1.15">Write assumptions</div><div class="small">The paper asks for them. One or two lines at the top.</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>"Which design pattern would you use? Give reasons." <span class="r">the most common part</span></h2>
+    <ol class="small" style="columns:2;column-gap:7mm">
+      <li><b>Name it and its group.</b> "I would use the Decorator pattern, which is a structural pattern."</li>
+      <li><b>Say what it does in one line.</b> Each pattern's W1 has this sentence ready.</li>
+      <li><b>Map the scenario onto the pattern's parts.</b> "Coffee is the component, Milk and Sugar are decorators." Most of the marks are here.</li>
+      <li><b>Give 2 or 3 reasons tied to the scenario.</b> Not general praise. Say what problem it removes here.</li>
+      <li><b>Draw something if it's worth 4 marks or more.</b> A small class diagram is enough.</li>
+      <li><b>Add code only if they ask for it.</b> Interface first, then the class, then 3 lines of client code.</li>
+    </ol>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>How much to write</h2>
+      <table class="tight small">
+        <tr><th style="width:22%">Marks</th><th>Write</th></tr>
+        <tr><td>2–3</td><td>Pattern name and one solid reason.</td></tr>
+        <tr><td>4–5</td><td>Name, mapping, two or three reasons. A small sketch helps.</td></tr>
+        <tr><td>5–8 (diagram)</td><td>Full class diagram with the correct arrows, stereotypes and + / − / # signs.</td></tr>
+        <tr><td>3–6 (code)</td><td>Exactly what they asked for, using their method names.</td></tr>
+        <tr><td>"Challenges"</td><td>Each challenge paired with how you would solve it. Each W5 block has these pairs.</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>Assumptions you can reuse</h2>
+      <ul class="small">
+        <li>The system is written in Java (or a similar OO language).</li>
+        <li>Prices and rates are read from configuration, not hard-coded.</li>
+        <li>Only the classes needed to show the pattern are drawn. Getters and setters are left out.</li>
+        <li>Third-party systems can't be changed by us.</li>
+        <li>The system runs on several servers behind a load balancer.</li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">"Draw a diagram to depict the scenario"</h2><span class="tiny">this is NOT a class diagram. Draw the real things and how they connect.</span></div>
+    <svg class="dg" data-d="scenario-travel"></svg>
+    <p class="tiny" style="margin-top:1.5mm">Example from 2022 Q1 (travel booking). Use boxes for users, systems and services, and arrows for requests. Label the arrows. Then show where your pattern sits (here: Facade in the middle, Adapters at the edge).</p>
+  </div>
+
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Start · page <b class="pnum"></b></span></div>
+</section>
+
+
+<!-- ===================== 00 START : page 3 — reading the question ===================== -->
+<section class="page" data-sec="00">
+<div class="body">
+  <header class="ph">
+    <div class="code">00</div>
+    <div><h1>Reading the question</h1><div class="lede">When the trigger words aren't obvious, and when one question needs several patterns.</div></div>
+    <div class="meta">Start<br><b>Tricky cases</b></div>
+  </header>
+  <div class="g2">
+    <div class="shade">
+      <h2>Still unsure? Ask what the problem is about</h2>
+      <table class="tight small">
+        <tr><td style="width:40%"><b>Making objects?</b></td><td>Creational. One object → Singleton. Many types → Factory.</td></tr>
+        <tr><td><b>Wrapping or connecting objects?</b></td><td>Structural. Use the wrapper test →</td></tr>
+        <tr><td><b>Who does what, and in what order?</b></td><td>Behavioural. Fixed steps → Template. Passed along → Chain. Changes with state → State.</td></tr>
+      </table>
+    </div>
+    <div class="shade">
+      <h2>The wrapper test</h2>
+      <p class="small">Four patterns wrap something. Ask what the wrapper does.</p>
+      <table class="tight small">
+        <tr><td style="width:27%"><b>Adapter</b></td><td><b>changes</b> the interface (a plug adapter)</td></tr>
+        <tr><td><b>Facade</b></td><td><b>simplifies</b> many classes into one (a waiter)</td></tr>
+        <tr><td><b>Proxy</b></td><td>same interface, <b>controls</b> access (a security guard)</td></tr>
+        <tr><td><b>Decorator</b></td><td>same interface, <b>adds</b> features, stackable (toppings)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Pairs people mix up <span class="r">one line each, good for "compare" questions</span></h2>
+    <table class="tight small">
+      <tr><td style="width:24%"><b>State vs Chain</b></td><td>State asks "how should I behave right now?" The object keeps one current state and hands work to it. Chain asks "who will handle this?" The request moves along a line of handlers.</td></tr>
+      <tr><td><b>Template vs Strategy</b></td><td>Template Method fixes the steps in a parent class and lets subclasses fill some of them (inheritance). Strategy swaps the whole algorithm for another object at runtime (composition).</td></tr>
+      <tr><td><b>Factory vs Singleton</b></td><td>Factory decides <b>which type</b> of object to create. Singleton decides <b>how many</b> (just one). They are often used together.</td></tr>
+      <tr><td><b>Factory vs Facade</b></td><td>Factory creates objects. Facade uses objects that already exist and gives them one simple front.</td></tr>
+      <tr><td><b>Proxy vs Decorator</b></td><td>Both keep the same interface and wrap one object. Proxy controls access and is usually one layer. Decorator adds features and is stacked many times.</td></tr>
+      <tr><td><b>Adapter vs Facade</b></td><td>Adapter converts one interface into another that the client expects. Facade puts one new, simpler interface over many classes.</td></tr>
+    </table>
+  </div>
+  <div class="panel">
+    <h2>One scenario, several patterns <span class="r">how 2025 asked every question</span></h2>
+    <table class="tight small">
+      <tr><td style="width:22%"><span class="y">2025 Q1</span> kiosk</td><td>kiosk states → <b>State 09</b> · optional add-ons → <b>Decorator 06</b> · one tax calculator → <b>Singleton 01</b></td></tr>
+      <tr><td><span class="y">2025 Q3</span> library</td><td>checks in order → <b>Chain 08</b> · types of book → <b>Factory 02</b> · rare books → <b>Proxy 05</b> · optional services → <b>Decorator 06</b></td></tr>
+      <tr><td><span class="y">2025 Q4</span> shop</td><td>same payment steps → <b>Template 07</b> · order checks → <b>Chain 08</b> · order IDs → <b>Singleton 01</b> · payment objects → <b>Factory 02</b> <span class="tiny">(fully worked in tab 13)</span></td></tr>
+      <tr><td><span class="y">2022 Q1</span> travel</td><td>combine air, hotel and taxi → <b>Facade 03</b> · each third-party API → <b>Adapter 04</b></td></tr>
+      <tr><td><span class="y q">Quizzes</span></td><td>parking: State + Adapter · database: Factory + Singleton · scanner: Adapter + Facade · course: Template + Decorator · support desk: Chain + Template</td></tr>
+    </table>
+  </div>
+
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Start · page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['scenario-travel'] = {
+  items: [
+    {id:'u', k:'node', x:0, y:30, w:62, lines:['Traveller','web / mobile']},
+    {id:'w', k:'node', x:84, y:30, w:86, lines:['Booking website','"Book trip"']},
+    {id:'f', k:'node', x:192, y:24, w:110, h:46, lines:['TravelBookingFacade','bookTrip()'], shade:true},
+    {id:'a', k:'node', x:330, y:0, w:96, lines:['Air ticket service']},
+    {id:'h', k:'node', x:330, y:36, w:96, lines:['Hotel service']},
+    {id:'t', k:'node', x:330, y:72, w:96, lines:['Taxi service']},
+    {id:'aa', k:'node', x:448, y:0, w:84, lines:['Airline APIs','via adapters'], dashed:true},
+    {id:'hh', k:'node', x:448, y:36, w:84, lines:['Hotel APIs','via adapters'], dashed:true},
+    {id:'tt', k:'node', x:448, y:72, w:84, lines:['Taxi APIs','via adapters'], dashed:true},
+  ],
+  edges: [
+    {a:'u', as:'right', b:'w', bs:'left', type:'flow'},
+    {a:'w', as:'right', b:'f', bs:'left', type:'flow'},
+    {a:'f', as:'right', ao:.2, b:'a', bs:'left', type:'flow', mid:316},
+    {a:'f', as:'right', ao:.5, b:'h', bs:'left', type:'flow'},
+    {a:'f', as:'right', ao:.8, b:'t', bs:'left', type:'flow', mid:316},
+    {a:'a', as:'right', b:'aa', bs:'left', type:'flow'},
+    {a:'h', as:'right', b:'hh', bs:'left', type:'flow'},
+    {a:'t', as:'right', b:'tt', bs:'left', type:'flow'},
+  ]
+};
+</script>

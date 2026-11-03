@@ -1,0 +1,177 @@
+<!-- ===================== B BASICS : page 1 — theory ===================== -->
+<section class="page" data-sec="B">
+<div class="body">
+  <header class="ph">
+    <div class="code">B</div>
+    <div><h1>Design pattern basics</h1><div class="lede">Lecture 1 theory, for "explain" questions and for opening an answer.</div></div>
+    <div class="meta">Basics<br><b>Theory</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>What is a design pattern?</h2>
+    <div class="say">A design pattern is a proven, reusable solution to a problem that keeps coming up in software design. It is not finished code. It is a template for how to arrange classes and objects, which you adapt to your own situation.</div>
+    <p class="small">Every pattern has <b>four elements</b>: a <b>name</b> (so developers can talk about it), the <b>problem</b> and its context (when to use it), the <b>solution</b> (the classes, their roles and how they relate), and the <b>consequences</b> (the benefits and the costs).</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Where they came from</h2>
+      <ul class="small">
+        <li>The idea started in building architecture. <b>Christopher Alexander</b> wrote about reusable patterns for towns and buildings.</li>
+        <li>In <b>1995</b>, four authors (Gamma, Helm, Johnson and Vlissides, the <b>"Gang of Four"</b> or GoF) published <i>Design Patterns: Elements of Reusable Object-Oriented Software</i>.</li>
+        <li>The book describes <b>23 patterns</b> in three groups. These are the "GoF patterns".</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Why use them</h2>
+      <ul class="small">
+        <li>They give the team a <b>shared vocabulary</b>: "use a Factory here" says a lot in three words.</li>
+        <li>They make code <b>flexible and reusable</b>, with <b>loose coupling</b>.</li>
+        <li>They are <b>easier to maintain and extend</b>, because changes stay in one place.</li>
+        <li>They <b>avoid repeating design mistakes</b> that others have already solved.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The three groups <span class="r">bold = taught in this module</span></h2>
+    <table>
+      <tr><th style="width:18%">Group</th><th style="width:35%">What it deals with</th><th>Patterns</th></tr>
+      <tr><td><b>Creational</b></td><td>How objects are created, and who creates them</td><td><b>Singleton</b>, <b>Factory Method</b>, Abstract Factory, Builder, Prototype</td></tr>
+      <tr><td><b>Structural</b></td><td>How classes and objects are put together into bigger structures</td><td><b>Adapter</b>, <b>Facade</b>, <b>Proxy</b>, <b>Decorator</b>, Composite, Bridge, Flyweight</td></tr>
+      <tr><td><b>Behavioural</b></td><td>How objects talk to each other and share responsibilities</td><td><b>Template Method</b>, <b>Chain of Responsibility</b>, <b>State</b>, Strategy, Observer, Command, Iterator</td></tr>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>What patterns are not</h2>
+      <ul class="small">
+        <li>Not ready-made code you can paste anywhere.</li>
+        <li>Not guaranteed to be correct, and not rules you must always follow.</li>
+        <li>Not something to force on a simple problem. Using one where it isn't needed is <b>over-engineering</b>.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Anti-patterns</h2>
+      <p class="small">An <b>anti-pattern</b> is a common solution that looks good now but causes problems later. It's a poor answer to a recurring problem.</p>
+      <p class="small"><b>Why they happen:</b> time pressure, poor planning, overconfidence, using new technology just to impress, no design thinking, ignoring maintenance.</p>
+      <p class="small"><b>Examples:</b> a God class that does everything, copy-pasted code, long if/else chains on a type field.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Patterns, frameworks and libraries <span class="r">the "Frameworks" in the module name</span></h2>
+    <table class="tight small">
+      <tr><td style="width:17%"><b>Pattern</b></td><td>An idea for solving a design problem. No code of its own. You implement it yourself.</td></tr>
+      <tr><td><b>Library</b></td><td>Reusable code that <b>your code calls</b> when it needs something (e.g. a JSON parser).</td></tr>
+      <tr><td><b>Framework</b></td><td>Reusable infrastructure that <b>calls your code</b> ("don't call us, we'll call you", called <b>Inversion of Control</b>). Frameworks are built from patterns: Spring uses Dependency Injection and Proxy, JUnit uses Template Method, Java I/O uses Decorator and Adapter.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Basics · page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== B BASICS : page 2 — UML ===================== -->
+<section class="page" data-sec="B">
+<div class="body">
+  <header class="ph">
+    <div class="code">B</div>
+    <div><h1>Drawing UML in the exam</h1><div class="lede">Diagrams carry 4 to 10 marks. The arrows are where people lose marks, so check them here.</div></div>
+    <div class="meta">Basics<br><b>UML notation</b></div>
+  </header>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">The six arrows</h2><span class="tiny">the shape always sits at the end shown here</span></div>
+    <svg class="dg" data-d="arrows"></svg>
+  </div>
+
+  <div class="gc">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">Reading a class box</h2></div>
+      <svg class="dg" data-d="anatomy"></svg>
+    </div>
+    <div class="panel">
+      <h2>Symbols inside the box</h2>
+      <table class="tight small">
+        <tr><td style="width:24%"><code>+</code></td><td>public</td></tr>
+        <tr><td><code>−</code></td><td>private</td></tr>
+        <tr><td><code>#</code></td><td>protected</td></tr>
+        <tr><td><u>underlined</u></td><td>static (belongs to the class)</td></tr>
+        <tr><td><i>italic</i></td><td>abstract class or method</td></tr>
+        <tr><td>«interface»</td><td>written above the name</td></tr>
+        <tr><td>{final}</td><td>can't be overridden</td></tr>
+        <tr><td><code>name : Type</code></td><td>field, type after the colon</td></tr>
+        <tr><td><code>op(p) : Type</code></td><td>method and return type</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">State diagram symbols</h2></div>
+      <svg class="dg" data-d="statenote"></svg>
+      <p class="tiny mt">Filled dot = start. Rounded box = state. Arrow with the event that causes it. Bullseye = end (only if the object really finishes).</p>
+    </div>
+    <div class="panel">
+      <h2>Drawing a class diagram in 5 steps</h2>
+      <ol class="small">
+        <li>Draw the <b>interface or abstract class</b> at the top, in the middle.</li>
+        <li>Draw the <b>concrete classes</b> under it. Connect with hollow-triangle arrows pointing up.</li>
+        <li>Add the <b>"has-a" links</b> (diamonds, or arrows for fields).</li>
+        <li>Put the <b>client</b> on the left with an arrow to what it uses.</li>
+        <li>Fill in only the <b>important</b> fields and methods. Use their names from the question.</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>Design Patterns &amp; Frameworks · INTE 22313 · open-book note</span><span>Basics · page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+(function(){
+  const rows = [
+    ['realize','BasicCoffee','Coffee','interface','Realisation: a class implements an interface. Dashed line, hollow triangle at the interface.'],
+    ['extend','Milk','CoffeeDecorator','abstract','Generalisation: a class extends a parent class. Solid line, hollow triangle at the parent.'],
+    ['assoc','Adapter','Adaptee',null,'Association: a class holds a field of the other type. Solid line, open arrow at the one being used.'],
+    ['depend','Factory','FictionBook',null,'Dependency: a class uses or creates the other, no field. Dashed line, open arrow. Label it «create» for factories.'],
+    ['aggr','CoffeeDecorator','Coffee','interface','Aggregation: "has-a", the part can exist on its own. Hollow diamond at the owner.'],
+    ['comp','Kiosk','Cart',null,'Composition: "owns", the part dies with the owner. Filled diamond at the owner.'],
+  ];
+  const items = [], edges = [];
+  rows.forEach((r, i) => {
+    const y = i * 42;
+    items.push({id:'a'+i, k:'class', x:0, y:y, w:112, name:r[1]});
+    items.push({id:'b'+i, k:'class', x:200, y:y-(r[3]?5.5:0), w:112, name:r[2], stereo:r[3]||null});
+    const words = r[4].split(' '); const lines=[]; let cur='';
+    words.forEach(w=>{ if((cur+' '+w).length>54){lines.push(cur.trim());cur=w;} else cur+=' '+w; }); lines.push(cur.trim());
+    items.push({k:'text', x:338, y:y+10, lines:lines, size:8.6, fill:'#111', lh:11});
+    edges.push({a:'a'+i, as:'right', b:'b'+i, bs:'left', bx: y+9, type:r[0], label: r[0]==='depend' ? '«create»' : null, lx:156, ly:y+5});
+  });
+  DIAGRAMS['arrows'] = {items, edges};
+})();
+DIAGRAMS['anatomy'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, w:220, name:'PaymentProcessor', stereo:'abstract', abstract:true,
+     attrs:['_- instance : Logger', '# amount : double'],
+     ops:['+ handlePayment() : void {final}', '/# processPayment() : void', '_+ getInstance() : Logger']},
+    {k:'text', x:232, y:12, lines:['← stereotype and name', '   (italic = abstract)'], size:9.5, lh:12},
+    {k:'text', x:232, y:52, lines:['← fields: visibility name : Type', '   underlined = static'], size:9.5, lh:12},
+    {k:'text', x:232, y:86, lines:['← methods: + public, # protected', '   italic = abstract method'], size:9.5, lh:12},
+  ]
+};
+DIAGRAMS['statenote'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:16},
+    {id:'s1', k:'state', x:30, y:4, label:'Idle'},
+    {id:'s2', k:'state', x:148, y:4, label:'Scanning'},
+    {id:'f', k:'final', cx:275, cy:16},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'s1', bs:'left', type:'trans'},
+    {a:'s1', as:'right', b:'s2', bs:'left', type:'trans', label:'scanItem()'},
+    {a:'s2', as:'right', b:'f', bs:'left', type:'trans', label:'done'},
+  ]
+};
+</script>

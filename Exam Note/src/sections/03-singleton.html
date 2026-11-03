@@ -1,0 +1,387 @@
+<!-- ===================== 01 SINGLETON : understand ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton</h1><div class="lede">Only one object of the class can exist, and everyone uses that same object.</div></div>
+    <div class="meta">Creational<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">only one instance</span><span class="chip">a single global tax calculator</span><span class="chip">one logger, all logs in the same file</span>
+      <span class="chip">every order gets a unique ID</span><span class="chip">only one user can run the payroll</span><span class="chip">only one DB connection active</span>
+      <span class="chip">a new object is created every time → duplicates, wrong order</span><span class="chip">maximum of N → Multiton</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Some things should exist only once in a system: the print queue for the one printer, the logger, the configuration, the tax calculator. If every part of the program creates its own copy, each copy has its own data, and they disagree.</p>
+      <p class="small">Singleton stops that. The class creates its one object itself and hands the same object to anyone who asks. Think of an airport control tower: every plane talks to the same tower.</p>
+    </div>
+    <div class="panel">
+      <h2>What goes wrong without it <span class="r">Quiz 4</span></h2>
+      <ul class="small">
+        <li><b>Inconsistent data</b>: each object has its own queue or status, so departments see different printer statuses.</li>
+        <li><b>Resource conflicts</b>: several objects send jobs at once, so jobs print in the wrong order, get duplicated, or the printer freezes.</li>
+        <li><b>Wasted memory</b> and no central control.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The three ingredients <span class="r">name all three in your answer</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><b>Private constructor</b><span class="small">No other class can write <code>new PrinterManager()</code>.</span></div>
+      <div class="step"><span class="n">2</span><b>Private static field</b><span class="small">Holds the one instance. Static means it belongs to the class, so there is only one copy.</span></div>
+      <div class="step"><span class="n">3</span><b>Public static getInstance()</b><span class="small">Creates the object the first time, then always returns the same one.</span></div>
+    </div>
+    <p class="small mt">Also make the class <b>final</b> so no subclass can get around the private constructor.</p>
+  </div>
+
+  <div class="panel">
+    <h2>How many objects do you need?</h2>
+    <table class="tight small">
+      <tr><td style="width:18%">exactly 1</td><td style="width:32%"><b>Singleton</b> (DB manager, logger)</td><td style="width:18%">N reusable</td><td><b>Object pool</b> (10 DB connections)</td></tr>
+      <tr><td>at most N</td><td><b>Multiton</b>, "extended Singleton" (3 printers, 5 batsmen)</td><td>unlimited</td><td>a normal class (customers)</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>Asked before</h2>
+    <table class="small">
+      <tr><th style="width:24%">Where</th><th>What they asked</th><th style="width:15%">Answer</th></tr>
+      <tr><td><span class="y q">Quiz 4</span> 5m</td><td>Many PrinterManager objects: two problems, and the fix</td><td class="go">above + W1</td></tr>
+      <tr><td><span class="y q">Quiz 2</span> Q4</td><td>Make sure only one DB connection is active at a time</td><td class="go">answers</td></tr>
+      <tr><td><span class="y">2022</span> Q4.3 · <span class="y">2023</span> Q1.6</td><td>Payroll runs for one user only, block everyone else</td><td class="go">answers</td></tr>
+      <tr><td><span class="y">2023</span> Q3.4 · <span class="y">2024</span> Q1.5</td><td>A logger that writes everything to one file</td><td class="go">answers</td></tr>
+      <tr><td><span class="y">2023</span> Q4.1 5m</td><td>Fantasy cricket: max 5 batsmen, 5 bowlers, 1 keeper, 1 captain, using an "extended Singleton"</td><td class="go">answers</td></tr>
+      <tr><td><span class="y">2025</span> Q1 · Q4</td><td>One global tax calculator / one OrderID generator, and how it fits the flow</td><td class="go">answers</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 01 SINGLETON : write ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: write</h1><div class="lede">Copy these blocks in order. Replace PrinterManager with the class from your question.</div></div>
+    <div class="meta">Creational<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Singleton</b> pattern, which is a creational pattern. It makes sure a class has <b>only one instance</b> and provides <b>one global point of access</b> to it.</div>
+    <div class="g2 small">
+      <div><b>Reasons (pick two or three)</b>
+        <ul>
+          <li>Everyone works with the <b>same object</b>, so there is one queue / one status, and the data stays consistent.</li>
+          <li>No duplicate objects fighting over the same resource, so no duplicated or out-of-order jobs.</li>
+          <li><b>Saves memory</b>, because the object is created once and reused.</li>
+        </ul>
+      </div>
+      <div><b>Map it to the scenario</b>
+        <ul>
+          <li><b>PrinterManager</b> is the Singleton class.</li>
+          <li>The <b>lab, library, engineering and staff room modules</b> are the clients.</li>
+          <li>Each client calls <code>PrinterManager.getInstance()</code> instead of <code>new</code>, so all print jobs go into one queue.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">underline the static field and method</span></div>
+    <svg class="dg" data-d="singleton"></svg>
+  </div>
+
+  <div class="gc">
+    <div>
+      <div class="codecap">W3 · Java (lazy and thread-safe)</div>
+<pre class="code"><span class="k">public final class</span> PrinterManager {
+    <span class="c">// the one shared object (volatile for threads)</span>
+    <span class="k">private static volatile</span> PrinterManager instance;
+    <span class="k">private final</span> Queue&lt;String&gt; jobs = <span class="k">new</span> LinkedList&lt;&gt;();
+
+    <span class="c">// private: nobody outside can call "new"</span>
+    <span class="k">private</span> PrinterManager() { }
+
+    <span class="c">// the global access point</span>
+    <span class="k">public static</span> PrinterManager getInstance() {
+        <span class="k">if</span> (instance == <span class="k">null</span>) {             <span class="c">// check 1</span>
+            <span class="k">synchronized</span> (PrinterManager.<span class="k">class</span>) {
+                <span class="k">if</span> (instance == <span class="k">null</span>) {     <span class="c">// check 2</span>
+                    instance = <span class="k">new</span> PrinterManager();
+                }
+            }
+        }
+        <span class="k">return</span> instance;
+    }
+
+    <span class="k">public synchronized void</span> submitJob(String job) {
+        jobs.add(job);
+    }
+}
+
+<span class="c">// client: every department gets the same object</span>
+PrinterManager p1 = PrinterManager.getInstance();
+PrinterManager p2 = PrinterManager.getInstance();
+System.out.println(p1 == p2);    <span class="c">// true</span></pre>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h2><span class="w">W4</span> Thread-safe versions</h2>
+        <table class="tight small">
+          <tr><td style="width:34%"><b>Eager</b></td><td>Created when the class loads. Safe and simple, but created even if never used.</td></tr>
+          <tr><td><b>Lazy</b></td><td><b>Not</b> thread-safe. Two threads can both see null and make two objects.</td></tr>
+          <tr><td><b>synchronized</b> getInstance()</td><td>Safe, but locks on every call, so slower.</td></tr>
+          <tr><td><b>Double-checked</b></td><td>Lazy, safe and fast. This is the code on the left.</td></tr>
+        </table>
+        <p class="tiny mt">Eager in one line: <code>private static final X INSTANCE = new X();</code></p>
+      </div>
+      <div class="panel">
+        <h2><span class="w">W5</span> Challenges → fix</h2>
+        <ul class="small">
+          <li><b>Two threads create two objects</b> → double-checked locking or eager creation.</li>
+          <li><b>Hard to unit test</b> (can't swap in a mock) → let it implement an interface and inject it.</li>
+          <li><b>Single point of failure / bottleneck</b> → Multiton or a pool, plus a standby replica (HA).</li>
+          <li><b>Overuse as a global variable</b> → only use it for things that are truly single.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 01 SINGLETON : past questions ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: past questions answered</h1><div class="lede">Each answer is written at the length the marks need.</div></div>
+    <div class="meta">Creational<br><b>Answers</b></div>
+  </header>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>One DB connection at a time <span class="r"><span class="y q">Quiz 2</span> Q4</span></h2>
+      <p class="small">Make a <b>DatabaseConnectionManager</b> Singleton. Its constructor is private and it keeps one static <code>connection</code>. <code>getConnection()</code> opens the connection only if it is null and otherwise returns the one that exists. The method is synchronized. The Factory picks the database type once, and everyone reuses that single connection.</p>
+    </div>
+    <div class="panel">
+      <h2>Logger, all logs in one file <span class="r"><span class="y">2024</span> Q1.5 5m</span></h2>
+      <p class="small">Use a <b>Singleton Logger</b>. The one instance owns the only <code>FileWriter</code>, and every class calls <code>Logger.getInstance().log(msg)</code>. So there is one file handle (no corrupted or duplicate lines), one format, one order, and less memory. <code>log()</code> is synchronized so lines from different threads don't mix.</p>
+      <p class="tiny">2023 Q3.4 "implement logging": the same answer works. You can add that a <b>logging Proxy</b> could add logging around existing services without changing them.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Payroll runs for one user only <span class="r"><span class="y">2022</span> Q4.3 · <span class="y">2023</span> Q1.6, 4–5m</span></h2>
+    <p class="small"><b>A Singleton alone does not give exclusive access.</b> It only guarantees there is <b>one</b> <code>PayrollEngine</code> object, and therefore one lock that every caller shares. The exclusion comes from that lock. Two behaviours are possible, and the question decides which: <b>reject immediately</b> (<code>tryLock()</code> returns false at once, "payroll is running, try later") or <b>wait</b> (<code>lock()</code> blocks until the current run finishes). Ownership is released in <code>finally</code>, so an exception during the calculation can't leave the system locked forever.</p>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public final class</span> PayrollEngine {
+  <span class="k">private static final</span> PayrollEngine INSTANCE =
+      <span class="k">new</span> PayrollEngine();
+  <span class="k">private final</span> ReentrantLock lock =
+      <span class="k">new</span> ReentrantLock(); <span class="c">// j.u.concurrent</span>
+  <span class="k">private</span> PayrollEngine() { }
+  <span class="k">public static</span> PayrollEngine getInstance() {
+    <span class="k">return</span> INSTANCE; }
+
+  <span class="c">// option 1: refuse at once if busy</span>
+  <span class="k">public boolean</span> tryRunPayroll(String user) {
+    <span class="k">if</span> (!lock.tryLock()) <span class="k">return false</span>;
+    <span class="k">try</span> { calculateAll(user); <span class="k">return true</span>; }
+    <span class="k">finally</span> { lock.unlock(); } <span class="c">// release</span>
+  }</pre>
+<pre class="code">  <span class="c">// option 2: wait for the run to end</span>
+  <span class="k">public void</span> runPayrollWhenFree(String user) {
+    lock.lock();
+    <span class="k">try</span> { calculateAll(user); }
+    <span class="k">finally</span> { lock.unlock(); }
+  }
+  <span class="k">public boolean</span> isRunning() {
+    <span class="k">return</span> lock.isLocked(); }
+  <span class="k">private void</span> calculateAll(String user) {
+    <span class="c">/* calculate every employee's salary */</span> }
+}
+
+<span class="c">// every OTHER entry point checks it</span>
+<span class="k">if</span> (PayrollEngine.getInstance().isRunning())
+  <span class="k">throw new</span> IllegalStateException(
+      <span class="s">"Payroll running, try later"</span>);</pre>
+    </div>
+    <p class="small mt"><b>Coordinated access checks:</b> "no other user logged in, no other process running" (2023 Q1.6) is only true if the <b>login service, data-entry screens and batch jobs all check the same lock</b> before they start (last snippet). Anything that skips the check is not blocked. The lock lives inside one running program (JVM). If the system runs on <b>several servers</b>, each has its own Singleton, so use a shared lock instead, such as a database row lock (<code>SELECT … FOR UPDATE</code> on a <code>payroll_run</code> row) checked by every server.</p>
+  </div>
+
+</div>
+<div class="foot"><span>01 Singleton · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 01 SINGLETON : past questions 2 ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: more answers</h1><div class="lede">How a Singleton plugs into a bigger design, and how to make settings configurable.</div></div>
+    <div class="meta">Creational<br><b>Answers</b></div>
+  </header>
+  <div class="g2">
+    <div class="panel">
+      <h2>One global tax calculator <span class="r"><span class="y">2025</span> Q1.5, 4m</span></h2>
+      <p class="small">Each checkout counter adds up the items' <code>getCost()</code> (the Decorator gives the final item prices). In the Payment state the kiosk calls <code>TaxCalculator.getInstance().calculateTax(subtotal)</code>. Every counter gets the same instance, so they all use one rate and one set of rules. Change the rate once and it changes everywhere.</p>
+    </div>
+    <div class="panel">
+      <h2>OrderID generator <span class="r"><span class="y">2025</span> Q4, 5m</span></h2>
+      <p class="small">Use an eager Singleton with an <code>AtomicLong</code> counter, so two threads asking at the same moment never get the same ID. The first step of the template method <code>handlePayment()</code> is <code>OrderIdGenerator.getInstance().nextId()</code>, then validate → process → send receipt. All payment types share the one generator.</p>
+<pre class="code" style="margin-top:1.5mm"><span class="k">public final class</span> OrderIdGenerator {
+  <span class="k">private static final</span> OrderIdGenerator
+      INSTANCE = <span class="k">new</span> OrderIdGenerator();
+  <span class="k">private final</span> AtomicLong counter =
+      <span class="k">new</span> AtomicLong(1000);
+  <span class="k">private</span> OrderIdGenerator() { }
+  <span class="k">public static</span> OrderIdGenerator
+      getInstance() { <span class="k">return</span> INSTANCE; }
+  <span class="k">public</span> String nextId() {
+    <span class="k">return</span> <span class="s">"ORD-"</span>
+        + counter.incrementAndGet();
+  }
+}</pre>
+      <p class="small mt"><b>Scope of "unique":</b> only <b>within one running program</b>. After a restart the counter starts at 1000 again, and two servers each have their own Singleton and counter, so both would repeat IDs. For real uniqueness, start the counter from the last saved ID, or take IDs from a <b>database sequence</b> (or a central ID service, or a server prefix such as <code>ORD-S2-1001</code>).</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>"Parameters change over time. Improve configurability." <span class="r"><span class="y">2023</span> Q1.5, 4m</span></h2>
+    <div class="g2" style="align-items:start">
+      <div class="small">
+        <p>Take every rate and limit out of the code (EPF 8%, employer 12%, ETF 3%, tax threshold 100,000, tax 6%) and keep them in <b>external configuration</b>: a database table or a properties / YAML file.</p>
+        <p>A <b>Singleton ConfigManager</b> loads them once and every calculation reads from it. An admin screen updates the values. Changes are versioned and audited, with an "effective from" date. No recompiling or redeploying is needed.</p>
+      </div>
+<pre class="code"><span class="c"># payroll.properties</span>
+epf.employee=0.08
+epf.employer=0.12
+etf=0.03
+tax.threshold=100000
+tax.rate=0.06
+
+<span class="c">// in the calculation</span>
+<span class="k">double</span> rate = ConfigManager.getInstance()
+                  .get(<span class="s">"epf.employee"</span>);
+<span class="k">double</span> epf = gross * rate;</pre>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Often combined with</h2>
+      <table class="tight small">
+        <tr><td style="width:26%"><b>Factory</b></td><td>The factory picks the DB type; the connection manager is a Singleton.</td></tr>
+        <tr><td><b>Facade</b></td><td>Only one facade is needed, so make it a Singleton.</td></tr>
+        <tr><td><b>State</b></td><td>State objects with no data can be shared Singletons.</td></tr>
+        <tr><td><b>Template</b></td><td>The first step of the template method gets an ID from a Singleton.</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>Mistakes that lose marks</h2>
+      <ul class="small">
+        <li>Leaving the constructor public.</li>
+        <li>Making <code>getInstance()</code> non-static.</li>
+        <li>Not underlining static members in the class diagram.</li>
+        <li>Saying the basic lazy version is thread-safe.</li>
+        <li>Using a Singleton when the question says "maximum N" (that's a Multiton).</li>
+        <li>Calling it a structural pattern. It's creational.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+
+<!-- ===================== 01 SINGLETON : extended singleton + OOP/SOLID ===================== -->
+<section class="page" data-sec="01">
+<div class="body">
+  <header class="ph">
+    <div class="code">01</div>
+    <div><h1>Singleton: Multiton, OOP and SOLID</h1><div class="lede">The "extended Singleton" answer, what each part of the code does in OOP terms, and mistakes to avoid.</div></div>
+    <div class="meta">Creational<br><b>Answers · theory</b></div>
+  </header>
+  <div class="panel">
+    <h2>Fantasy cricket with an "extended Singleton" <span class="r"><span class="y">2023</span> Q4.1, 5m</span></h2>
+    <p class="small">Use a <b>Multiton</b>: a Singleton that allows a fixed maximum number of objects per key. Player objects can only be created through <code>addPlayer(role, name)</code>, which counts how many of each role exist and refuses once the limit is reached: 5 batsmen, 5 bowlers, 1 wicketkeeper. The <b>captain</b> is a plain Singleton, because there must be exactly one; appointing a new captain replaces the old one instead of adding a second.</p>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public final class</span> Player {
+  <span class="k">private static final</span> Map&lt;String,Integer&gt; LIMIT =
+    Map.of(<span class="s">"BATSMAN"</span>,5, <span class="s">"BOWLER"</span>,5, <span class="s">"KEEPER"</span>,1);
+  <span class="k">private static final</span> Map&lt;String,List&lt;Player&gt;&gt; team
+    = <span class="k">new</span> HashMap&lt;&gt;();
+  <span class="k">private final</span> String role, name;
+  <span class="k">private</span> Player(String role, String name) {
+    <span class="k">this</span>.role = role; <span class="k">this</span>.name = name; }
+
+  <span class="k">public static synchronized</span> Player addPlayer(
+      String role, String name) {
+    <span class="k">if</span> (!LIMIT.containsKey(role))
+      <span class="k">throw new</span> IllegalArgumentException(role);
+    team.putIfAbsent(role, <span class="k">new</span> ArrayList&lt;&gt;());
+    <span class="k">if</span> (team.get(role).size() &gt;= LIMIT.get(role))
+      <span class="k">throw new</span> IllegalStateException(<span class="s">"Max reached"</span>);
+    Player p = <span class="k">new</span> Player(role, name);
+    team.get(role).add(p);
+    <span class="k">return</span> p;
+  }
+}</pre>
+<pre class="code"><span class="k">public final class</span> Captain {
+  <span class="k">private static</span> Captain instance;
+  <span class="k">private</span> Player player;
+  <span class="k">private</span> Captain() { }
+  <span class="k">public static synchronized</span> Captain
+      getInstance() {
+    <span class="k">if</span> (instance == <span class="k">null</span>)
+      instance = <span class="k">new</span> Captain();
+    <span class="k">return</span> instance; }
+  <span class="k">public void</span> appoint(Player p) {
+    player = p; }  <span class="c">// replaces, never adds</span>
+}</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>OOP and SOLID in the Singleton code <span class="r">name the concept → class/member → effect</span></h2>
+    <table class="small">
+      <tr><th style="width:20%">Concept</th><th style="width:34%">Where (PrinterManager)</th><th>Effect</th></tr>
+      <tr><td><b>Encapsulation</b></td><td><code>private PrinterManager()</code>, <code>private … jobs</code></td><td>Only the class can create itself; the queue is reached only through <code>submitJob()</code>, so no one can corrupt it.</td></tr>
+      <tr><td><b>Class (static) members</b></td><td><code>private static volatile instance</code>, <code>public static getInstance()</code></td><td>Static belongs to the class, so there is one copy for the whole program, reachable without an object.</td></tr>
+      <tr><td><b>Inheritance blocked</b></td><td><code>public final class</code></td><td>No subclass can add a public constructor and create a second object.</td></tr>
+      <tr><td><b>Thread safety</b></td><td><code>volatile</code>, <code>synchronized</code> block, <code>synchronized submitJob()</code></td><td>Only one object is created even under concurrent calls; jobs are added one at a time.</td></tr>
+      <tr><td><b>SRP (tension)</b></td><td>the class manages print jobs <i>and</i> its own creation</td><td>Two reasons to change. Accepted for small shared resources.</td></tr>
+      <tr><td><b>DIP (risk)</b></td><td>clients call <code>PrinterManager.getInstance()</code> directly</td><td>A hidden, concrete dependency, hard to mock. Fix: let it implement <code>PrintQueue</code> and pass the instance into clients through their constructors.</td></tr>
+      <tr><td><b>OCP</b></td><td><code>final</code> class</td><td>It can't be extended by subclassing; change it by editing, or put it behind an interface.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>01 Singleton · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['singleton'] = {
+  items: [
+    {id:'lab', k:'class', x:0, y:22, w:110, name:'LabModule'},
+    {id:'lib', k:'class', x:0, y:86, w:110, name:'LibraryModule'},
+    {id:'pm', k:'class', x:200, y:10, name:'PrinterManager', stereo:'Singleton',
+      attrs:['_- instance : PrinterManager', '- jobs : Queue<String>'],
+      ops:['- PrinterManager()', '_+ getInstance() : PrinterManager', '+ submitJob(job : String) : void', '+ getStatus() : String']},
+  ],
+  edges: [
+    {a:'lab', as:'right', b:'pm', bs:'left', bx:31, type:'depend', label:'getInstance()'},
+    {a:'lib', as:'right', b:'pm', bs:'left', bx:95, type:'depend', label:'getInstance()'},
+    {a:'pm', as:'right', ao:.14, b:'pm', bs:'right', bo:.42, type:'assoc', loop:26, label:'instance  1'},
+  ]
+};
+</script>

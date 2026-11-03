@@ -1,0 +1,272 @@
+<!-- ===================== 06 DECORATOR : understand ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator</h1><div class="lede">Add optional extras to an object by wrapping it, layer by layer, instead of making a subclass for every combination.</div></div>
+    <div class="meta">Structural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">optional add-ons / extras / toppings / ingredients</span><span class="chip">without creating subclasses for every combination</span>
+      <span class="chip">price depends on the base type and the selected additions</span><span class="chip">instead of modifying the class directly</span>
+      <span class="chip">students may optionally add</span><span class="chip">calculate the price dynamically</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">A coffee can have milk, sugar and chocolate in any mix. With subclasses you'd need <code>CoffeeWithMilkAndSugar</code> and so on: 2ⁿ classes (3 extras → 8, 10 → 1,024). That's <b>class explosion</b>.</p>
+      <p class="small">Instead, each extra is a small wrapper. It looks like a Coffee, holds the coffee inside, adds its own price and text, and passes the call inwards. Stack wrappers at runtime to get any combination.</p>
+    </div>
+    <div class="fig">
+      <div class="cap"><h2 style="margin:0">How a call runs</h2></div>
+      <svg class="dg" data-d="deco-onion"></svg>
+      <p class="small mt"><code>getCost()</code> on Sugar asks Milk, which asks BasicCoffee. The answer comes back out: 200 → 280 → <b>300</b>.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The four parts, renamed for each question <span class="r">naming the parts = marks</span></h2>
+    <table class="small">
+      <tr><th style="width:15%"></th><th style="width:20%">Component «interface»</th><th style="width:24%">Concrete component (the base)</th><th>Concrete decorators (the extras)</th></tr>
+      <tr><td><b>Coffee</b> <span class="y">2024</span></td><td><code>Coffee</code></td><td><code>BasicCoffee</code></td><td>Milk, Sugar, Chocolate</td></tr>
+      <tr><td><b>Kiosk</b> <span class="y">2025</span></td><td><code>CheckoutItem</code></td><td><code>GroceryItem(name, price)</code></td><td>GiftWrap, EcoBag, ExpressPacking</td></tr>
+      <tr><td><b>Profile</b> <span class="y q">Q5</span></td><td><code>UserProfile</code></td><td><code>BasicUserProfile</code></td><td>PremiumBadge, TwoFactorAuth, ProfileTheme</td></tr>
+      <tr><td><b>Library</b> <span class="y">2025</span></td><td><code>BorrowTransaction</code></td><td><code>BasicBorrow</code></td><td>ExtendedPeriod, SmsNotification, EmailReceipt</td></tr>
+      <tr><td><b>Cake</b> <span class="y">2022</span></td><td><code>Cake</code></td><td><code>PlainCake</code></td><td>Fondant, Colour (each adds price <i>and</i> delivery days)</td></tr>
+      <tr><td><b>Course</b> <span class="y q">Q6</span></td><td><code>Course</code></td><td><code>ProgrammingCourse</code></td><td>AIAssistant, PremiumMaterials, MentorSupport</td></tr>
+    </table>
+    <p class="small mt">The fourth part, the abstract <b>Decorator</b>, is always <code>&lt;Component&gt;Decorator</code> (CoffeeDecorator, AddOnDecorator). It <b>is a</b> Component (implements it) <b>and has a</b> Component (a field holding the wrapped object).</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs Proxy</b>: same interface, but Proxy controls access (one layer). Decorator adds features (many layers).</li>
+        <li><b>vs Adapter</b>: Adapter changes the interface. Decorator keeps it.</li>
+        <li><b>vs inheritance</b>: inheritance fixes combinations at compile time. Decorator builds them at runtime.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Mistakes that lose marks</h2>
+      <ul class="small">
+        <li>Decorator doesn't implement the Component.</li>
+        <li>Decorator makes its own base instead of taking it in the constructor.</li>
+        <li>Not calling the wrapped object, so earlier extras are lost.</li>
+        <li>Inheritance drawn instead of the has-a diamond.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y">2024</span> coffee (20m) · <span class="y">2025</span> kiosk (11m) · <span class="y">2023</span> coffee flavours · <span class="y q">Quiz 5</span> profile (18m) · <span class="y">2022</span> cake · <span class="y">2025</span> library · <span class="y q">Quiz 6</span> course. <b>Use the method names the question gives you.</b></div>
+</div>
+<div class="foot"><span>06 Decorator · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 06 DECORATOR : write ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: write</h1><div class="lede">Copy in order. Swap Coffee and the extras for the names in your question (table on the previous page).</div></div>
+    <div class="meta">Structural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–6 marks</span></h2>
+    <div class="say">I would use the <b>Decorator</b> pattern, which is a structural pattern. It <b>attaches additional responsibilities to an object dynamically</b> by wrapping it, which is a flexible alternative to subclassing.</div>
+    <p class="small"><b>Reasons:</b> (1) <b>no class explosion</b>: n add-ons would need 2ⁿ subclasses, here it's one class per add-on; (2) <b>runtime flexibility</b>: the customer picks any mix of add-ons while ordering; (3) <b>Open/Closed</b>: a new add-on is a new class, and the base coffee and existing add-ons don't change; (4) each decorator has <b>one responsibility</b>.</p>
+    <p class="small"><b>Mapping:</b> Component = <b>Coffee</b> «interface» · concrete component = <b>BasicCoffee</b> · decorator = <b>CoffeeDecorator</b> «abstract» · concrete decorators = <b>Milk, Sugar, Chocolate</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">the diamond sits on the decorator: it has a Coffee inside</span></div>
+    <svg class="dg" data-d="decorator"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java (this is what 2024 Q1.2–1.3 and 2025 Q1.2–1.3 asked for)</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// 1. COMPONENT: "define a Coffee interface"</span>
+<span class="k">public interface</span> Coffee {
+    <span class="k">double</span> getCost();
+    String getDescription();
+}
+
+<span class="c">// 2. CONCRETE COMPONENT: "create BasicCoffee"</span>
+<span class="k">public class</span> BasicCoffee <span class="k">implements</span> Coffee {
+    <span class="k">public double</span> getCost() { <span class="k">return</span> 200.0; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> <span class="s">"Basic coffee"</span>; }
+}
+
+<span class="c">// 5. CLIENT: wrap at runtime</span>
+Coffee c = <span class="k">new</span> BasicCoffee();
+c = <span class="k">new</span> Milk(c);
+c = <span class="k">new</span> Sugar(c);
+c.getDescription(); <span class="c">// Basic coffee, Milk, Sugar</span>
+c.getCost();        <span class="c">// 200 + 80 + 20 = 300.0</span></pre>
+<pre class="code"><span class="c">// 3. ABSTRACT DECORATOR: is-a + has-a</span>
+<span class="k">public abstract class</span> CoffeeDecorator
+        <span class="k">implements</span> Coffee {
+    <span class="k">protected</span> Coffee coffee;      <span class="c">// wrapped</span>
+    <span class="k">public</span> CoffeeDecorator(Coffee c) {
+        <span class="k">this</span>.coffee = c; }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost(); }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription(); }
+}
+
+<span class="c">// 4. CONCRETE DECORATOR: add, then pass on</span>
+<span class="k">public class</span> Milk <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">public</span> Milk(Coffee c) { <span class="k">super</span>(c); }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost() + 80; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription()
+               + <span class="s">", Milk"</span>; }
+}
+<span class="c">// Sugar (+20), Chocolate (+120): same shape</span></pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 06 DECORATOR : answers ===================== -->
+<section class="page" data-sec="06">
+<div class="body">
+  <header class="ph">
+    <div class="code">06</div>
+    <div><h1>Decorator: past questions answered</h1><div class="lede">The follow-up parts they add after the basic code.</div></div>
+    <div class="meta">Structural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W4</span> "If there are different profits for each coffee, how would you extend the design?" <span class="r"><span class="y">2024</span> Q1.4, 5m</span></h2>
+    <div class="g2" style="align-items:start">
+      <div class="small">
+        <p><b>Option A:</b> add <code>getProfit()</code> to the <code>Coffee</code> interface. Each base coffee returns its own margin, and each decorator returns <code>coffee.getProfit() + addOnProfit</code>. Selling price = <code>getCost() + getProfit()</code>.</p>
+        <p><b>Option B (better, keeps Open/Closed):</b> a new <code>ProfitMargin</code> decorator wraps the finished drink and adds a percentage. No existing class changes. Different coffees get different rates: <code>new ProfitMargin(irish, 0.30)</code>.</p>
+      </div>
+<pre class="code"><span class="k">public class</span> ProfitMargin
+        <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">private double</span> rate;
+    <span class="k">public</span> ProfitMargin(Coffee c, <span class="k">double</span> r) {
+        <span class="k">super</span>(c);
+        rate = r;
+    }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> coffee.getCost() * (1 + rate);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Self-checkout kiosk: CheckoutItem and GroceryItem <span class="r"><span class="y">2025</span> Q1.2–1.3, 10m</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> CheckoutItem {
+    <span class="k">double</span> getCost();
+    String getDescription();
+}
+<span class="k">public class</span> GroceryItem
+        <span class="k">implements</span> CheckoutItem {
+    <span class="k">private</span> String name;
+    <span class="k">private double</span> price;
+    <span class="k">public</span> GroceryItem(String n, <span class="k">double</span> p) {
+        name = n; price = p;
+    }
+    <span class="k">public double</span> getCost() { <span class="k">return</span> price; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> name; }
+}</pre>
+<pre class="code"><span class="k">public class</span> GiftWrap
+        <span class="k">extends</span> AddOnDecorator {
+    <span class="k">public</span> GiftWrap(CheckoutItem i) {
+        <span class="k">super</span>(i); }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> item.getCost() + 150; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> item.getDescription()
+               + <span class="s">" + gift wrap"</span>; }
+}
+<span class="c">// usage</span>
+CheckoutItem it = <span class="k">new</span> GroceryItem(
+        <span class="s">"Rice 5kg"</span>, 1200);
+it = <span class="k">new</span> EcoBag(it);
+it = <span class="k">new</span> GiftWrap(it);</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>User profile: wrapping and real-world challenges <span class="r"><span class="y q">Quiz 5</span>, 3m + 4m</span></h2>
+    <div class="g2" style="align-items:start">
+<pre class="code">UserProfile p = <span class="k">new</span> BasicUserProfile(
+    <span class="s">"Nimal"</span>, <span class="s">"nimal@mail.com"</span>, <span class="s">"n.png"</span>);
+p = <span class="k">new</span> PremiumBadgeDecorator(p);
+p = <span class="k">new</span> TwoFactorAuthDecorator(
+        p, <span class="s">"0771234567"</span>);
+p = <span class="k">new</span> ProfileThemeDecorator(p, <span class="s">"Dark"</span>);
+p.getDetails();
+<span class="c">// [PREMIUM] Nimal (nimal@mail.com)</span>
+<span class="c">//   | theme: Dark</span></pre>
+      <table class="tight small">
+        <tr><td style="width:27%"><b>Code complexity</b></td><td>Many small classes; hard to see one object's full feature set.</td></tr>
+        <tr><td><b>Debugging</b></td><td>A call passes through many wrappers; the bug can be in any layer.</td></tr>
+        <tr><td><b>Performance</b></td><td>An extra object and call per layer; small, but it grows.</td></tr>
+        <tr><td><b>Readability</b></td><td><code>new A(new B(new C(x)))</code> is hard to read, and order changes the result.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">W5</span> Challenges → fix</h2>
+    <div class="g2 small">
+      <ul>
+        <li><b>Many small classes</b> → one job per decorator; a builder assembles common combinations.</li>
+        <li><b>Debugging</b> → log in each decorator; test each one on its own.</li>
+      </ul>
+      <ul>
+        <li><b>Order matters</b> (discount then tax ≠ tax then discount) → fix the wrapping order in the builder.</li>
+        <li><b>Performance</b> → negligible for short chains; cache the total.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>06 Decorator · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['decorator'] = {
+  items: [
+    {id:'c', k:'class', cx:270, y:0, name:'Coffee', stereo:'interface', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'b', k:'class', cx:90, y:98, name:'BasicCoffee', ops:['+ getCost() : double', '+ getDescription() : String']},
+    {id:'d', k:'class', cx:400, y:98, name:'CoffeeDecorator', stereo:'abstract', abstract:true, attrs:['# coffee : Coffee'], ops:['+ CoffeeDecorator(c : Coffee)', '+ getCost() : double', '+ getDescription() : String']},
+    {id:'m', k:'class', cx:290, y:206, w:96, name:'Milk'},
+    {id:'s', k:'class', cx:400, y:206, w:96, name:'Sugar'},
+    {id:'h', k:'class', cx:510, y:206, w:96, name:'Chocolate'},
+  ],
+  edges: [
+    {a:'b', as:'top', b:'c', bs:'bottom', bo:.3, type:'realize', mid:78},
+    {a:'d', as:'top', ao:.3, b:'c', bs:'bottom', bo:.7, type:'realize', mid:78},
+    {a:'d', as:'right', ao:.15, b:'c', bs:'right', bo:.5, type:'aggr', via:[[530,113],[530,30]], label:'wraps  1', lx:536, ly:70, lanchor:'start'},
+    {a:'m', as:'top', b:'d', bs:'bottom', type:'extend', mid:194},
+    {a:'s', as:'top', b:'d', bs:'bottom', type:'extend', mid:194},
+    {a:'h', as:'top', b:'d', bs:'bottom', type:'extend', mid:194},
+  ]
+};
+DIAGRAMS['deco-onion'] = {
+  items: [
+    {k:'node', x:0, y:0, w:230, h:96, lines:['Sugar  +20'], round:14, align:'left', top:true},
+    {k:'node', x:14, y:22, w:202, h:64, lines:['Milk  +80'], round:12, shade:true, align:'left', top:true},
+    {k:'node', x:28, y:46, w:174, h:30, lines:['BasicCoffee  200'], round:10, dark:true},
+  ]
+};
+</script>

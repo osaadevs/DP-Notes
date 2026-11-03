@@ -1,0 +1,249 @@
+<!-- ===================== 05 PROXY : understand ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy</h1><div class="lede">A stand-in with the same interface as the real object. It decides if, when and how the real object is reached.</div></div>
+    <div class="meta">Structural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">load only a couple of pages rather than the entire document</span><span class="chip">lazy loading</span>
+      <span class="chip">users should not access these objects directly</span><span class="chip">access controlled through permission checks</span>
+      <span class="chip">restricted archive</span><span class="chip">different authorization options / levels</span><span class="chip">cache results</span><span class="chip">remote service</span><span class="chip">log every access</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Sometimes the client shouldn't reach the real object straight away. It may be too heavy to load, the user may not be allowed, or it may be on another server.</p>
+      <p class="small">A proxy has <b>exactly the same interface</b>, so the client can't tell the difference. The proxy does its check first (permission, cache, lazy load, log) and only then forwards the call to the real object. Like a security guard at a door: same building, but you go through the guard.</p>
+    </div>
+    <div class="panel">
+      <h2>How a call goes through</h2>
+      <ol class="small">
+        <li>The client calls <code>getPage(5)</code> on the Subject (it's really the proxy).</li>
+        <li>The proxy checks first: access, cache, validation, log.</li>
+        <li>If allowed, it creates the real object if needed and forwards the call.</li>
+        <li>The real object does the work and returns.</li>
+        <li>The proxy can cache or log the result, then returns it.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The parts</h2>
+    <table class="small">
+      <tr><th style="width:20%">Part</th><th style="width:46%">Job</th><th>LMS document (2022, 2023)</th></tr>
+      <tr><td><b>Subject</b> «interface»</td><td>The interface both the proxy and the real object implement</td><td><code>Document</code> with <code>getPage(n)</code></td></tr>
+      <tr><td><b>RealSubject</b></td><td>Does the real, expensive or protected work</td><td><code>LargeDocument</code></td></tr>
+      <tr><td><b>Proxy</b></td><td>Same interface, holds a reference to the real one, checks, then forwards</td><td><code>DocumentProxy</code></td></tr>
+      <tr><td><b>Client</b></td><td>Uses the Subject and never knows which one it has</td><td><code>LMSReader</code></td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>Types of proxy <span class="r">name the type in your answer</span></h2>
+    <table class="small">
+      <tr><td style="width:20%"><b>Virtual</b></td><td>Delays creating a heavy object until it is needed (lazy loading). <i>LMS pages, high-res images, Google Drive thumbnails.</i></td></tr>
+      <tr><td><b>Protection</b></td><td>Checks the user's role or permission before allowing the call. <i>Rare books, hospital records, admin pages, bank withdrawals.</i></td></tr>
+      <tr><td><b>Remote</b></td><td>A local object that stands for one on another server. <i>Mobile banking app calling the bank API; an API gateway.</i></td></tr>
+      <tr><td><b>Cache / smart</b></td><td>Keeps results so repeat calls are fast; can count references. <i>CDN, search results.</i></td></tr>
+      <tr><td><b>Logging</b></td><td>Records every access for auditing. <i>Who opened which record and when.</i></td></tr>
+    </table>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y">2022</span> Q4.4 and <span class="y">2023</span> Q4.4 load only a couple of pages (same question twice) · <span class="y">2025</span> Q3.1(c), 3.5 rare books in a restricted archive · <span class="y">2023</span> Q4.5, <span class="y">2024</span> Q4.5 authorization levels · <span class="y">2023</span> Q3.4 logging.</div>
+</div>
+<div class="foot"><span>05 Proxy · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 05 PROXY : write ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: write</h1><div class="lede">Virtual proxy for the LMS question. The protection proxy is on the answers page.</div></div>
+    <div class="meta">Structural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Proxy</b> pattern (a <b>virtual proxy</b>), which is a structural pattern. It provides a <b>surrogate or placeholder</b> for another object to <b>control access</b> to it.</div>
+    <p class="small"><b>Reasons:</b> (1) only the pages the user is reading are loaded, so the document <b>opens fast and uses little memory and bandwidth</b>; (2) the proxy has the <b>same interface</b> as the real document, so the reader code doesn't change; (3) loaded pages can be <b>cached</b> so going back is instant.</p>
+    <p class="small"><b>Mapping:</b> Subject = <b>Document</b> «interface» · RealSubject = <b>LargeDocument</b> · Proxy = <b>DocumentProxy</b> · Client = <b>LMSReader</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">both implement the Subject; the proxy points to the real subject</span></div>
+    <svg class="dg" data-d="proxy"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="c">// 1. SUBJECT</span>
+<span class="k">public interface</span> Document {
+    Page getPage(<span class="k">int</span> n);
+}
+
+<span class="c">// 2. REAL SUBJECT: expensive to load</span>
+<span class="k">public class</span> LargeDocument
+        <span class="k">implements</span> Document {
+    <span class="k">private</span> List&lt;Page&gt; pages;
+    <span class="k">public</span> LargeDocument(String path) {
+        pages = Storage.loadAll(path); <span class="c">// slow</span>
+    }
+    <span class="k">public</span> Page getPage(<span class="k">int</span> n) {
+        <span class="k">return</span> pages.get(n);
+    }
+}
+
+<span class="c">// 4. CLIENT: can't tell it's a proxy</span>
+Document doc = <span class="k">new</span> DocumentProxy(<span class="s">"notes.pdf"</span>);
+doc.getPage(1);  <span class="c">// loads page 1 only</span>
+doc.getPage(1);  <span class="c">// from cache</span></pre>
+<pre class="code"><span class="c">// 3. PROXY: same interface, lazy</span>
+<span class="k">public class</span> DocumentProxy
+        <span class="k">implements</span> Document {
+    <span class="k">private final</span> String path;
+    <span class="k">private final</span> Map&lt;Integer, Page&gt; cache =
+        <span class="k">new</span> HashMap&lt;&gt;();
+
+    <span class="k">public</span> DocumentProxy(String path) {
+        <span class="k">this</span>.path = path;  <span class="c">// nothing loaded</span>
+    }
+
+    <span class="k">public</span> Page getPage(<span class="k">int</span> n) {
+        <span class="k">if</span> (!cache.containsKey(n)) {
+            <span class="c">// load just this one page</span>
+            Page p = Storage.loadPage(path, n);
+            cache.put(n, p);
+        }
+        <span class="k">return</span> cache.get(n);
+    }
+}</pre>
+    </div>
+    <p class="tiny mt">Lecture version of the same idea: <code>ProxyImage</code> keeps <code>realImage = null</code> and only does <code>new RealImage(file)</code> the first time <code>display()</code> is called.</p>
+  </div>
+</div>
+<div class="foot"><span>05 Proxy · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 05 PROXY : answers ===================== -->
+<section class="page" data-sec="05">
+<div class="body">
+  <header class="ph">
+    <div class="code">05</div>
+    <div><h1>Proxy: past questions answered</h1><div class="lede">Protection proxy for rare books and authorization, plus the challenges.</div></div>
+    <div class="meta">Structural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Rare books in a restricted archive <span class="r"><span class="y">2025</span> Q3.1(c), 3.5, 5m</span></h2>
+    <p class="small"><b>Protection Proxy.</b> <code>ArchiveAccessProxy</code> and <code>RestrictedArchive</code> both implement <code>BookArchive</code>. The user only ever gets the proxy. Its <code>getBook(id)</code> first checks the user's role and permission (for example, a researcher with an approved request and a valid membership), logs the access, and only then forwards to the real archive. Otherwise it throws <code>AccessDeniedException</code>. <b>Example:</b> a student asking for an 1820 manuscript is refused; an approved researcher gets it, and the access is logged.</p>
+    <div class="g2 mt" style="align-items:start">
+      <svg class="dg" data-d="proxy-archive"></svg>
+<pre class="code"><span class="k">public</span> RareBook getBook(String id) {
+  <span class="k">if</span> (!user.hasRole(<span class="s">"RESEARCHER"</span>)
+      || !user.isApproved(id))
+    <span class="k">throw new</span>
+      AccessDeniedException(<span class="s">"No permission"</span>);
+  AuditLog.record(user, id);    <span class="c">// log it</span>
+  <span class="k">return</span> archive.getBook(id);   <span class="c">// forward</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Different authorization options <span class="r"><span class="y">2023</span> Q4.5 · <span class="y">2024</span> Q4.5</span></h2>
+      <p class="small">Put a <b>protection proxy</b> in front of each protected service (<code>AdminServiceProxy</code>, <code>ReportServiceProxy</code>). It checks the user's role or permissions before forwarding. The services themselves stay free of security code.</p>
+      <p class="small">If authorization is a series of checks (login → role → permission → 2FA), add a <b>Chain of Responsibility</b> (tab 08).</p>
+    </div>
+    <div class="panel">
+      <h2>Implementing logging <span class="r"><span class="y">2023</span> Q3.4, 5m</span></h2>
+      <p class="small">Two valid answers. Say which one you mean:</p>
+      <ul class="small">
+        <li><b>Singleton</b> for the logger itself: one shared logger writing to one file (tab 01).</li>
+        <li><b>Logging proxy</b>: to add logging around existing services without changing them, a proxy logs before and after each call and forwards it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2><span class="w">W5</span> Challenges → fix</h2>
+      <ul class="small">
+        <li><b>Extra layer, slower response</b> → don't use a proxy for cheap, public objects.</li>
+        <li><b>Stale cache</b> → set an expiry time, or clear the cache when data changes.</li>
+        <li><b>Two threads create the real object</b> → synchronize the lazy-creation check.</li>
+        <li><b>Proxy becomes a bottleneck / single point of failure</b> → keep it stateless and run several copies (HA).</li>
+        <li><b>Interface changes</b> → proxy and real object must be updated together.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Proxy or not?</h2>
+      <table class="tight small">
+        <tr><td>Hospital login, online exam</td><td><b>yes</b>, protection</td></tr>
+        <tr><td>Image editor, high-res photos</td><td><b>yes</b>, virtual</td></tr>
+        <tr><td>CDN, Netflix streaming</td><td><b>yes</b>, cache + protection</td></tr>
+        <tr><td>Mobile banking app</td><td><b>yes</b>, remote</td></tr>
+        <tr><td>Calculator, static menu</td><td><b>no</b>, nothing to control or delay</td></tr>
+      </table>
+      <p class="tiny mt">Mistakes: giving the proxy a different interface (that's Adapter) · arrow from RealSubject to Proxy · client creating the RealSubject itself.</p>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="panel">
+      <h2>Slide quiz: true or false?</h2>
+      <table class="tight small">
+        <tr><td>Proxy and RealSubject are both subtypes of Subject</td><td><b>True</b></td></tr>
+        <tr><td>Polymorphism comes from both implementing Subject</td><td><b>True</b></td></tr>
+        <tr><td>RealSubject holds a reference to the Proxy</td><td><b>False</b>, it's the other way</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs Decorator</b>: both keep the interface. Proxy <b>controls</b> access (usually one layer, may create the real object itself). Decorator <b>adds</b> features and is stacked.</li>
+        <li><b>vs Adapter</b>: Adapter <b>changes</b> the interface; Proxy keeps it.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+<div class="foot"><span>05 Proxy · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['proxy'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:14, name:'LMSReader'},
+    {id:'s', k:'class', cx:300, y:0, name:'Document', stereo:'interface', ops:['+ getPage(n : int) : Page']},
+    {id:'r', k:'class', cx:150, y:96, name:'LargeDocument', attrs:['- pages : List<Page>'], ops:['+ getPage(n : int) : Page']},
+    {id:'p', k:'class', cx:470, y:96, name:'DocumentProxy', attrs:['- path : String', '- cache : Map<Integer,Page>', '- real : LargeDocument'], ops:['+ getPage(n : int) : Page']},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'s', bs:'left', bx:23, type:'assoc', label:'uses'},
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:76},
+    {a:'p', as:'left', ao:.3, b:'r', bs:'right', type:'assoc', label:'real (lazy)'},
+  ]
+};
+DIAGRAMS['proxy-archive'] = {
+  items: [
+    {id:'s', k:'class', cx:150, y:0, name:'BookArchive', stereo:'interface', ops:['+ getBook(id) : RareBook']},
+    {id:'r', k:'class', cx:60, y:86, name:'RestrictedArchive', ops:['+ getBook(id)']},
+    {id:'p', k:'class', cx:240, y:86, name:'ArchiveAccessProxy', attrs:['- archive : RestrictedArchive', '- user : User'], ops:['+ getBook(id)', '- hasPermission() : boolean']},
+  ],
+  edges: [
+    {a:'r', as:'top', b:'s', bs:'bottom', bo:.3, type:'realize', mid:68},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.7, type:'realize', mid:68},
+    {a:'p', as:'left', ao:.25, b:'r', bs:'right', type:'assoc'},
+  ]
+};
+</script>

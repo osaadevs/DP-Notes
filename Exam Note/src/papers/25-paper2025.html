@@ -1,0 +1,507 @@
+<!-- ===================== 2025 Q1 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 1</h1><div class="lede">Supermarket self-checkout kiosk: states, add-ons and one global tax calculator.</div></div>
+    <div class="meta">State · Decorator · Singleton<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>A supermarket introduces a self-checkout kiosk. Customers scan items, apply optional add-ons (gift-wrap, eco-bag, express packing) and pay. The kiosk operates in the states Idle, Scanning, Payment and Completed. An item's price can have dynamic add-ons without subclasses for every combination. A single global tax calculator must be used across all checkout counters for consistent tax.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Identify suitable design patterns with reasons for: (a) managing kiosk states, (b) applying optional add-ons and calculating the final price dynamically, (c) ensuring only one tax calculator instance.</span><span class="r">6 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>(a)</b> kiosk states</td><td style="width:14%"><b>State</b></td><td>The kiosk behaves differently in each state (scanning is ignored when Completed, paying is refused when Idle). Each state is its own class that handles the actions and decides the next state, so there is no if/else on a status flag, and a new state is just a new class.</td></tr>
+      <tr><td><b>(b)</b> add-ons</td><td><b>Decorator</b></td><td>Each add-on wraps the item and adds its own cost and description, so any combination is built at runtime without 2ⁿ subclasses. A new add-on is a new class (Open/Closed).</td></tr>
+      <tr><td><b>(c)</b> one tax calculator</td><td><b>Singleton</b></td><td>A private constructor and a static <code>getInstance()</code> give one shared instance, so every counter uses the same rate and rules, and a rate change applies everywhere at once.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.2</span><span class="qt">Define an interface CheckoutItem with getCost() and getDescription().</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="c">// Component: items and add-ons</span>
+<span class="c">// share this interface</span>
+<span class="k">public interface</span> CheckoutItem {
+    <span class="k">double</span> getCost();
+    String getDescription();
+}</pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">1.3</span><span class="qt">Create a concrete class GroceryItem implementing CheckoutItem.</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public class</span> GroceryItem
+        <span class="k">implements</span> CheckoutItem {
+    <span class="k">private final</span> String name;
+    <span class="k">private final double</span> price;
+    <span class="k">public</span> GroceryItem(String name,
+                       <span class="k">double</span> price) {
+        <span class="k">this</span>.name = name;
+        <span class="k">this</span>.price = price;
+    }
+    <span class="k">public double</span> getCost() {
+        <span class="k">return</span> price; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> name; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>An add-on decorator <span class="r">shows 1.2 and 1.3 in use, worth adding</span></h2>
+<pre class="code"><span class="k">public abstract class</span> AddOnDecorator <span class="k">implements</span> CheckoutItem {
+    <span class="k">protected final</span> CheckoutItem item;                  <span class="c">// the wrapped item</span>
+    <span class="k">public</span> AddOnDecorator(CheckoutItem i) { item = i; }
+}
+<span class="k">public class</span> GiftWrap <span class="k">extends</span> AddOnDecorator {         <span class="c">// EcoBag, ExpressPacking: same shape</span>
+    <span class="k">public</span> GiftWrap(CheckoutItem i) { <span class="k">super</span>(i); }
+    <span class="k">public double</span> getCost()        { <span class="k">return</span> item.getCost() + 150; }
+    <span class="k">public</span> String getDescription() { <span class="k">return</span> item.getDescription() + <span class="s">" + gift wrap"</span>; }
+}
+CheckoutItem it = <span class="k">new</span> GiftWrap(<span class="k">new</span> EcoBag(<span class="k">new</span> GroceryItem(<span class="s">"Rice 5kg"</span>, 1200)));  <span class="c">// 1200+50+150</span></pre>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 1 (cont.)</h1><div class="lede">Kiosk states with an example transition, and the Singleton in the pricing flow.</div></div>
+    <div class="meta">State · Singleton<br><b>9 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.4</span><span class="qt">Explain how you would incorporate the kiosk states (Idle → Scanning → Payment → Completed) using a design pattern. Provide an example transition.</span><span class="r">5 marks</span></div>
+    <p>Use the <b>State</b> pattern. <code>Kiosk</code> is the context and holds a <code>KioskState</code>. <code>IdleState</code>, <code>ScanningState</code>, <code>PaymentState</code> and <code>CompletedState</code> implement <code>scanItem()</code>, <code>checkout()</code>, <code>pay()</code> and <code>cancel()</code>. The kiosk passes every button press to its current state, and the state calls <code>kiosk.setState(next)</code> to move on.</p>
+    <svg class="dg mt" data-d="p25-kiosk"></svg>
+    <p class="small mt"><b>Example transition:</b> in <code>ScanningState</code>, the customer presses Checkout. <code>checkout()</code> adds up the items' <code>getCost()</code>, adds tax through the Singleton, stores the total and calls <code>kiosk.setState(new PaymentState())</code>. If the customer presses Pay while still Idle, <code>IdleState.pay()</code> refuses: "scan items first".</p>
+<pre class="code mt"><span class="k">public class</span> ScanningState <span class="k">implements</span> KioskState {
+    <span class="k">public void</span> scanItem(Kiosk k, CheckoutItem i) { k.addItem(i); }      <span class="c">// stay</span>
+    <span class="k">public void</span> checkout(Kiosk k) {
+        <span class="k">double</span> total = TaxCalculator.getInstance().applyTax(k.subtotal());
+        k.setTotal(total);
+        k.setState(<span class="k">new</span> PaymentState());                                     <span class="c">// transition</span>
+    }
+    <span class="k">public void</span> pay(Kiosk k, <span class="k">double</span> amt) { System.out.println(<span class="s">"Press checkout first"</span>); }
+}</pre>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">1.5</span><span class="qt">Describe how the Singleton tax calculator can be integrated into the pricing flow.</span><span class="r">4 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">Each scanned item is wrapped with its add-ons, so <code>item.getCost()</code> is already the final item price. When the kiosk moves to the Payment state it adds up the item costs and calls <code>TaxCalculator.getInstance().applyTax(subtotal)</code>. Because every counter calls <code>getInstance()</code>, they all get the <b>same</b> calculator with the same rate and rules, so tax is consistent across the store. When the rate changes, it is updated once (from configuration) and every counter uses it immediately.</p>
+<pre class="code"><span class="k">public final class</span> TaxCalculator {
+  <span class="k">private static final</span> TaxCalculator INSTANCE
+      = <span class="k">new</span> TaxCalculator();
+  <span class="k">private double</span> rate = Config.get(<span class="s">"vat"</span>);
+  <span class="k">private</span> TaxCalculator() { }
+  <span class="k">public static</span> TaxCalculator getInstance() {
+    <span class="k">return</span> INSTANCE; }
+  <span class="k">public double</span> applyTax(<span class="k">double</span> subtotal) {
+    <span class="k">return</span> subtotal * (1 + rate); }
+}</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 1</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2025 Q2 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 2</h1><div class="lede">Media streaming platform on microservices.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>A media streaming platform wants a scalable, resilient microservices system. <b>User profile management</b> (register, accounts, preferences, viewing history, profiles) · <b>Content delivery</b> (store, transcode and stream video with a CDN) · <b>Recommendations</b> (personalised, ML/AI models) · <b>Billing &amp; subscriptions</b> (plans, payments, invoices, renewals) · <b>Analytics</b> (streams, playback errors, engagement, insights). Each microservice should run independently while the user experience stays seamless.</div>
+
+  <div class="panel">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the microservices scenario.</span><span class="r">5 marks</span></div>
+    <svg class="dg" data-d="p25-stream"></svg>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can the organisation implement and manage microservices to achieve scalability, fault isolation and continuous deployment for this platform?</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td>Scale each service on its own. <b>Content Delivery</b> carries most of the load at peak evening hours, so it auto-scales and serves video from <b>CDN edge servers</b>; transcoding runs as a scalable worker queue; Recommendation runs on GPU nodes; Billing stays small. Stateless services on Kubernetes.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Each service has its own process and database. If Recommendations fails, the home page shows a "popular now" list (graceful degradation); if Analytics fails, playback continues and events wait in the queue. Circuit breakers, timeouts, retries and bulkheads.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>One repository and CI/CD pipeline per service, automated tests, Docker images, canary releases (new recommendation model to 5% of users first), versioned APIs, one team per service.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, service registry, config server, and central logging, metrics and tracing to spot playback errors fast.</td></tr>
+    </table>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 2 (cont.)</h1><div class="lede">Architecture, data consistency and security for the streaming platform.</div></div>
+    <div class="meta">Microservices<br><b>25 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a suitable microservices architecture for the platform.</span><span class="r">5 marks</span></div>
+    <table class="small">
+      <tr><th style="width:22%">Service</th><th style="width:44%">Responsibility</th><th>Data / tech</th></tr>
+      <tr><td><b>User Profile</b></td><td>accounts, profiles, preferences, viewing history</td><td>own DB</td></tr>
+      <tr><td><b>Content Catalogue</b></td><td>titles, metadata, rights by country</td><td>own DB + search index</td></tr>
+      <tr><td><b>Content Delivery</b></td><td>upload, transcode to several resolutions, stream</td><td>object storage + CDN</td></tr>
+      <tr><td><b>Recommendation</b></td><td>personalised lists from ML models</td><td>feature store, GPU nodes</td></tr>
+      <tr><td><b>Billing &amp; Subscription</b></td><td>plans, payments, invoices, renewals</td><td>own DB, payment gateway</td></tr>
+      <tr><td><b>Analytics</b></td><td>streams, errors, engagement, insights</td><td>event stream → data warehouse</td></tr>
+      <tr><td><b>Notification</b></td><td>renewal reminders, new releases</td><td>consumes events</td></tr>
+    </table>
+    <p class="small mt">Clients (TV, mobile, web) go through an <b>API gateway</b>. Services use REST/gRPC for direct requests ("is this subscription active?") and publish events to <b>Kafka</b> ("PlaybackStarted", "PaymentFailed") for Analytics, Recommendation and Notification. Containers on Kubernetes, with a registry, config and monitoring.</p>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.4</span><span class="qt">What methods can be used to maintain data consistency across the microservices?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Database per service</b> with <b>eventual consistency</b>: viewing history and recommendations can catch up a few seconds later.</li>
+      <li><b>Saga</b> for subscribing: create subscription → charge payment → activate the profile's plan. If the payment fails, a <b>compensating action</b> cancels the subscription.</li>
+      <li><b>Event-driven updates</b> with a <b>transactional outbox</b> and <b>idempotent consumers</b>, so a repeated "PaymentSucceeded" doesn't extend the plan twice.</li>
+      <li><b>CQRS</b> read models for analytics dashboards; strong consistency only where it matters (billing).</li>
+    </ul>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you ensure security of user data and of service-to-service communication?</span><span class="r">5 marks</span></div>
+    <ul class="small">
+      <li><b>Users:</b> OAuth2 / OpenID Connect login at the gateway with JWT tokens; roles (viewer, profile owner, admin); limits on devices per account.</li>
+      <li><b>User data:</b> encrypted at rest and in transit (HTTPS), card data handled to <b>PCI-DSS</b> by the payment gateway, privacy rules for viewing history, secrets in a vault.</li>
+      <li><b>Service to service:</b> <b>mutual TLS</b> through a service mesh, short-lived service tokens, least-privilege access.</li>
+      <li><b>Content:</b> DRM and signed, expiring CDN URLs so streams can't be shared; rate limiting and a WAF.</li>
+    </ul>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 2</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2025 Q3 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 3</h1><div class="lede">Library book-borrowing workflow: checks in order, book types, rare books, optional services.</div></div>
+    <div class="meta">Chain · Factory · Proxy · Decorator<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>When a user requests a book, the system checks in order: membership validity, book availability, pending fines. The checks must run in order and be easy to extend. Different categories of book (Fiction, Research, Magazine) must be created depending on the request. Rare books are in a restricted archive; users must not access them directly; access is controlled through permission checks. Optional services (Extended Borrow Period, SMS Notification, Email Receipt) should be applied without subclasses for each combination.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Identify the design patterns, with reasons, for: (a) sequential validation checks, (b) creating different types of book, (c) controlling access to rare books, (d) adding optional services to the borrow transaction.</span><span class="r">8 marks</span></div>
+    <table class="small">
+      <tr><td style="width:19%"><b>(a)</b> checks in order</td><td style="width:17%"><b>Chain of Responsibility</b></td><td>Each check is a handler linked to the next; a failure stops the request with a reason. A new check is one class and one link, and the others don't change.</td></tr>
+      <tr><td><b>(b)</b> book types</td><td><b>Factory Method</b></td><td><code>BookFactory.createBook(type, title)</code> decides which class to create, so the client never uses <code>new</code> and new categories are easy to add.</td></tr>
+      <tr><td><b>(c)</b> rare books</td><td><b>Protection Proxy</b></td><td>The proxy has the same interface as the archive and checks permissions (and logs access) before forwarding, so users can't reach the real archive directly.</td></tr>
+      <tr><td><b>(d)</b> optional services</td><td><b>Decorator</b></td><td>Each service wraps the borrow transaction and adds its own behaviour or fee, in any combination, without a subclass per mix.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">3.2</span><span class="qt">Create a Book interface with getTitle() and getCategory().</span><span class="r">2 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public interface</span> Book {
+    String getTitle();
+    String getCategory();
+}
+
+<span class="k">public class</span> FictionBook <span class="k">implements</span> Book {
+    <span class="k">private final</span> String title;
+    <span class="k">public</span> FictionBook(String t) {
+        title = t; }
+    <span class="k">public</span> String getTitle() {
+        <span class="k">return</span> title; }
+    <span class="k">public</span> String getCategory() {
+        <span class="k">return</span> <span class="s">"Fiction"</span>; }
+}
+<span class="c">// ResearchBook, Magazine: same shape</span></pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">3.3</span><span class="qt">Write a simple BookFactory outline returning FictionBook, ResearchBook or Magazine.</span><span class="r">5 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public class</span> BookFactory {
+  <span class="k">public static</span> Book createBook(
+          String type, String title) {
+    <span class="k">switch</span> (type.toUpperCase()) {
+      <span class="k">case</span> <span class="s">"FICTION"</span>:
+        <span class="k">return new</span> FictionBook(title);
+      <span class="k">case</span> <span class="s">"RESEARCH"</span>:
+        <span class="k">return new</span> ResearchBook(title);
+      <span class="k">case</span> <span class="s">"MAGAZINE"</span>:
+        <span class="k">return new</span> Magazine(title);
+      <span class="k">default</span>:
+        <span class="k">throw new</span> IllegalArgumentException(
+            <span class="s">"Unknown type: "</span> + type);
+    }
+  }
+}
+<span class="c">// client</span>
+Book b = BookFactory.createBook(
+    <span class="s">"RESEARCH"</span>, <span class="s">"AI Ethics"</span>);</pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 3 (cont.)</h1><div class="lede">The check chain and the rare-book proxy.</div></div>
+    <div class="meta">Chain · Proxy<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Explain how you would handle the membership check → availability check → fine check.</span><span class="r">5 marks</span></div>
+    <p>With <b>Chain of Responsibility</b>. An abstract <code>BorrowCheck</code> holds a link to the next check. <code>MembershipCheck</code>, <code>AvailabilityCheck</code> and <code>FineCheck</code> each implement only their own test. The chain is built once in this order and every request goes to the first check. If a check fails, the chain stops and returns the reason ("membership expired", "book not available", "pending fine Rs. 200"); if all pass, the borrow goes ahead. A new rule (e.g. <code>BorrowLimitCheck</code>) is one new class added with one link.</p>
+    <div class="g2 mt" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> BorrowCheck {
+  <span class="k">private</span> BorrowCheck next;
+  <span class="k">public</span> BorrowCheck linkWith(BorrowCheck n) {
+    next = n;
+    <span class="k">return</span> n;
+  }
+  <span class="k">public</span> String check(Request r) {
+    String err = test(r);
+    <span class="k">if</span> (err != <span class="k">null</span>) <span class="k">return</span> err;   <span class="c">// stop</span>
+    <span class="k">return</span> next == <span class="k">null</span> ? <span class="k">null</span>
+                        : next.check(r);
+  }
+  <span class="k">protected abstract</span> String test(Request r);
+}</pre>
+<pre class="code"><span class="k">class</span> MembershipCheck <span class="k">extends</span> BorrowCheck {
+  <span class="k">protected</span> String test(Request r) {
+    <span class="k">return</span> r.getUser().isMember() ? <span class="k">null</span>
+        : <span class="s">"Membership expired"</span>;
+  }
+}
+<span class="c">// AvailabilityCheck, FineCheck: same shape</span>
+
+BorrowCheck chain = <span class="k">new</span> MembershipCheck();
+chain.linkWith(<span class="k">new</span> AvailabilityCheck())
+     .linkWith(<span class="k">new</span> FineCheck());
+String err = chain.check(request);
+<span class="k">if</span> (err == <span class="k">null</span>) borrowService.issue(request);
+<span class="k">else</span> System.out.println(err);</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">Explain the method(s) for controlling access to rare books and give one example.</span><span class="r">5 marks</span></div>
+    <p>A <b>Protection Proxy</b>. <code>ArchiveAccessProxy</code> and <code>RestrictedArchive</code> both implement <code>BookArchive</code>, and users are only ever given the proxy. Its <code>getBook(id)</code> first checks the user's role and permission (for example a researcher with an approved request and a valid membership), records the access in an audit log, and only then forwards to the real archive; otherwise it throws <code>AccessDeniedException</code>. The proxy can also make the access <b>read-only</b> or limit it to the reading room.</p>
+    <div class="g2 mt" style="align-items:start">
+      <p class="small"><b>Example:</b> a first-year student requests an 1820 manuscript: the proxy sees no approval and refuses. A researcher approved by the chief librarian requests it: the proxy allows it, logs "researcher R102 viewed MS-1820 at 10:42", and returns the book from the archive.</p>
+<pre class="code"><span class="k">public</span> RareBook getBook(String id) {
+  <span class="k">if</span> (!user.hasRole(<span class="s">"RESEARCHER"</span>)
+      || !user.isApproved(id))
+    <span class="k">throw new</span>
+      AccessDeniedException(<span class="s">"No permission"</span>);
+  AuditLog.record(user, id);
+  <span class="k">return</span> archive.getBook(id);  <span class="c">// forward</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="shade small"><b>(d) in code, if asked:</b> <code>BorrowTransaction t = new EmailReceipt(new SmsNotification(new ExtendedPeriod(new BasicBorrow(book, user))));</code> Each decorator adds its fee or extra step and calls the transaction it wraps.</div>
+</div>
+<div class="foot"><span>2025 · Question 3</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 2025 Q4 ===================== -->
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 4</h1><div class="lede">E-commerce orders: payment workflow, automated checks, global order IDs, payment objects.</div></div>
+    <div class="meta">Template · Chain · Singleton · Factory<br><b>25 marks</b></div>
+  </header>
+
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>Payment methods (credit card, PayPal, cash on delivery) follow a common workflow: validate payment details → process payment → send receipt; each method varies in step 2. The company wants to standardise the workflow while allowing custom behaviour per payment type. Orders go through automated checks (inventory, fraud, delivery-area validation) that must be maintainable and extendable. A single global OrderID generator must give every order a unique ID.</div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Which design patterns fit? Valid reasons for: (a) payment workflow with common steps but different implementations, (b) sequential automated validations, (c) consistent global order IDs, (d) creating different payment objects.</span><span class="r">8 marks</span></div>
+    <table class="small">
+      <tr><td style="width:20%"><b>(a)</b> payment workflow</td><td style="width:16%"><b>Template Method</b></td><td>A final <code>handlePayment()</code> fixes validate → process → receipt; only <code>processPayment()</code> differs per method, so the workflow is standardised and the common steps aren't duplicated.</td></tr>
+      <tr><td><b>(b)</b> validations</td><td><b>Chain of Responsibility</b></td><td>Inventory → fraud → delivery area as linked handlers; a failure stops the order; a new check is one new class and one link.</td></tr>
+      <tr><td><b>(c)</b> order IDs</td><td><b>Singleton</b></td><td>One generator with one thread-safe counter, shared system-wide, so IDs are never duplicated.</td></tr>
+      <tr><td><b>(d)</b> payment objects</td><td><b>Factory Method</b></td><td><code>PaymentFactory.create(method)</code> returns the right processor from the customer's choice, so the client has no <code>new</code> or if-else.</td></tr>
+    </table>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="panel ans">
+      <div class="ql"><span class="w">4.2</span><span class="qt">Define an abstract PaymentProcessor class (with the appropriate pattern) with validate(), processPayment(), sendReceipt() and handlePayment().</span><span class="r">4 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public abstract class</span> PaymentProcessor {
+  <span class="c">// template method: fixed order</span>
+  <span class="k">public final void</span> handlePayment(Order o) {
+    o.setId(OrderIdGenerator
+        .getInstance().nextId());
+    <span class="k">if</span> (!validate(o)) {
+      System.out.println(<span class="s">"Invalid"</span>);
+      <span class="k">return</span>;
+    }
+    processPayment(o);
+    sendReceipt(o);
+  }
+  <span class="k">protected boolean</span> validate(Order o) {
+    <span class="k">return</span> o.getAmount() &gt; 0; }
+  <span class="k">protected abstract void</span>
+      processPayment(Order o);
+  <span class="k">protected void</span> sendReceipt(Order o) {
+    System.out.println(<span class="s">"Receipt "</span>
+        + o.getId()); }
+}</pre>
+    </div>
+    <div class="panel ans">
+      <div class="ql"><span class="w">3.3</span><span class="qt">Implement a concrete class CreditCardPaymentProcessor extending PaymentProcessor.</span><span class="r">3 marks</span></div>
+<pre class="code" style="border:none;padding:0"><span class="k">public class</span> CreditCardPaymentProcessor
+        <span class="k">extends</span> PaymentProcessor {
+
+  <span class="k">protected boolean</span> validate(Order o) {
+    <span class="k">return super</span>.validate(o)
+        &amp;&amp; CardValidator.isValid(
+               o.getCardNo());
+  }
+
+  <span class="k">protected void</span> processPayment(Order o) {
+    System.out.println(<span class="s">"Charging card"</span>);
+    BankGateway.charge(o.getCardNo(),
+                       o.getAmount());
+  }
+}</pre>
+      <p class="tip">The paper numbers these as 3.3–3.5 by mistake; they belong to Question 4.</p>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<section class="page" data-sec="25">
+<div class="body">
+  <header class="ph">
+    <div class="code">25</div>
+    <div><h1>2025 · Question 4 (cont.)</h1><div class="lede">The validation flow, the OrderID generator, and how all four patterns fit together.</div></div>
+    <div class="meta">Chain · Singleton<br><b>10 marks</b></div>
+  </header>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Briefly outline how a design pattern can be used for the validation flow (inventory → fraud → delivery area).</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small"><b>Chain of Responsibility</b> (pipeline form). An abstract <code>Validator</code> holds <code>next</code>; <code>InventoryCheck</code>, <code>FraudCheck</code> and <code>DeliveryAreaCheck</code> each implement <code>check(order)</code>. The chain is built once in this order and the order service sends each order to the first validator. A failed check stops the chain and rejects the order with a reason; if all pass, payment starts. Cheap checks go first (inventory) and the expensive fraud scoring later. A new check (e.g. <code>AddressFormatCheck</code>) is one class and one link, and nothing else changes.</p>
+<pre class="code"><span class="k">abstract class</span> Validator {
+  <span class="k">private</span> Validator next;
+  Validator linkWith(Validator n) {
+    next = n; <span class="k">return</span> n; }
+  <span class="k">boolean</span> validate(Order o) {
+    <span class="k">if</span> (!check(o)) <span class="k">return false</span>;
+    <span class="k">return</span> next == <span class="k">null</span>
+        || next.validate(o);
+  }
+  <span class="k">abstract boolean</span> check(Order o);
+}
+Validator v = <span class="k">new</span> InventoryCheck();
+v.linkWith(<span class="k">new</span> FraudCheck())
+ .linkWith(<span class="k">new</span> DeliveryAreaCheck());</pre>
+    </div>
+  </div>
+
+  <div class="panel ans">
+    <div class="ql"><span class="w">3.5</span><span class="qt">Explain how you will design an OrderID generator and how it integrates with payment processing.</span><span class="r">5 marks</span></div>
+    <div class="g2" style="align-items:start">
+      <p class="small">An <b>eager Singleton</b>: private constructor, one static final instance, and a thread-safe <code>AtomicLong</code> counter, so two orders placed at the same moment can never get the same ID. <b>Integration:</b> the first step of the template method <code>PaymentProcessor.handlePayment()</code> calls <code>OrderIdGenerator.getInstance().nextId()</code> and stores the ID on the order, then validate → process → send receipt (which prints the ID). Every payment type (card, PayPal, COD) inherits that step, so all share the one generator. For HA across several servers, the counter is backed by a database sequence.</p>
+<pre class="code"><span class="k">public final class</span> OrderIdGenerator {
+  <span class="k">private static final</span> OrderIdGenerator
+      INSTANCE = <span class="k">new</span> OrderIdGenerator();
+  <span class="k">private final</span> AtomicLong counter =
+      <span class="k">new</span> AtomicLong(1000);
+  <span class="k">private</span> OrderIdGenerator() { }
+  <span class="k">public static</span> OrderIdGenerator
+      getInstance() { <span class="k">return</span> INSTANCE; }
+  <span class="k">public</span> String nextId() {
+    <span class="k">return</span> <span class="s">"ORD-"</span>
+        + counter.incrementAndGet();
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">How the four patterns fit together</h2><span class="tiny">draw it if you have time; it ties all the parts together</span></div>
+    <svg class="dg" data-d="p25-q4"></svg>
+  </div>
+</div>
+<div class="foot"><span>2025 · Question 4</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['p25-kiosk'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'id', k:'state', x:28, y:30, w:60, label:'Idle'},
+    {id:'sc', k:'state', x:150, y:30, w:80, label:'Scanning'},
+    {id:'py', k:'state', x:296, y:30, w:78, label:'Payment'},
+    {id:'co', k:'state', x:436, y:30, w:88, label:'Completed'},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'id', bs:'left', type:'trans'},
+    {a:'id', as:'right', b:'sc', bs:'left', type:'trans', label:'scanItem()'},
+    {a:'sc', as:'right', b:'py', bs:'left', type:'trans', label:'checkout()'},
+    {a:'py', as:'right', b:'co', bs:'left', type:'trans', label:'pay() ok'},
+    {a:'sc', as:'top', ao:.3, b:'sc', bs:'top', bo:.7, type:'trans', loop:14, label:'scanItem()'},
+    {a:'py', as:'top', b:'sc', bs:'top', bo:.85, type:'trans', loop:42, label:'cancel / payment failed'},
+    {a:'co', as:'bottom', b:'id', bs:'bottom', type:'trans', loop:22, label:'printReceipt() / timeout'},
+  ]
+};
+DIAGRAMS['p25-stream'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:52, w:74, h:44, lines:['Viewers','TV · mobile · web']},
+    {id:'gw', k:'node', x:96, y:44, w:100, h:60, lines:['API Gateway','OAuth2 / JWT','routing · rate limit'], dark:true},
+    {id:'s1', k:'node', x:222, y:0, w:156, h:22, lines:['User Profile  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:222, y:26, w:156, h:22, lines:['Content Catalogue  [DB]'], align:'left'},
+    {id:'s3', k:'node', x:222, y:52, w:156, h:22, lines:['Content Delivery  [storage]'], align:'left'},
+    {id:'s4', k:'node', x:222, y:78, w:156, h:22, lines:['Recommendation  [ML]'], align:'left'},
+    {id:'s5', k:'node', x:222, y:104, w:156, h:22, lines:['Billing / Subscription  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:222, y:130, w:156, h:22, lines:['Analytics  [warehouse]'], align:'left'},
+    {id:'cdn', k:'node', x:406, y:0, w:104, lines:['CDN edge servers','video segments'], shade:true},
+    {id:'mb', k:'node', x:406, y:52, w:104, h:52, lines:['Kafka','PlaybackStarted,','PaymentFailed…'], dashed:true},
+    {id:'k', k:'node', x:406, y:118, w:104, lines:['Kubernetes, CI/CD,','monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:74, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.25, b:'s2', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.45, b:'s3', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.6, b:'s4', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.75, b:'s5', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.9, b:'s6', bs:'left', type:'flow', mid:209},
+    {a:'s3', as:'right', b:'cdn', bs:'bottom', type:'flow'},
+    {a:'s4', as:'right', b:'mb', bs:'left', bx:89, type:'dflow', label:'events', lx:392, ly:86},
+  ]
+};
+DIAGRAMS['p25-q4'] = {
+  items: [
+    {id:'os', k:'class', x:0, y:100, name:'OrderService', ops:['+ placeOrder(o : Order)']},
+    {id:'v', k:'class', x:210, y:0, name:'Validator', stereo:'abstract · Chain', abstract:true, attrs:['- next : Validator'], ops:['+ linkWith(v) : Validator', '+ validate(o) : boolean']},
+    {id:'c1', k:'node', x:210, y:94, w:170, round:0, lines:['InventoryCheck','FraudCheck · DeliveryAreaCheck']},
+    {id:'pf', k:'class', x:210, y:148, name:'PaymentFactory', stereo:'Factory', ops:['_+ create(method) : PaymentProcessor']},
+    {id:'g', k:'class', x:470, y:30, name:'OrderIdGenerator', stereo:'Singleton', ops:['_+ getInstance()', '+ nextId() : String']},
+    {id:'pp', k:'class', x:470, y:134, name:'PaymentProcessor', stereo:'abstract · Template', abstract:true, ops:['+ handlePayment(o) {final}', '/# processPayment(o)']},
+    {id:'c2', k:'node', x:470, y:212, w:150, round:0, lines:['CreditCard · PayPal · COD','processors']},
+  ],
+  edges: [
+    {a:'os', as:'right', ao:.25, b:'v', bs:'left', type:'assoc', label:'1. validate', mid:150},
+    {a:'os', as:'right', ao:.75, b:'pf', bs:'left', type:'assoc', label:'2. create', mid:150},
+    {a:'c1', as:'top', ax:290, b:'v', bs:'bottom', bx:290, type:'extend'},
+    {a:'pf', as:'right', b:'pp', bs:'left', type:'depend', label:'«create»'},
+    {a:'pp', as:'top', b:'g', bs:'bottom', type:'depend', label:'3. nextId()'},
+    {a:'c2', as:'top', b:'pp', bs:'bottom', type:'extend'},
+  ]
+};
+</script>

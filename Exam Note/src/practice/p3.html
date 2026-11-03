@@ -1,0 +1,390 @@
+<!-- ======================= PRACTICE PAPER 3 ======================= -->
+
+<!-- ---------- P3 Q1 ---------- -->
+<div class="chunk" data-sec="P3" data-code="1" data-title="Paper 3 · Question 1" data-lede="EV charging station" data-meta="Practice paper 3<br><b>25 marks</b>" data-foot="Practice paper 3 · Question 1">
+  <div class="examhead"><b>PRACTICE PAPER 3</b><br>INTE 22313 – Software Design Patterns and Frameworks · No. of questions: 4 · Time: 2½ hours<br>Answer ALL questions. Allocate time by the marks. State any assumptions you make. This is an OPEN BOOK exam.</div>
+
+  <div class="qbox"><span class="lab">QUESTION 1 · 25 MARKS</span>
+    A city installs <b>electric vehicle (EV) charging points</b>. A charging session can be in these states: <b>Available</b>, <b>Reserved</b> (a driver booked it in the app), <b>Charging</b>, <b>Payment due</b> and <b>Completed</b>. Any point can also go <b>Faulty</b>, and then it accepts nothing until a technician resets it. What the point does when a driver taps "start", "stop" or "pay" depends on its current state.<br>
+    The charging hardware comes from two vendors that the city cannot modify: Vendor A's charger offers <code>startCharge(double kW)</code> / <code>halt()</code>; Vendor B's offers <code>beginSession(int port, String mode)</code> / <code>endSession(int port)</code>. The session software expects <code>start()</code> and <code>stop()</code>.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.1</span><span class="qt">Explain why the State pattern is appropriate for a charging session.</span><span class="r">4 marks</span></div>
+    <div class="a"><p class="small">A session has a <b>fixed set of well-defined states</b>, and the <b>same action behaves differently in each</b>: "start" begins charging when Reserved (for that driver) but is refused when Faulty; "pay" only works in Payment due. Without the pattern, every method needs a growing if/switch on the status. With State, each state is a class holding its own rules and deciding the next state, so invalid actions are refused cleanly, transitions are explicit, and a new state (e.g. <i>Overstay</i> with an idle fee) is just a new class.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.2</span><span class="qt">Draw a state diagram for a charging session.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp3-sd"></svg>
+      <p class="tip">"Any state → Faulty" can be drawn as one note, or arrows from the main states, labelled fault().</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.3</span><span class="qt">Design a UML class diagram for the charging session using the State pattern.</span><span class="r">6 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp3-cd"></svg></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.4</span><span class="qt">Write Java for the ChargingSession context class.</span><span class="r">4 marks</span></div>
+    <div class="a">
+<pre class="code"><span class="k">public class</span> ChargingSession {
+    <span class="k">private</span> SessionState state = <span class="k">new</span> AvailableState();
+    <span class="k">private final</span> Charger charger;          <span class="c">// the adapter from 1.5</span>
+    <span class="k">private double</span> kWh;
+
+    <span class="k">public</span> ChargingSession(Charger c) { charger = c; }
+    <span class="k">public void</span> setState(SessionState s) { state = s; }
+    <span class="k">public</span> Charger getCharger() { <span class="k">return</span> charger; }
+
+    <span class="c">// every request is handed to the current state</span>
+    <span class="k">public void</span> reserve(Driver d) { state.reserve(<span class="k">this</span>, d); }
+    <span class="k">public void</span> start()           { state.start(<span class="k">this</span>); }
+    <span class="k">public void</span> stop()            { state.stop(<span class="k">this</span>); }
+    <span class="k">public void</span> pay(<span class="k">double</span> amt)    { state.pay(<span class="k">this</span>, amt); }
+    <span class="k">public void</span> fault()           { setState(<span class="k">new</span> FaultyState()); }
+}</pre></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">1.5</span><span class="qt">The session software must work with both vendors' chargers. Provide a solution using design pattern knowledge, with code for one vendor.</span><span class="r">6 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small">Use the <b>Adapter</b> pattern. The session software depends on one target interface it owns, <code>Charger</code> with <code>start()</code> and <code>stop()</code>. <code>VendorAAdapter</code> and <code>VendorBAdapter</code> implement <code>Charger</code>, each holding that vendor's class (the adaptee) and translating the call: Vendor A needs a power level in kW; Vendor B needs a port and a mode. <code>ChargingState</code> just calls <code>session.getCharger().start()</code> and never knows the vendor. <b>Why:</b> the hardware software can't be modified, the state classes stay the same for every vendor, and a third vendor is one more adapter (Open/Closed).</p>
+<pre class="code"><span class="k">public interface</span> Charger {     <span class="c">// target</span>
+  <span class="k">void</span> start();
+  <span class="k">void</span> stop();
+}
+<span class="k">public class</span> VendorBAdapter
+        <span class="k">implements</span> Charger {
+  <span class="k">private final</span> VendorBCharger hw;
+  <span class="k">private final int</span> port;
+  <span class="k">public</span> VendorBAdapter(VendorBCharger hw,
+                        <span class="k">int</span> port) {
+    <span class="k">this</span>.hw = hw; <span class="k">this</span>.port = port; }
+  <span class="k">public void</span> start() {
+    hw.beginSession(port, <span class="s">"FAST"</span>); }
+  <span class="k">public void</span> stop() {
+    hw.endSession(port); }
+}</pre>
+    </div></div>
+  </div>
+</div>
+
+<!-- ---------- P3 Q2 ---------- -->
+<div class="chunk" data-sec="P3" data-code="2" data-title="Paper 3 · Question 2" data-lede="Airline reservation system" data-meta="Practice paper 3<br><b>25 marks</b>" data-foot="Practice paper 3 · Question 2">
+  <div class="qbox"><span class="lab">QUESTION 2 · 25 MARKS</span>
+    A regional airline is rebuilding its reservation platform as <b>microservices</b>. Key functional requirements:
+    <b>Flight search</b> (routes, schedules, fares, seat availability) · <b>Booking</b> (reserve seats, passenger details, changes and cancellations) · <b>Payments</b> (cards, wallets, refunds) · <b>Check-in</b> (online check-in, seat selection, boarding passes) · <b>Loyalty</b> (miles, tiers, rewards) · <b>Notifications</b> (e-tickets, delays, gate changes).</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.1</span><span class="qt">Draw a diagram to depict the microservices scenario.</span><span class="r">5 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp3-air"></svg></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.2</span><span class="qt">How can the airline achieve scalability, fault isolation and continuous deployment?</span><span class="r">5 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:19%"><b>Scalability</b></td><td><b>Flight Search</b> takes far more traffic than booking (many searches per booking, spikes during sales), so it scales out on its own with a cache of fares and availability; Check-in scales in the hours before departures; Loyalty stays small.</td></tr>
+      <tr><td><b>Fault isolation</b></td><td>Own process and database per service. If Loyalty is down, bookings still complete and miles are added later from queued events; if Notification fails, the e-ticket is resent when it recovers. Circuit breakers, timeouts, retries, bulkheads.</td></tr>
+      <tr><td><b>Continuous deployment</b></td><td>Pipeline per service with automated tests, Docker images, canary releases (new fare engine to 5% of searches), versioned APIs, quick rollback.</td></tr>
+      <tr><td><b>Manage it</b></td><td>API gateway, registry, config server, central logging, metrics and tracing; one team per service.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.3</span><span class="qt">Propose a suitable microservices architecture.</span><span class="r">5 marks</span></div>
+    <div class="a"><p class="small">Services, each with its <b>own database</b>: <b>Flight/Inventory</b> (schedules, seats), <b>Search</b> (read-optimised index built from flight events, CQRS), <b>Booking</b>, <b>Payment</b> (gateway adapters for cards and wallets), <b>Check-in</b> (boarding passes), <b>Loyalty</b>, <b>Notification</b>. Web, mobile and travel-agent clients go through an <b>API gateway</b>. Booking calls Flight/Inventory synchronously to hold seats, and publishes events to <b>Kafka</b> ("BookingConfirmed" → Loyalty adds miles, Notification sends the e-ticket; "FlightDelayed" → Notification alerts passengers). Kubernetes, registry, config and monitoring.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.4</span><span class="qt">How would you keep data consistent, for example so that two passengers can't get the same seat?</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Database per service</b>; the Flight/Inventory service is the <b>single owner of seat data</b> and holds seats with a local ACID transaction or an optimistic lock (version number), so the same seat can't be sold twice.</li>
+      <li><b>Saga</b> for booking: hold seat (with a 15-minute expiry) → take payment → confirm booking → issue ticket. If payment fails, a <b>compensating action</b> releases the seat.</li>
+      <li><b>Transactional outbox</b> and <b>idempotent consumers</b>, so a repeated "PaymentSucceeded" never books twice.</li>
+      <li><b>Eventual consistency</b> for search results and loyalty miles, which can lag a few seconds.</li>
+    </ul></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">2.5</span><span class="qt">How would you secure passenger data and communication between services?</span><span class="r">5 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Users:</b> OAuth2 / OpenID Connect at the gateway with JWT; roles for passenger, travel agent, airport staff, admin.</li>
+      <li><b>Data:</b> passport and payment data encrypted at rest and in transit; card data to <b>PCI-DSS</b> through the payment provider; personal data handled under privacy laws; secrets in a vault.</li>
+      <li><b>Service to service:</b> mutual TLS via a service mesh, least-privilege access (Loyalty can't read passport numbers).</li>
+      <li>Rate limiting and bot protection on search, a WAF, audit logs and alerts.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ---------- P3 Q3 ---------- -->
+<div class="chunk" data-sec="P3" data-code="3" data-title="Paper 3 · Question 3" data-lede="Hotel booking system" data-meta="Practice paper 3<br><b>25 marks</b>" data-foot="Practice paper 3 · Question 3">
+  <div class="qbox"><span class="lab">QUESTION 3 · 25 MARKS</span>
+    A beach hotel builds a booking system. Rooms are <b>Standard</b>, <b>Deluxe</b> or <b>Suite</b>, and the right room object must be created from the guest's choice.<br>
+    Guests can add optional extras to a room: <b>breakfast</b>, <b>airport pickup</b>, <b>late checkout</b> and <b>sea view</b>, in any combination. The price and description must update automatically, without a class for every combination.<br>
+    The hotel also sells <b>holiday packages</b>. Booking a package must reserve the room, book a spa slot, reserve a restaurant table and schedule the airport transfer. The front-desk screen should do this with one call.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.1</span><span class="qt">Identify suitable design patterns, with reasons, for: (a) creating room types, (b) optional extras, (c) booking a package.</span><span class="r">6 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:22%"><b>(a)</b> room types</td><td style="width:15%"><b>Factory Method</b></td><td><code>RoomFactory.create(type)</code> builds a Standard, Deluxe or Suite room from the guest's choice, so booking code uses the <code>Room</code> interface only, and a new type (Villa) is one class.</td></tr>
+      <tr><td><b>(b)</b> extras</td><td><b>Decorator</b></td><td>Each extra wraps the room and adds its own price and description, so any of the 2⁴ = 16 combinations is built at runtime without subclasses.</td></tr>
+      <tr><td><b>(c)</b> packages</td><td><b>Facade</b></td><td><code>PackageFacade.bookPackage()</code> calls the room, spa, restaurant and transfer services in order behind one method, so the front desk depends on one class.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.2</span><span class="qt">Define a Room interface with getPrice() and getDescription(), and a DeluxeRoom class.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public interface</span> Room {
+    <span class="k">double</span> getPrice();      <span class="c">// per night</span>
+    String getDescription();
+}</pre>
+<pre class="code"><span class="k">public class</span> DeluxeRoom <span class="k">implements</span> Room {
+    <span class="k">private final int</span> number;
+    <span class="k">public</span> DeluxeRoom(<span class="k">int</span> number) {
+        <span class="k">this</span>.number = number; }
+    <span class="k">public double</span> getPrice() {
+        <span class="k">return</span> 25000; }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> <span class="s">"Deluxe room "</span> + number; }
+}</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.3</span><span class="qt">Draw a class diagram showing how the optional extras are applied.</span><span class="r">6 marks</span></div>
+    <div class="a"><svg class="dg" data-d="pp3-deco"></svg>
+      <p class="small mt"><code>Room r = new LateCheckout(new Breakfast(new DeluxeRoom(204)));</code> → 25,000 + 3,000 + 4,000.</p></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.4</span><span class="qt">Write an outline of the class that books a package with one call.</span><span class="r">4 marks</span></div>
+    <div class="a">
+<pre class="code"><span class="k">public class</span> PackageFacade {
+    <span class="k">private final</span> RoomService rooms = <span class="k">new</span> RoomService();
+    <span class="k">private final</span> SpaService spa = <span class="k">new</span> SpaService();
+    <span class="k">private final</span> RestaurantService dining = <span class="k">new</span> RestaurantService();
+    <span class="k">private final</span> TransferService transfer = <span class="k">new</span> TransferService();
+
+    <span class="k">public</span> Booking bookPackage(Guest g, Room room, DateRange dates) {
+        Booking b = rooms.reserve(g, room, dates);       <span class="c">// calls each subsystem in order</span>
+        spa.bookSlot(g, dates.firstDay());
+        dining.reserveTable(g, dates.firstDay());
+        transfer.schedule(g, dates.arrival());
+        <span class="k">return</span> b;
+    }
+}</pre></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">3.5</span><span class="qt">Discuss two challenges of the design used for the extras and how you would handle them.</span><span class="r">4 marks</span></div>
+    <div class="a"><ul class="small">
+      <li><b>Many small classes and long wrapping chains</b> (<code>new A(new B(new C(room)))</code>) are hard to read and debug. → A <b>builder</b> (or the factory) assembles the chosen extras in one place; each decorator logs what it adds.</li>
+      <li><b>Order and duplicates matter</b>: a percentage discount applied before or after extras gives different totals, and breakfast could be added twice. → Fix the wrapping order in the builder and reject duplicate extras.</li>
+      <li><i>(Also acceptable: identity checks fail because the outer object isn't a DeluxeRoom; performance cost of many layers is small but grows.)</i></li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ---------- P3 Q4 ---------- -->
+<div class="chunk" data-sec="P3" data-code="4" data-title="Paper 3 · Question 4" data-lede="Online store returns and refunds" data-meta="Practice paper 3<br><b>25 marks</b>" data-foot="Practice paper 3 · Question 4">
+  <div class="qbox"><span class="lab">QUESTION 4 · 25 MARKS</span>
+    An online store automates <b>returns</b>. A return request is checked in order: <b>valid receipt → within 14 days → item condition → refund limit</b>. The checks must be easy to change and extend.<br>
+    Every refund follows the same steps: <b>validate the request → calculate the amount → issue the refund → notify the customer</b>. Issuing the refund differs for <b>card</b>, <b>cash on delivery</b> (bank transfer) and <b>store credit</b>.<br>
+    For auditing, every refund must be written to <b>one central audit log</b> in order, with no duplicate entries. The returns service must keep working even if a server or a data centre fails.</div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.1</span><span class="qt">Identify suitable design patterns, with reasons, for: (a) the return checks, (b) the refund steps, (c) the audit log.</span><span class="r">6 marks</span></div>
+    <div class="a"><table class="small">
+      <tr><td style="width:20%"><b>(a)</b> return checks</td><td style="width:17%"><b>Chain of Responsibility</b></td><td>Receipt → 14 days → condition → limit as linked handlers; a failure stops the request with a reason; checks can be reordered or added without touching the others.</td></tr>
+      <tr><td><b>(b)</b> refund steps</td><td><b>Template Method</b></td><td>A final <code>processRefund()</code> fixes the four steps; only <code>issueRefund()</code> differs per refund method, so the process is standard and shared steps are written once.</td></tr>
+      <tr><td><b>(c)</b> audit log</td><td><b>Singleton</b></td><td>One <code>AuditLogger</code> instance owns the log and writes entries in order through one synchronized method, so there are no duplicates or interleaving.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.2</span><span class="qt">Write the abstract class for the refund steps, and one subclass.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> RefundProcess {
+  <span class="k">public final void</span> processRefund(
+          ReturnRequest r) {
+    <span class="k">if</span> (!validate(r)) <span class="k">return</span>;
+    <span class="k">double</span> amt = calculate(r);
+    issueRefund(r, amt);       <span class="c">// varies</span>
+    notifyCustomer(r, amt);
+    AuditLogger.getInstance()
+        .log(<span class="s">"Refund "</span> + r.getId()
+             + <span class="s">" "</span> + amt);
+  }
+  <span class="k">protected boolean</span> validate(
+          ReturnRequest r) {
+    <span class="k">return</span> r.isApproved(); }
+  <span class="k">protected double</span> calculate(
+          ReturnRequest r) {
+    <span class="k">return</span> r.getItemPrice(); }
+  <span class="k">protected abstract void</span> issueRefund(
+          ReturnRequest r, <span class="k">double</span> a);
+  <span class="k">private void</span> notifyCustomer(
+          ReturnRequest r, <span class="k">double</span> a) {
+    Mailer.send(r.getEmail(),
+                <span class="s">"Refunded "</span> + a); }
+}</pre>
+<pre class="code"><span class="k">public class</span> StoreCreditRefund
+        <span class="k">extends</span> RefundProcess {
+  <span class="k">protected double</span> calculate(
+          ReturnRequest r) {
+    <span class="c">// 10% bonus for taking store credit</span>
+    <span class="k">return</span> r.getItemPrice() * 1.10; }
+  <span class="k">protected void</span> issueRefund(
+          ReturnRequest r, <span class="k">double</span> a) {
+    Wallet.of(r.getCustomer()).add(a); }
+}
+<span class="c">// CardRefund: gateway.refund(...)</span>
+<span class="c">// BankTransferRefund: bank.transfer(...)</span></pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.3</span><span class="qt">Outline how the return checks would be implemented.</span><span class="r">5 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+      <p class="small">An abstract <code>ReturnCheck</code> holds a link to the next check and a <code>check(request)</code> that returns a failure reason or passes the request on. <code>ReceiptCheck</code>, <code>WithinDaysCheck</code>, <code>ConditionCheck</code> and <code>RefundLimitCheck</code> each test one thing. The chain is built once (the order can come from configuration) and every request goes to the first check. If all pass, the refund process from 4.2 starts. A new rule, such as <code>SerialNumberCheck</code> for electronics, is one new class with one link.</p>
+<pre class="code"><span class="k">abstract class</span> ReturnCheck {
+  <span class="k">private</span> ReturnCheck next;
+  ReturnCheck then(ReturnCheck n) {
+    next = n; <span class="k">return</span> n; }
+  String check(ReturnRequest r) {
+    String fail = test(r);
+    <span class="k">if</span> (fail != <span class="k">null</span>) <span class="k">return</span> fail;
+    <span class="k">return</span> next == <span class="k">null</span> ? <span class="k">null</span>
+                        : next.check(r);
+  }
+  <span class="k">abstract</span> String test(ReturnRequest r);
+}
+<span class="k">class</span> WithinDaysCheck <span class="k">extends</span> ReturnCheck {
+  String test(ReturnRequest r) {
+    <span class="k">return</span> r.daysSincePurchase() &lt;= 14
+        ? <span class="k">null</span> : <span class="s">"Older than 14 days"</span>; }
+}</pre>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.4</span><span class="qt">Write the audit log class and explain why it prevents duplicate or out-of-order entries.</span><span class="r">4 marks</span></div>
+    <div class="a"><div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public final class</span> AuditLogger {
+  <span class="k">private static final</span> AuditLogger
+      INSTANCE = <span class="k">new</span> AuditLogger();
+  <span class="k">private final</span> AtomicLong seq =
+      <span class="k">new</span> AtomicLong();
+  <span class="k">private</span> AuditLogger() { }
+  <span class="k">public static</span> AuditLogger getInstance() {
+    <span class="k">return</span> INSTANCE; }
+  <span class="k">public synchronized void</span> log(String e) {
+    AuditStore.append(
+        seq.incrementAndGet(), e);
+  }
+}</pre>
+      <p class="small">The private constructor means <b>no other logger object can exist</b>; every refund calls the same <code>getInstance()</code>. Because there is one object, there is one writer and one sequence counter, and <code>log()</code> is <code>synchronized</code>, so two refunds at the same moment are written one after the other with increasing sequence numbers, never twice and never interleaved. (For several servers, <code>AuditStore</code> is a replicated, append-only store.)</p>
+    </div></div>
+  </div>
+
+  <div class="panel part">
+    <div class="ql"><span class="w">4.5</span><span class="qt">How would you extend the design for High Availability and Disaster Recovery?</span><span class="r">5 marks</span></div>
+    <div class="a"><p class="small"><b>HA:</b> the check chain and refund classes keep no state, so the returns service runs as <b>several copies behind a load balancer</b>, with health checks and automatic restart (Kubernetes). Requests go through a <b>message queue</b> so none are lost if a copy dies. The database is replicated with automatic failover. Each server's Singleton logger writes to a <b>shared, replicated audit store</b>, so the logger isn't a single point of failure, and a refund is made <b>idempotent</b> (refund ID checked) so a retry never pays twice. <b>DR:</b> regular backups, the database and audit log <b>replicated to a second region</b>, agreed RPO/RTO, automated failover, infrastructure-as-code to rebuild, and regular DR drills.</p></div>
+  </div>
+</div>
+
+<script>
+DIAGRAMS['pp3-sd'] = {
+  items: [
+    {id:'i', k:'init', cx:6, cy:42},
+    {id:'av', k:'state', x:28, y:30, w:78, label:'Available'},
+    {id:'re', k:'state', x:150, y:30, w:78, label:'Reserved'},
+    {id:'ch', k:'state', x:272, y:30, w:78, label:'Charging'},
+    {id:'pd', k:'state', x:396, y:30, w:96, label:'Payment due'},
+    {id:'co', k:'state', x:536, y:30, w:88, label:'Completed'},
+    {id:'fa', k:'state', x:272, y:112, w:78, label:'Faulty'},
+  ],
+  edges: [
+    {a:'i', as:'right', b:'av', bs:'left', type:'trans'},
+    {a:'av', as:'right', b:'re', bs:'left', type:'trans', label:'reserve()'},
+    {a:'re', as:'right', b:'ch', bs:'left', type:'trans', label:'start()'},
+    {a:'ch', as:'right', b:'pd', bs:'left', type:'trans', label:'stop()'},
+    {a:'pd', as:'right', b:'co', bs:'left', type:'trans', label:'pay()'},
+    {a:'re', as:'top', b:'av', bs:'top', type:'trans', loop:20, label:'cancel() / timeout'},
+    {a:'av', as:'bottom', b:'ch', bs:'bottom', bo:.3, type:'trans', loop:16, label:'start() walk-in'},
+    {a:'co', as:'top', b:'av', bs:'top', bo:.8, type:'trans', loop:40, label:'unplug → reset'},
+    {a:'ch', as:'bottom', ao:.7, b:'fa', bs:'top', bo:.7, type:'trans', label:'fault()'},
+    {a:'fa', as:'left', b:'av', bs:'bottom', bo:.8, type:'trans', label:'technicianReset()'},
+  ]
+};
+DIAGRAMS['pp3-cd'] = {
+  items: [
+    {id:'c', k:'class', x:0, y:0, name:'ChargingSession', stereo:'Context', attrs:['- state : SessionState', '- charger : Charger', '- kWh : double'], ops:['+ reserve(d) / start() / stop()', '+ pay(amount : double)', '+ setState(s : SessionState)']},
+    {id:'s', k:'class', x:250, y:6, name:'SessionState', stereo:'interface', ops:['+ reserve(s, d : Driver)', '+ start(s : ChargingSession)', '+ stop(s : ChargingSession)', '+ pay(s, amount : double)']},
+    {id:'a', k:'class', cx:50, y:150, w:100, name:'AvailableState'},
+    {id:'b', k:'class', cx:158, y:150, w:100, name:'ReservedState'},
+    {id:'o', k:'class', cx:266, y:150, w:100, name:'ChargingState'},
+    {id:'p', k:'class', cx:380, y:150, w:112, name:'PaymentDueState'},
+    {id:'x', k:'class', cx:494, y:150, w:100, name:'CompletedState'},
+    {id:'f', k:'class', cx:600, y:150, w:92, name:'FaultyState'},
+  ],
+  edges: [
+    {a:'c', as:'right', ao:.3, b:'s', bs:'left', type:'aggr', label:'current  1'},
+    {a:'a', as:'top', b:'s', bs:'bottom', bo:.08, type:'realize', mid:132},
+    {a:'b', as:'top', b:'s', bs:'bottom', bo:.25, type:'realize', mid:132},
+    {a:'o', as:'top', b:'s', bs:'bottom', bo:.42, type:'realize', mid:132},
+    {a:'p', as:'top', b:'s', bs:'bottom', bo:.58, type:'realize', mid:132},
+    {a:'x', as:'top', b:'s', bs:'bottom', bo:.75, type:'realize', mid:132},
+    {a:'f', as:'top', b:'s', bs:'bottom', bo:.92, type:'realize', mid:132},
+  ]
+};
+DIAGRAMS['pp3-air'] = {
+  items: [
+    {id:'c', k:'node', x:0, y:50, w:80, h:52, lines:['Clients','web · mobile','travel agents']},
+    {id:'gw', k:'node', x:100, y:46, w:96, h:60, lines:['API Gateway','OAuth2 / JWT','rate limit'], dark:true},
+    {id:'s1', k:'node', x:222, y:0, w:150, h:22, lines:['Flight / Inventory  [DB]'], align:'left'},
+    {id:'s2', k:'node', x:222, y:26, w:150, h:22, lines:['Search  [index]'], align:'left'},
+    {id:'s3', k:'node', x:222, y:52, w:150, h:22, lines:['Booking  [DB]'], align:'left'},
+    {id:'s4', k:'node', x:222, y:78, w:150, h:22, lines:['Payment  [DB]'], align:'left'},
+    {id:'s5', k:'node', x:222, y:104, w:150, h:22, lines:['Check-in  [DB]'], align:'left'},
+    {id:'s6', k:'node', x:222, y:130, w:150, h:22, lines:['Loyalty · Notification'], align:'left'},
+    {id:'mb', k:'node', x:400, y:40, w:110, h:60, lines:['Kafka','BookingConfirmed,','FlightDelayed'], dashed:true},
+    {id:'k', k:'node', x:400, y:114, w:110, lines:['Kubernetes, CI/CD,','monitoring'], shade:true},
+  ],
+  edges: [
+    {a:'c', as:'right', b:'gw', bs:'left', bx:76, type:'flow'},
+    {a:'gw', as:'right', ao:.1, b:'s1', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.3, b:'s2', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.5, b:'s3', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.7, b:'s4', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.8, b:'s5', bs:'left', type:'flow', mid:209},
+    {a:'gw', as:'right', ao:.9, b:'s6', bs:'left', type:'flow', mid:209},
+    {a:'s3', as:'right', b:'mb', bs:'left', bx:63, type:'dflow', label:'events', lx:386, ly:58},
+  ]
+};
+DIAGRAMS['pp3-deco'] = {
+  items: [
+    {id:'r', k:'class', cx:250, y:0, name:'Room', stereo:'interface', ops:['+ getPrice() : double', '+ getDescription() : String']},
+    {id:'s', k:'class', cx:40, y:96, w:80, name:'Standard'},
+    {id:'d', k:'class', cx:128, y:96, w:80, name:'DeluxeRoom'},
+    {id:'su', k:'class', cx:216, y:96, w:80, name:'Suite'},
+    {id:'x', k:'class', cx:400, y:92, name:'RoomExtra', stereo:'abstract', abstract:true, attrs:['# room : Room'], ops:['+ getPrice() : double', '+ getDescription() : String']},
+    {id:'e1', k:'class', cx:258, y:200, w:90, name:'Breakfast'},
+    {id:'e2', k:'class', cx:356, y:200, w:96, name:'AirportPickup'},
+    {id:'e3', k:'class', cx:460, y:200, w:96, name:'LateCheckout'},
+    {id:'e4', k:'class', cx:560, y:200, w:84, name:'SeaView'},
+  ],
+  edges: [
+    {a:'s', as:'top', b:'r', bs:'bottom', bo:.15, type:'realize', mid:76},
+    {a:'d', as:'top', b:'r', bs:'bottom', bo:.3, type:'realize', mid:76},
+    {a:'su', as:'top', b:'r', bs:'bottom', bo:.45, type:'realize', mid:76},
+    {a:'x', as:'top', ao:.3, b:'r', bs:'bottom', bo:.8, type:'realize', mid:76},
+    {a:'x', as:'right', ao:.15, b:'r', bs:'right', bo:.5, type:'aggr', via:[[540,106],[540,30]], label:'wraps  1', lx:546, ly:70, lanchor:'start'},
+    {a:'e1', as:'top', b:'x', bs:'bottom', type:'extend', mid:186},
+    {a:'e2', as:'top', b:'x', bs:'bottom', type:'extend', mid:186},
+    {a:'e3', as:'top', b:'x', bs:'bottom', type:'extend', mid:186},
+    {a:'e4', as:'top', b:'x', bs:'bottom', type:'extend', mid:186},
+  ]
+};
+</script>

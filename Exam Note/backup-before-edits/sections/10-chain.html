@@ -1,0 +1,315 @@
+<!-- ===================== 08 CHAIN : understand ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain of Responsibility</h1><div class="lede">A request is passed along a line of handlers. Each one either deals with it or hands it to the next.</div></div>
+    <div class="meta">Behavioural<br><b>Understand</b></div>
+  </header>
+
+  <div class="shade">
+    <h2>Spot it: the question says…</h2>
+    <div class="chips">
+      <span class="chip">several levels of support / escalation</span><span class="chip">approval limits: team leader, manager, director, CEO</span>
+      <span class="chip">a sequence of checks that must occur in order and be easy to extend</span><span class="chip">multiple sub-filters</span>
+      <span class="chip">handle different priorities</span><span class="chip">exception handling</span><span class="chip">multiple handlers hard-coded in sequence</span>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>The idea</h2>
+      <p class="small">Without the pattern, the sender has a long if-else: "if it's a password issue send it to L1, else if it's an install issue send it to L2…". The sender knows every handler, and adding a level means editing it.</p>
+      <p class="small">With the chain, each handler only knows the <b>next</b> one. The sender gives the request to the first handler and doesn't care who finally deals with it. Like a hospital: nurse → doctor → specialist, each passing on what they can't treat. Java's try/catch works the same way.</p>
+    </div>
+    <div class="panel">
+      <h2>Two ways a chain runs</h2>
+      <p class="small"><b>1. Escalation:</b> the first handler that <b>can</b> handle the request does, and the chain stops. <i>Support levels, expense approval, exceptions by priority.</i></p>
+      <p class="small"><b>2. Pipeline of checks:</b> <b>every</b> handler checks the request; any failure stops it, and passing all means accepted. <i>Membership → availability → fines; inventory → fraud → delivery area; spam sub-filters.</i></p>
+      <p class="small"><b>The chain ends</b> when a handler deals with the request, or when the end is reached. Add a <b>fallback handler</b> at the end so nothing goes unhandled.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The parts</h2>
+    <table class="small">
+      <tr><th style="width:21%">Part</th><th style="width:43%">Job</th><th>Support desk (Quiz 7)</th></tr>
+      <tr><td><b>Handler</b> «abstract»</td><td>Holds a <code>next</code> link, has <code>setNext()</code> and <code>handle()</code></td><td><code>SupportHandler</code></td></tr>
+      <tr><td><b>Concrete handlers</b></td><td>Deal with the request if they can, otherwise pass it on</td><td><code>L1Support</code>, <code>L2Support</code>, <code>L3Support</code>, <code>SpecialistSupport</code></td></tr>
+      <tr><td><b>Request</b></td><td>The data being passed (type, level, amount)</td><td><code>SupportRequest</code></td></tr>
+      <tr><td><b>Client</b></td><td>Builds the chain once, sends every request to the first handler</td><td><code>SupportDesk</code></td></tr>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>How to order the chain <span class="r">asked as "prioritise"</span></h2>
+      <ul class="small">
+        <li><b>Cost / speed</b>: cheap, fast checks first, so expensive ones run less often.</li>
+        <li><b>Rejection rate</b>: checks that catch the most go early.</li>
+        <li><b>Severity / security</b>: dangerous cases first (e.g. a malware attachment).</li>
+        <li><b>Accuracy</b>: low false-positive checks before risky ones.</li>
+        <li><b>Business priority</b> and <b>availability</b> of the handler.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Don't mix it up</h2>
+      <ul class="small">
+        <li><b>vs State</b>: Chain asks "<b>who</b> will handle this request?" and the request moves along handlers. State asks "<b>how</b> should I behave now?" and the object hands work to its current state.</li>
+        <li><b>vs Decorator</b>: decorators all run and add to the result. In a chain, usually one handler takes the request.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="shade small"><b>Asked before:</b> <span class="y">2022</span> Q3 email spam filter (all 25 marks) · <span class="y">2025</span> Q3.1(a), 3.4 membership → availability → fines · <span class="y">2025</span> Q4.1(b), 4.4 inventory → fraud → delivery area · <span class="y">2023</span> Q4.3, <span class="y">2024</span> Q4.3 exceptions by priority · <span class="y q">Quiz 7</span> support levels (20m).</div>
+</div>
+<div class="foot"><span>08 Chain of Responsibility · understand</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 08 CHAIN : write ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain of Responsibility: write</h1><div class="lede">The support desk from Quiz 7, with the logging procedure enforced (Quiz 7 Q4).</div></div>
+    <div class="meta">Behavioural<br><b>Write</b></div>
+  </header>
+
+  <div class="panel">
+    <h2><span class="w">W1</span> Name it and say why <span class="r">2–5 marks</span></h2>
+    <div class="say">I would use the <b>Chain of Responsibility</b> pattern, which is a behavioural pattern. It <b>avoids coupling the sender of a request to its receiver</b> by giving more than one object a chance to handle it. The handlers are chained, and the request is passed along until one handles it.</div>
+    <p class="small"><b>Reasons:</b> (1) the support desk sends every request to L1 and <b>doesn't need to know who solves it</b>; (2) each level has <b>one responsibility</b>; (3) levels can be <b>added, removed or reordered</b> without changing the client or the other levels (Open/Closed); (4) a fallback at the end means <b>nothing goes unhandled</b>.</p>
+    <p class="small"><b>Mapping:</b> request = <b>SupportRequest</b> · handler = <b>SupportHandler</b> «abstract» with <code>next</code> · concrete handlers = <b>L1, L2, L3, Specialist</b> · client = <b>SupportDesk</b>.</p>
+  </div>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0"><span class="w">W2</span> Class diagram</h2><span class="tiny">the "next" link is a self-association on the Handler</span></div>
+    <svg class="dg" data-d="chain"></svg>
+  </div>
+
+  <div>
+    <div class="codecap">W3 · Java (Quiz 7 Q3: a database connectivity request goes through the chain)</div>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> SupportHandler {
+  <span class="k">protected</span> SupportHandler next;
+
+  <span class="k">public</span> SupportHandler setNext(
+          SupportHandler n) {
+    <span class="k">this</span>.next = n;
+    <span class="k">return</span> n;   <span class="c">// allows chaining</span>
+  }
+
+  <span class="c">// fixed procedure (Template Method, Q4)</span>
+  <span class="k">public final void</span> handle(SupportRequest r) {
+    log(<span class="s">"received "</span> + r.getType());
+    <span class="k">boolean</span> solved = attemptToSolve(r);
+    log(solved ? <span class="s">"RESOLVED"</span> : <span class="s">"escalated"</span>);
+    <span class="k">if</span> (!solved &amp;&amp; next != <span class="k">null</span>) {
+      next.handle(r);      <span class="c">// pass it along</span>
+    }
+  }
+  <span class="k">protected abstract boolean</span>
+      attemptToSolve(SupportRequest r);
+
+  <span class="k">private void</span> log(String msg) {
+    System.out.println(
+      getClass().getSimpleName() + <span class="s">": "</span> + msg);
+  }
+}</pre>
+<pre class="code"><span class="k">public class</span> L1Support <span class="k">extends</span> SupportHandler {
+  <span class="k">protected boolean</span> attemptToSolve(
+          SupportRequest r) {
+    <span class="k">return</span> r.getType() == PASSWORD_RESET
+        || r.getType() == ACCOUNT_BLOCKED;
+  }
+}
+<span class="c">// L2Support: INSTALLATION_ERROR</span>
+<span class="k">public class</span> L3Support <span class="k">extends</span> SupportHandler {
+  <span class="k">protected boolean</span> attemptToSolve(
+          SupportRequest r) {
+    <span class="k">return</span> r.getType() == DB_CONNECTIVITY
+        || r.getType() == PERFORMANCE;
+  }
+}
+<span class="c">// SpecialistSupport: returns true (fallback)</span>
+
+<span class="c">// CLIENT: build once, send to the first</span>
+SupportHandler chain = <span class="k">new</span> L1Support();
+chain.setNext(<span class="k">new</span> L2Support())
+     .setNext(<span class="k">new</span> L3Support())
+     .setNext(<span class="k">new</span> SpecialistSupport());
+chain.handle(<span class="k">new</span> SupportRequest(
+    DB_CONNECTIVITY, <span class="s">"App can't reach MySQL"</span>));
+<span class="c">// L1 escalated → L2 escalated → L3 RESOLVED</span></pre>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>08 Chain of Responsibility · write</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 08 CHAIN : answers spam filter ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain: the spam filter question</h1><div class="lede">2022 Q3 was a full 25-mark Chain question. All five parts, answered.</div></div>
+    <div class="meta">Behavioural<br><b>Answers</b></div>
+  </header>
+
+  <div class="fig">
+    <div class="cap"><h2 style="margin:0">3.1 Diagram and components <span class="tiny" style="font-weight:400">· 4m</span></h2><span class="tiny">solid = passed, go on · dashed = marked as spam, stop</span></div>
+    <svg class="dg" data-d="spam"></svg>
+    <p class="small mt">Components: the <b>mail server</b> (client) receives the email and passes it to the first filter. <b>Sender filter</b> (blacklist, domain reputation), <b>time filter</b> (odd hours, bursts), <b>content filter</b> (keywords, links, NLP), <b>attachment filter</b> (file types, virus scan). Any filter can mark it SPAM and stop; if all pass, it goes to the inbox.</p>
+  </div>
+
+  <div class="panel">
+    <h2>3.2 Pattern and reasons <span class="r">5m</span></h2>
+    <p class="small"><b>Chain of Responsibility.</b> Each sub-filter is a handler with a link to the next one. The email passes Sender → Time → Content → Attachment. Reasons: the mail server is decoupled from the filters (it only knows the first); each filter has one responsibility; filters can be added, removed or reordered without changing the others; the chain can be configured at runtime.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>3.3 Prioritising the components <span class="r">6m</span></h2>
+      <ul class="small">
+        <li><b>Cost and speed</b>: cheap checks first (sender blacklist, sent time); expensive ones last (content NLP, attachment virus scan).</li>
+        <li><b>Rejection rate</b>: the filter that catches the most spam early saves work for the rest.</li>
+        <li><b>Severity</b>: a malware attachment may be moved first for security.</li>
+        <li><b>Accuracy</b>: filters with few false positives before risky ones.</li>
+      </ul>
+      <p class="small">So a sensible order is: <b>Sender → Time → Content → Attachment</b>.</p>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h2>3.4 Adding more sub-components <span class="r">5m</span></h2>
+        <p class="small">Write a new class that extends <code>SpamFilter</code> (e.g. <code>LinkReputationFilter</code>) and link it in with <code>setNext()</code>, or list it in a config file that builds the chain. Existing filters and the mail server don't change (Open/Closed).</p>
+      </div>
+      <div class="panel">
+        <h2>3.5 High Availability and DR <span class="r">5m</span></h2>
+        <p class="small"><b>HA:</b> the filters are stateless, so run the chain on several servers behind a load balancer; a backup handler skips a filter that times out; a message queue so no mail is lost. <b>DR:</b> blacklists and rules backed up and replicated to a second region, with automatic failover.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot"><span>08 Chain of Responsibility · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<!-- ===================== 08 CHAIN : answers 2 ===================== -->
+<section class="page" data-sec="08">
+<div class="body">
+  <header class="ph">
+    <div class="code">08</div>
+    <div><h1>Chain: validation checks and more</h1><div class="lede">The 2025 "checks in order" questions, exceptions, authorization, and the challenges.</div></div>
+    <div class="meta">Behavioural<br><b>Answers</b></div>
+  </header>
+
+  <div class="panel">
+    <h2>Checks that must run in order <span class="r"><span class="y">2025</span> Q4.4 inventory → fraud → delivery · Q3.4 membership → availability → fines, 5m</span></h2>
+    <p class="small">Chain of Responsibility in the <b>pipeline</b> form. Each check is a handler. If it fails, the chain stops and returns the reason ("membership expired"); if it passes, the request goes to the next check. A new check (e.g. <code>BorrowLimitCheck</code>) is one new class and one new link.</p>
+    <div class="g2" style="align-items:start">
+<pre class="code"><span class="k">public abstract class</span> Validator {
+  <span class="k">private</span> Validator next;
+  <span class="k">public</span> Validator linkWith(Validator n) {
+    <span class="k">this</span>.next = n;
+    <span class="k">return</span> n;
+  }
+  <span class="k">public boolean</span> validate(Order o) {
+    <span class="k">if</span> (!check(o)) <span class="k">return false</span>; <span class="c">// stop</span>
+    <span class="k">return</span> next == <span class="k">null</span> || next.validate(o);
+  }
+  <span class="k">protected abstract boolean</span> check(Order o);
+}</pre>
+<pre class="code"><span class="k">class</span> InventoryCheck <span class="k">extends</span> Validator {
+  <span class="k">protected boolean</span> check(Order o) {
+    <span class="k">return</span> Stock.has(o.getItems()); }
+}
+<span class="c">// FraudCheck, DeliveryAreaCheck: same shape</span>
+
+<span class="c">// CLIENT</span>
+Validator v = <span class="k">new</span> InventoryCheck();
+v.linkWith(<span class="k">new</span> FraudCheck())
+ .linkWith(<span class="k">new</span> DeliveryAreaCheck());
+<span class="k">if</span> (v.validate(order))
+  processor.handlePayment(order);</pre>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <h2>Exceptions with different priorities <span class="r"><span class="y">2023</span> Q4.3 · <span class="y">2024</span> Q4.3</span></h2>
+      <p class="small">Chain of handlers ordered by severity: <code>ValidationErrorHandler</code> (low: show a message) → <code>PaymentErrorHandler</code> (retry or offer another method) → <code>SystemErrorHandler</code> (log, alert the admin) → <code>DefaultHandler</code> (generic error page). Each one handles the types it knows and passes the rest on, just like nested try/catch blocks.</p>
+    </div>
+    <div class="panel">
+      <h2>Expense approval <span class="r">in-class example</span></h2>
+      <table class="tight small">
+        <tr><td>Team leader</td><td>up to $1,000</td></tr>
+        <tr><td>Manager</td><td>$1,001 – $5,000</td></tr>
+        <tr><td>Director</td><td>$5,001 – $20,000</td></tr>
+        <tr><td>CEO</td><td>above $20,000</td></tr>
+      </table>
+      <p class="tiny mt">$750 → team leader · $3,500 → manager · $50,000 → CEO. Authorization levels (2024 Q4.5) work the same way.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="w">W5</span> Challenges → fix <span class="r">from the slides</span></h2>
+    <table class="small">
+      <tr><th style="width:40%">Challenge</th><th>How to handle it</th></tr>
+      <tr><td><b>No guarantee the request is handled</b> (falls off the end)</td><td>A default / fallback handler at the end (Specialist, manual review).</td></tr>
+      <tr><td><b>Debugging is tricky</b></td><td>Log at every handler (who received it, who handled it); unit-test each handler.</td></tr>
+      <tr><td><b>Long chains are slow</b>; unnecessary handlers run</td><td>Order by priority (cheap and likely first); skip handlers using request info; keep the chain short.</td></tr>
+      <tr><td><b>Order matters; cycles if mis-linked</b></td><td>Build the chain in one place (builder or config) and check for cycles.</td></tr>
+    </table>
+    <p class="tiny mt">Mistakes: the client calling every handler itself (that's the if-else approach) · forgetting the <code>next != null</code> check · no fallback handler · drawing links between concrete handlers instead of the self-association on Handler.</p>
+  </div>
+</div>
+<div class="foot"><span>08 Chain of Responsibility · answers</span><span>page <b class="pnum"></b></span></div>
+</section>
+
+<script>
+DIAGRAMS['chain'] = {
+  items: [
+    {id:'cl', k:'class', x:0, y:26, name:'SupportDesk'},
+    {id:'rq', k:'class', x:0, y:86, name:'SupportRequest', attrs:['- type : IssueType', '- description : String']},
+    {id:'h', k:'class', cx:300, y:0, name:'SupportHandler', stereo:'abstract', abstract:true,
+      attrs:['# next : SupportHandler'],
+      ops:['+ setNext(h) : SupportHandler', '+ handle(r) : void {final}', '/# attemptToSolve(r) : boolean']},
+    {id:'l1', k:'class', cx:150, y:148, w:112, name:'L1Support'},
+    {id:'l2', k:'class', cx:270, y:148, w:112, name:'L2Support'},
+    {id:'l3', k:'class', cx:390, y:148, w:112, name:'L3Support'},
+    {id:'sp', k:'class', cx:520, y:148, w:120, name:'SpecialistSupport'},
+  ],
+  edges: [
+    {a:'cl', as:'right', b:'h', bs:'left', bx:35, type:'assoc', label:'sends to first'},
+    {a:'h', as:'left', ao:.72, b:'rq', bs:'right', type:'depend', label:'handles'},
+    {a:'h', as:'right', ao:.3, b:'h', bs:'right', bo:.85, type:'aggr', loop:34, label:'next  0..1'},
+    {a:'l1', as:'top', b:'h', bs:'bottom', type:'extend', mid:132},
+    {a:'l2', as:'top', b:'h', bs:'bottom', type:'extend', mid:132},
+    {a:'l3', as:'top', b:'h', bs:'bottom', type:'extend', mid:132},
+    {a:'sp', as:'top', b:'h', bs:'bottom', type:'extend', mid:132},
+  ]
+};
+DIAGRAMS['spam'] = {
+  items: [
+    {id:'in', k:'node', x:0, y:8, w:72, lines:['Incoming', 'email']},
+    {id:'ms', k:'node', x:88, y:8, w:72, lines:['Mail server', 'client'], shade:true},
+    {id:'f1', k:'node', x:176, y:8, w:72, lines:['Sender', 'filter']},
+    {id:'f2', k:'node', x:264, y:8, w:72, lines:['Time', 'filter']},
+    {id:'f3', k:'node', x:352, y:8, w:72, lines:['Content', 'filter']},
+    {id:'f4', k:'node', x:440, y:8, w:72, lines:['Attachment', 'filter']},
+    {id:'ib', k:'node', x:528, y:8, w:56, lines:['Inbox']},
+    {id:'sp', k:'node', x:298, y:76, w:98, lines:['Spam folder'], dashed:true},
+  ],
+  edges: [
+    {a:'in', as:'right', b:'ms', bs:'left', type:'flow'},
+    {a:'ms', as:'right', b:'f1', bs:'left', type:'flow'},
+    {a:'f1', as:'right', b:'f2', bs:'left', type:'flow'},
+    {a:'f2', as:'right', b:'f3', bs:'left', type:'flow'},
+    {a:'f3', as:'right', b:'f4', bs:'left', type:'flow'},
+    {a:'f4', as:'right', b:'ib', bs:'left', type:'flow'},
+    {a:'f1', as:'bottom', b:'sp', bs:'left', type:'dflow', label:'spam', lx:214, ly:70},
+    {a:'f2', as:'bottom', b:'sp', bs:'top', bo:.25, type:'dflow', mid:62},
+    {a:'f3', as:'bottom', b:'sp', bs:'top', bo:.75, type:'dflow', mid:62},
+    {a:'f4', as:'bottom', b:'sp', bs:'right', type:'dflow'},
+  ]
+};
+</script>

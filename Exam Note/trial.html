@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DP Exam Note — Trial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181d; --ink2:#4a505c; --mute:#8a909c; --line:#d9dce2; --soft:#f3f4f6;
+  --cre:#2563eb; --cre-bg:#e8efff;      /* creational  */
+  --str:#0f9f6e; --str-bg:#e3f6ee;      /* structural  */
+  --beh:#d9480f; --beh-bg:#fdebe2;      /* behavioural */
+  --arc:#7c3aed; --arc-bg:#efe8fe;      /* architecture */
+  --hot:#fff3b0;                        /* highlighter */
+}
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:9pt;line-height:1.38;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;padding:11mm 17mm 10mm 12mm;position:relative;overflow:hidden;page-break-after:always;display:flex;flex-direction:column;gap:3.2mm}
+.page:last-child{page-break-after:auto}
+@media screen{body{background:#9aa0aa}.page{margin:8mm auto;box-shadow:0 2px 12px rgba(0,0,0,.25)}}
+
+/* edge tab for thumbing */
+.tab{position:absolute;right:0;width:10mm;height:30mm;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;border-radius:2mm 0 0 2mm}
+.tab span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:8pt;letter-spacing:.08em}
+.tab b{font-size:11pt;margin-bottom:2mm}
+
+/* footer */
+.foot{position:absolute;bottom:4.5mm;left:12mm;right:17mm;display:flex;justify-content:space-between;font-size:7pt;color:var(--mute)}
+
+/* header */
+.hd{display:flex;align-items:flex-end;gap:4mm;border-bottom:2.2pt solid var(--c);padding-bottom:2mm}
+.hd .num{font-size:30pt;font-weight:800;line-height:.85;color:var(--c)}
+.hd h1{margin:0;font-size:21pt;line-height:1;font-weight:800;letter-spacing:-.01em}
+.hd .sub{font-size:8.5pt;color:var(--ink2);margin-top:1mm}
+.hd .chip{margin-left:auto}
+.chip{white-space:nowrap;display:inline-block;padding:.5mm 2mm;border-radius:10mm;font-size:7pt;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--cbg);color:var(--c)}
+.side{font-size:7.5pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+
+/* blocks */
+.box{border:1pt solid var(--line);border-radius:2mm;padding:2.6mm 3mm}
+.box.fill{background:var(--soft);border-color:var(--soft)}
+.box.c{border-color:var(--c)}
+.box.cbg{background:var(--cbg);border-color:var(--cbg)}
+h2{margin:0 0 1.6mm;font-size:10pt;font-weight:800;display:flex;align-items:center;gap:2mm}
+h2 .n{display:inline-flex;width:5mm;height:5mm;border-radius:50%;background:var(--c);color:#fff;font-size:7.5pt;align-items:center;justify-content:center}
+h2 .marks{margin-left:auto;font-size:7pt;font-weight:600;color:var(--mute)}
+h3{margin:1.5mm 0 .8mm;font-size:8.5pt;font-weight:700}
+p{margin:0 0 1.2mm}
+ul{margin:0;padding-left:4mm}
+li{margin:0 0 .6mm}
+.hl{background:var(--hot);padding:0 .6mm;border-radius:.6mm}
+.kw{display:inline-block;border:1pt solid var(--c);color:var(--c);border-radius:1.2mm;padding:.2mm 1.5mm;margin:0 1mm 1mm 0;font-weight:600;font-size:8pt}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:3mm}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3mm}
+.muted{color:var(--ink2)}
+.small{font-size:7.6pt}
+.tiny{font-size:7pt;color:var(--ink2)}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:7.4pt}
+pre{margin:0;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:7.3pt;line-height:1.36;white-space:pre}
+pre .cm{color:#8a909c}
+pre .k{color:var(--c);font-weight:600}
+.copy{border-left:2.4pt solid var(--c);background:#fafbfc;padding:1.6mm 2.4mm;border-radius:0 1.5mm 1.5mm 0}
+.copy .lbl{font-family:Inter;font-size:6.8pt;font-weight:800;letter-spacing:.08em;color:var(--c);text-transform:uppercase;margin-bottom:.8mm;display:block}
+.say{font-family:"Inter";font-size:8.6pt;border-left:2.4pt solid var(--c);padding:1mm 0 1mm 2.4mm;margin:0 0 1.4mm}
+.say i{color:var(--ink2)}
+table{width:100%;border-collapse:collapse;font-size:8pt}
+th{font-size:6.8pt;text-transform:uppercase;letter-spacing:.06em;text-align:left;color:var(--ink2);font-weight:700;border-bottom:1pt solid var(--ink);padding:.8mm 1.4mm}
+td{border-bottom:.6pt solid var(--line);padding:1mm 1.4mm;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.yr{display:inline-block;font-family:"JetBrains Mono";font-size:6.8pt;font-weight:600;background:var(--ink);color:#fff;border-radius:1mm;padding:.1mm 1.2mm;margin-right:.6mm;white-space:nowrap}
+.yr.q{background:var(--ink2)}
+.pill{display:inline-block;font-size:7pt;font-weight:700;border-radius:1mm;padding:.2mm 1.4mm;color:#fff;white-space:nowrap}
+.cre{--c:var(--cre);--cbg:var(--cre-bg)} .str{--c:var(--str);--cbg:var(--str-bg)} .beh{--c:var(--beh);--cbg:var(--beh-bg)} .arc{--c:var(--arc);--cbg:var(--arc-bg)}
+.pc{background:var(--cre)} .ps{background:var(--str)} .pb{background:var(--beh)} .pa{background:var(--arc)}
+td:has(.bar){white-space:nowrap}
+.bar{height:2mm;border-radius:1mm;background:var(--soft);position:relative;overflow:hidden;width:22mm;display:inline-block;vertical-align:middle}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ink)}
+.go{font-weight:800;white-space:nowrap}
+.arrow{color:var(--mute)}
+.steps{display:flex;gap:2mm}
+.steps>div{flex:1;border:1pt solid var(--line);border-radius:2mm;padding:2mm 2.4mm;position:relative}
+.steps .big{font-size:15pt;font-weight:800;line-height:1;color:var(--c)}
+svg text{font-family:Inter,sans-serif}
+svg .m{font-family:"JetBrains Mono",monospace}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ PAGE 1 : HOW TO USE + PATTERN FINDER -->
+<section class="page arc">
+  <div class="tab pa" style="top:12mm"><span><b>00</b>FINDER</span></div>
+
+  <div class="hd">
+    <div class="num">00</div>
+    <div><h1>Pattern Finder</h1><div class="sub">Start every question here. Circle the words in the question → find them below → go to the tab.</div></div>
+    <span class="chip">Start here</span>
+  </div>
+
+  <div class="steps">
+    <div><div class="big">1</div><b>Circle the trigger words</b><br><span class="small muted">"optional add-ons", "only one", "states", "in order"…</span></div>
+    <div><div class="big">2</div><b>Match them below</b><br><span class="small muted">Each trigger points to one pattern and its tab number.</span></div>
+    <div><div class="big">3</div><b>Open the tab → WRITE page</b><br><span class="small muted">Copy the blocks in order: <b>Name → Why → Diagram → Code → Challenges</b>.</span></div>
+  </div>
+
+  <div class="box" style="padding:2mm 2.6mm">
+    <table>
+      <tr><th style="width:52%">If the question says…</th><th>It's…</th><th style="width:11%">Tab</th></tr>
+      <tr><td>"only <span class="hl">one</span> instance", "single global tax calculator / logger / ID generator", "run by only one user", "new object every time ⇒ duplicates"</td><td><span class="pill pc">C</span> <b>Singleton</b></td><td class="go">→ 01</td></tr>
+      <tr><td>"<span class="hl">maximum N</span>" — 5 batsmen, 3 printers, N gates</td><td><span class="pill pc">C</span> <b>Multiton</b> <span class="tiny">(extended Singleton)</span></td><td class="go">→ 01</td></tr>
+      <tr><td>"create <span class="hl">different types</span> of X depending on user request", "too many if-else for creation", "extensible product framework"</td><td><span class="pill pc">C</span> <b>Factory Method</b></td><td class="go">→ 02</td></tr>
+      <tr><td>"<span class="hl">one simple interface</span> by internally calling A, B, C", "combine air + hotel + taxi", "hide complexity"</td><td><span class="pill ps">S</span> <b>Facade</b></td><td class="go">→ 03</td></tr>
+      <tr><td>"legacy / vendor / <span class="hl">can't modify</span>", "new device has a different method", "third-party services with different signatures"</td><td><span class="pill ps">S</span> <b>Adapter</b></td><td class="go">→ 04</td></tr>
+      <tr><td>"load <span class="hl">only a couple of pages</span>", "should not access directly", "restricted / permissions", "authorization", "cache"</td><td><span class="pill ps">S</span> <b>Proxy</b></td><td class="go">→ 05</td></tr>
+      <tr><td>"<span class="hl">optional add-ons / extras</span>", "without subclasses for every combination", "price = base + selections"</td><td><span class="pill ps">S</span> <b>Decorator</b></td><td class="go">→ 06</td></tr>
+      <tr><td>"<span class="hl">same overall process</span> / common workflow, however step X differs", "enforce the procedure"</td><td><span class="pill pb">B</span> <b>Template Method</b></td><td class="go">→ 07</td></tr>
+      <tr><td>"checks <span class="hl">in order, easy to extend</span>", "levels of support / approval", "sub-filters", "priorities", "exception handling"</td><td><span class="pill pb">B</span> <b>Chain of Responsibility</b></td><td class="go">→ 08</td></tr>
+      <tr><td>"operates in <span class="hl">states</span>", "transitions to", "behaviour depends on current state", "draw a state diagram"</td><td><span class="pill pb">B</span> <b>State</b></td><td class="go">→ 09</td></tr>
+      <tr><td>"<span class="hl">microservices</span>", "scalability, fault isolation, continuous deployment", "data consistency", "security"</td><td><span class="pill pa">A</span> <b>Microservices kit</b></td><td class="go">→ 11</td></tr>
+      <tr><td>"High Availability", "Disaster Recovery", "configurability", "use of interfaces / abstract classes", SOLID</td><td><span class="pill pa">A</span> <b>Answer bank</b></td><td class="go">→ 12</td></tr>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="box fill">
+      <h2>Still unsure? Ask one question.</h2>
+      <table class="small">
+        <tr><td style="width:46%">Is it about <b>making objects</b>?</td><td><span class="pill pc">Creational</span> one → Singleton · types → Factory</td></tr>
+        <tr><td>Is it about <b>wrapping / connecting</b> objects?</td><td><span class="pill ps">Structural</span> see the 4-wrapper test →</td></tr>
+        <tr><td>Is it about <b>who does what, in what order</b>?</td><td><span class="pill pb">Behavioural</span> fixed steps → Template · pass along → CoR · states → State</td></tr>
+      </table>
+    </div>
+    <div class="box fill">
+      <h2>The 4-wrapper test <span class="marks">all four "wrap" something</span></h2>
+      <table class="small">
+        <tr><td style="width:30%"><b>Adapter</b></td><td><b>changes</b> the interface (translator 🔌)</td></tr>
+        <tr><td><b>Facade</b></td><td><b>simplifies</b> many objects into one (waiter)</td></tr>
+        <tr><td><b>Proxy</b></td><td>same interface, <b>controls</b> access (guard)</td></tr>
+        <tr><td><b>Decorator</b></td><td>same interface, <b>adds</b> features, stackable (toppings)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="box c" style="padding:2mm 2.6mm">
+    <h2>One scenario, many patterns <span class="marks">2025 style — every part gets its own pattern</span></h2>
+    <table class="small">
+      <tr><td style="width:24%"><span class="yr">2025 Q1</span> Kiosk</td><td>states → <b>State 09</b> · add-ons → <b>Decorator 06</b> · one tax calculator → <b>Singleton 01</b></td></tr>
+      <tr><td><span class="yr">2025 Q3</span> Library</td><td>checks in order → <b>CoR 08</b> · book types → <b>Factory 02</b> · rare books → <b>Proxy 05</b> · optional services → <b>Decorator 06</b></td></tr>
+      <tr><td><span class="yr">2025 Q4</span> E-commerce</td><td>common payment steps → <b>Template 07</b> · validations → <b>CoR 08</b> · Order IDs → <b>Singleton 01</b> · payment objects → <b>Factory 02</b></td></tr>
+      <tr><td><span class="yr">2022 Q1</span> Travel</td><td>combine air + hotel + taxi → <b>Facade 03</b> · each third-party API → <b>Adapter 04</b></td></tr>
+    </table>
+  </div>
+
+  <div class="foot"><span>DP & Frameworks · INTE 22313 · Open-book note</span><span>00 · Finder</span></div>
+</section>
+
+<!-- ============================================================ PAGE 2 : FORECAST -->
+<section class="page arc">
+  <div class="tab pa" style="top:44mm"><span><b>★</b>FORECAST</span></div>
+
+  <div class="hd">
+    <div class="num">★</div>
+    <div><h1>What will come in 2026</h1><div class="sub">Built from 4 past papers (2022–25) and the lecturer's 7 in-class quizzes.</div></div>
+    <span class="chip">Read once, before the exam</span>
+  </div>
+
+  <div class="grid3">
+    <div class="box cbg"><div class="side">The paper</div><div style="font-size:15pt;font-weight:800;line-height:1.1">4 Qs × 25</div><div class="small">answer <b>all</b> · 150 min</div></div>
+    <div class="box cbg"><div class="side">Your clock</div><div style="font-size:15pt;font-weight:800;line-height:1.1">35 min / Q</div><div class="small">≈ <b>1.4 min per mark</b> · 10 min spare</div></div>
+    <div class="box cbg"><div class="side">Always</div><div style="font-size:15pt;font-weight:800;line-height:1.1">State assumptions</div><div class="small">The paper says so. One line at the top.</div></div>
+  </div>
+
+  <div class="box">
+    <h2>Likely questions <span class="marks">how sure I am</span></h2>
+    <table>
+      <tr><th style="width:4%">#</th><th>Prediction</th><th style="width:25%">Evidence</th><th style="width:15%">Confidence</th><th style="width:8%">Tab</th></tr>
+      <tr><td><b>1</b></td><td><b>Q2 = Microservices</b> for a new domain, same 5 sub-questions. Domains not used yet: food delivery, banking/ATM, LMS, hospital, ride-hailing.</td><td><span class="yr">2023</span><span class="yr">2024</span><span class="yr">2025</span> word-for-word</td><td><span class="bar"><i style="width:95%"></i></span> very high</td><td class="go">11</td></tr>
+      <tr><td><b>2</b></td><td><b>"Identify the patterns for (a) (b) (c) (d)"</b> in one scenario, with reasons. Then short code for one of them.</td><td><span class="yr">2025</span> Q1, Q3, Q4 all did this</td><td><span class="bar"><i style="width:90%"></i></span> very high</td><td class="go">00</td></tr>
+      <tr><td><b>3</b></td><td><b>Write an interface with 2 methods + one concrete class</b> (Decorator) — e.g. <code>getCost()</code>, <code>getDescription()</code>.</td><td><span class="yr">2024</span> Q1.2–1.3 <span class="yr">2025</span> Q1.2–1.3</td><td><span class="bar"><i style="width:85%"></i></span> high</td><td class="go">06</td></tr>
+      <tr><td><b>4</b></td><td><b>Singleton</b> for "one global X" — explain + how it plugs into the flow.</td><td>every paper, 9 times total</td><td><span class="bar"><i style="width:85%"></i></span> high</td><td class="go">01</td></tr>
+      <tr><td><b>5</b></td><td><b>Abstract class with a template method</b> + one concrete subclass.</td><td><span class="yr">2025</span> Q4.2 <span class="yr q">Quiz 6</span></td><td><span class="bar"><i style="width:75%"></i></span> high</td><td class="go">07</td></tr>
+      <tr><td><b>6</b></td><td><b>State</b> with a state diagram (Idle → … → Completed style).</td><td><span class="yr">2024</span> Q3 <span class="yr">2025</span> Q1 <span class="yr q">Quiz 1</span></td><td><span class="bar"><i style="width:70%"></i></span> high</td><td class="go">09</td></tr>
+      <tr><td><b>7</b></td><td><b>Adapter / Facade comeback.</b> New slides + Quiz 1 & 3 this year, but missing from papers since 2023 → overdue.</td><td><span class="yr q">Quiz 1</span><span class="yr q">Quiz 3</span></td><td><span class="bar"><i style="width:55%"></i></span> medium</td><td class="go">03 04</td></tr>
+      <tr><td><b>8</b></td><td><b>SOLID</b> — "which principle does this follow?" or "explain the use of interfaces". New lecture, never examined.</td><td>Lecture 12 (new)</td><td><span class="bar"><i style="width:45%"></i></span> medium</td><td class="go">10 12</td></tr>
+      <tr><td><b>9</b></td><td><b>Challenges → mechanism</b>, <b>HA & DR</b> (older style, may return as a 4–5 mark part).</td><td><span class="yr">2022</span><span class="yr">2023</span></td><td><span class="bar"><i style="width:35%"></i></span> medium-low</td><td class="go">12</td></tr>
+    </table>
+  </div>
+
+  <div class="box c">
+    <h2>The lecturer's question recipe <span class="marks">every quiz follows it</span></h2>
+    <div class="steps small">
+      <div><b>① Why this pattern?</b><br>2–4 marks. Name + category + 2–3 reasons tied to the scenario.</div>
+      <div><b>② Draw it</b><br>4–8 marks. State diagram and/or UML class diagram.</div>
+      <div><b>③ Java code</b><br>3–6 marks. Interface / abstract class / context class.</div>
+      <div><b>④ The twist</b><br>3–5 marks. <span class="hl">A second pattern</span> added at the end (Quiz 1 → Adapter, Quiz 3 → Facade, Quiz 6 → Decorator, Quiz 7 → Template).</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>Questions that came back almost word-for-word</h2>
+    <table class="small">
+      <tr><th>Repeated question</th><th style="width:30%">Seen</th><th style="width:28%">Answer</th></tr>
+      <tr><td>"LMS — load only a couple of pages rather than the entire document"</td><td><span class="yr">2022</span> Q4.4 <span class="yr">2023</span> Q4.4</td><td>Virtual <b>Proxy</b> → 05</td></tr>
+      <tr><td>"Define a Coffee / CheckoutItem interface with getCost() and getDescription()"</td><td><span class="yr">2024</span> Q1.2 <span class="yr">2025</span> Q1.2</td><td><b>Decorator</b> → 06</td></tr>
+      <tr><td>"Salary components differ for executive / daily / temporary staff"</td><td><span class="yr">2022</span> Q2 <span class="yr">2023</span> Q1</td><td><b>Template</b> + Singleton → 07</td></tr>
+      <tr><td>"Exception handling with different priorities / types"</td><td><span class="yr">2023</span> Q4.3 <span class="yr">2024</span> Q4.3</td><td><b>CoR</b> → 08</td></tr>
+      <tr><td>"Different authorization options / levels"</td><td><span class="yr">2023</span> Q4.5 <span class="yr">2024</span> Q4.5</td><td>Protection <b>Proxy</b> (+CoR) → 05</td></tr>
+      <tr><td>"Logger — all logs to the same file" / "implement logging"</td><td><span class="yr">2023</span> Q3.4 <span class="yr">2024</span> Q1.5</td><td><b>Singleton</b> → 01</td></tr>
+      <tr><td>"Extend this design for High Availability and Disaster Recovery"</td><td><span class="yr">2022</span> Q3.5 <span class="yr">2023</span> Q3.5</td><td>Answer bank → 12</td></tr>
+    </table>
+  </div>
+
+  <div class="foot"><span>DP & Frameworks · INTE 22313 · Open-book note</span><span>★ · Forecast</span></div>
+</section>
+
+<!-- ============================================================ PAGE 3 : DECORATOR — UNDERSTAND -->
+<section class="page str">
+  <div class="tab ps" style="top:205mm"><span><b>06</b>DECORATOR</span></div>
+
+  <div class="hd">
+    <div class="num">06</div>
+    <div><h1>Decorator</h1><div class="sub">Add optional extras by <b>wrapping</b> the object — no subclass per combination.</div></div>
+    <span class="chip">Structural · Understand</span>
+  </div>
+
+  <div class="box cbg">
+    <div class="side">Spot it — the question says…</div>
+    <div style="margin-top:1mm">
+      <span class="kw">optional add-ons / extras / toppings</span><span class="kw">without subclasses for every combination</span><span class="kw">price depends on base + selected additions</span><span class="kw">instead of modifying the class</span><span class="kw">students may optionally add</span><span class="kw">bloated class with optional features</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <h2>The idea in one picture</h2>
+      <svg viewBox="0 0 300 140" width="100%" style="max-height:30mm;display:block">
+        <circle cx="70" cy="70" r="66" fill="#e3f6ee" stroke="#0f9f6e" stroke-width="1.4"/>
+        <circle cx="70" cy="70" r="46" fill="#c9eedd" stroke="#0f9f6e" stroke-width="1.4"/>
+        <circle cx="70" cy="70" r="25" fill="#0f9f6e"/>
+        <text x="70" y="68" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">Espresso</text>
+        <text x="70" y="79" text-anchor="middle" fill="#fff" font-size="8">350</text>
+        <text x="70" y="35" text-anchor="middle" fill="#0b6b4a" font-size="8.5" font-weight="700">Milk +80</text>
+        <text x="70" y="14" text-anchor="middle" fill="#0b6b4a" font-size="8.5" font-weight="700">Sugar +20</text>
+        <path d="M145 55 L175 55" stroke="#8a909c" stroke-width="1.2" marker-end="url(#ah)"/>
+        <text x="180" y="50" font-size="9" fill="#4a505c">call goes <tspan font-weight="700">in</tspan></text>
+        <text x="180" y="62" font-size="9" fill="#4a505c">Sugar → Milk → Espresso</text>
+        <path d="M175 90 L145 90" stroke="#0f9f6e" stroke-width="1.2" marker-end="url(#ah2)"/>
+        <text x="180" y="87" font-size="9" fill="#4a505c">result comes <tspan font-weight="700">out</tspan></text>
+        <text x="180" y="99" font-size="9" fill="#4a505c">350 → 430 → <tspan font-weight="800" fill="#0f9f6e">450</tspan></text>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a909c"/></marker>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0f9f6e"/></marker>
+        </defs>
+      </svg>
+    </div>
+    <div class="box">
+      <h2>Why not just use subclasses?</h2>
+      <p class="small">Every combination needs its own class (<code>EspressoWithMilkAndSugar</code> ✗) = <b>class explosion</b>:</p>
+      <p class="small" style="font-size:9pt">3 add-ons → <b>8</b> · 10 → <b>1,024</b> · 15 → <b>32,768</b> <span class="tiny">(2ⁿ)</span></p>
+      <p class="small">Decorator builds the combination <b>at runtime</b> with objects, not at compile time with classes.</p>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>The 4 parts → rename for your question <span class="marks">naming them = marks</span></h2>
+    <table>
+      <tr><th style="width:15%"></th><th style="width:21%">Component «interface»<br><span class="tiny" style="text-transform:none;letter-spacing:0">the shared type</span></th><th style="width:21%">Concrete component<br><span class="tiny" style="text-transform:none;letter-spacing:0">the plain base</span></th><th>Concrete decorators<br><span class="tiny" style="text-transform:none;letter-spacing:0">each adds one extra, then delegates</span></th></tr>
+      <tr><td><b>Coffee</b> <span class="yr">24</span></td><td><code>Coffee</code></td><td><code>BasicCoffee</code></td><td><code>Milk</code> · <code>Sugar</code> · <code>Chocolate</code></td></tr>
+      <tr><td><b>Kiosk</b> <span class="yr">25</span></td><td><code>CheckoutItem</code></td><td><code>GroceryItem(name, price)</code></td><td><code>GiftWrap</code> · <code>EcoBag</code> · <code>ExpressPacking</code></td></tr>
+      <tr><td><b>Profile</b> <span class="yr q">Q5</span></td><td><code>UserProfile</code></td><td><code>BasicUserProfile</code></td><td><code>PremiumBadge</code> · <code>TwoFactorAuth</code> · <code>Theme</code></td></tr>
+      <tr><td><b>Library</b> <span class="yr">25</span></td><td><code>BorrowTransaction</code></td><td><code>BasicBorrow</code></td><td><code>ExtendedPeriod</code> · <code>SmsNotification</code> · <code>EmailReceipt</code></td></tr>
+      <tr><td><b>Cake</b> <span class="yr">22</span></td><td><code>Cake</code> <span class="tiny">price + days</span></td><td><code>PlainCake</code></td><td><code>Fondant</code> · <code>Colour</code> <span class="tiny">(each adds price and delivery days)</span></td></tr>
+      <tr><td><b>Course</b> <span class="yr q">Q6</span></td><td><code>Course</code></td><td><code>ProgrammingCourse</code></td><td><code>AIAssistant</code> · <code>PremiumMaterials</code> · <code>MentorSupport</code></td></tr>
+    </table>
+    <p class="tiny" style="margin:1mm 0 0">The 4th part, the abstract <b>Decorator</b>, is always <code>&lt;Component&gt;Decorator</code> — it <span class="hl">is-a</span> and <span class="hl">has-a</span> Component.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="box fill">
+      <h2>Don't confuse it</h2>
+      <ul class="small">
+        <li><b>vs Proxy</b> — same interface, but Proxy <b>controls</b> (1 layer); Decorator <b>adds</b> (many layers).</li>
+        <li><b>vs Adapter</b> — Adapter <b>changes</b> the interface; Decorator keeps it.</li>
+        <li><b>vs Inheritance</b> — compile time, rigid vs runtime, flexible.</li>
+      </ul>
+    </div>
+    <div class="box fill">
+      <h2>Common mistakes <span class="marks">lose marks</span></h2>
+      <ul class="small">
+        <li>Decorator does <b>not implement</b> the Component interface</li>
+        <li>Decorator creates its own base instead of <b>receiving it in the constructor</b></li>
+        <li>Forgets to <b>delegate</b> → loses earlier add-ons</li>
+        <li>Draws inheritance instead of <b>has-a (◇)</b> to the Component</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box c">
+    <h2>Every time it was asked <span class="marks">7 times · ≈ 70 marks total</span></h2>
+    <table class="small">
+      <tr><th style="width:21%">Where</th><th>What they asked</th><th style="width:30%">Takeaway</th></tr>
+      <tr><td><span class="yr">2024</span> Q1.1–1.4 <b>20m</b></td><td>Coffee + milk/sugar/chocolate: pattern · Coffee interface · BasicCoffee · different profit</td><td>Profit → <code>ProfitMargin</code> decorator <span class="go">W4</span></td></tr>
+      <tr><td><span class="yr">2025</span> Q1 <b>11m</b></td><td>Kiosk add-ons: CheckoutItem interface · GroceryItem class</td><td>Same code, new names <span class="go">W3</span></td></tr>
+      <tr><td><span class="yr">2023</span> Q3.1–3.2 <b>10m</b></td><td>Coffee flavours (Irish, Nitro): pattern + simple class diagram</td><td>Irish/Nitro = bases <span class="go">W2</span></td></tr>
+      <tr><td><span class="yr q">Quiz 5</span> <b>18m</b></td><td>Profile badge/2FA/theme: how applied · classes · wrapping code · challenges</td><td>Challenges <span class="go">W5</span></td></tr>
+      <tr><td><span class="yr">2022</span> Q4.1 · <span class="yr">2025</span> Q3.1d · <span class="yr q">Quiz 6</span></td><td>Cake extras · library optional services · course extras (2–5m each)</td><td>Name + 2 reasons <span class="go">W1</span></td></tr>
+    </table>
+    <p class="small" style="margin:1.2mm 0 0"><b>Takeaway:</b> the question <span class="hl">gives you the method names</span> — use them exactly. The code is the same every year.</p>
+  </div>
+
+  <div class="foot"><span>06 Decorator · Understand</span><span>Write page →</span></div>
+</section>
+
+<!-- ============================================================ PAGE 4 : DECORATOR — WRITE -->
+<section class="page str">
+  <div class="tab ps" style="top:205mm"><span><b>06</b>DECORATOR</span></div>
+
+  <div class="hd">
+    <div class="num">06</div>
+    <div><h1>Decorator — Write</h1><div class="sub">Copy-ready blocks. Swap the <b>bold names</b> for the ones in your question.</div></div>
+    <span class="chip">Structural · Write</span>
+  </div>
+
+  <div class="box">
+    <h2><span class="n">W1</span> Name it + why <span class="marks">2–6 marks</span></h2>
+    <div class="say">The <b>Decorator</b> design pattern (<b>structural</b>) is suitable. It attaches additional responsibilities to an object <b>dynamically</b> by wrapping it, giving a flexible alternative to subclassing.</div>
+    <div class="grid2 small">
+      <div>
+        <b>Reasons (pick 2–4):</b>
+        <ul>
+          <li><b>No class explosion</b> — n add-ons would need 2ⁿ subclasses; here, one class per add-on.</li>
+          <li><b>Runtime flexibility</b> — the customer chooses add-ons while ordering; any mix, any order.</li>
+          <li><b>Open/Closed</b> — a new add-on is a new class; the base and existing add-ons stay unchanged.</li>
+          <li><b>Single Responsibility</b> — each decorator adds one thing (price + description).</li>
+        </ul>
+      </div>
+      <div>
+        <b>Map it to the scenario (where the marks are):</b>
+        <ul>
+          <li>Component = <b>Coffee</b> «interface»</li>
+          <li>Concrete component = <b>BasicCoffee</b></li>
+          <li>Decorator = <b>CoffeeDecorator</b> «abstract»</li>
+          <li>Concrete decorators = <b>Milk, Sugar, Chocolate</b></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2><span class="n">W2</span> Class diagram <span class="marks">5–8 marks · draw exactly this shape</span></h2>
+    <svg viewBox="0 0 560 205" width="100%" style="display:block;max-height:54mm">
+      <defs>
+        <marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M1 1L11 6L1 11z" fill="#fff" stroke="#16181d" stroke-width="1.2"/></marker>
+        <marker id="dia" viewBox="0 0 16 10" refX="1" refY="5" markerWidth="13" markerHeight="9" orient="auto"><path d="M1 5L8 1L15 5L8 9z" fill="#fff" stroke="#16181d" stroke-width="1.2"/></marker>
+      </defs>
+      <!-- Coffee interface -->
+      <rect x="195" y="4" width="170" height="56" rx="2" fill="#e3f6ee" stroke="#16181d"/>
+      <text x="280" y="16" text-anchor="middle" font-size="8" fill="#4a505c">«interface»</text>
+      <text x="280" y="28" text-anchor="middle" font-size="10" font-weight="700" font-style="italic">Coffee</text>
+      <line x1="195" y1="33" x2="365" y2="33" stroke="#16181d"/>
+      <text x="203" y="45" font-size="8.5" class="m">+ getDescription() : String</text>
+      <text x="203" y="56" font-size="8.5" class="m">+ getCost() : double</text>
+      <!-- BasicCoffee -->
+      <rect x="20" y="105" width="150" height="46" rx="2" fill="#fff" stroke="#16181d"/>
+      <text x="95" y="119" text-anchor="middle" font-size="10" font-weight="700">BasicCoffee</text>
+      <line x1="20" y1="124" x2="170" y2="124" stroke="#16181d"/>
+      <text x="28" y="136" font-size="8.5" class="m">+ getDescription()</text>
+      <text x="28" y="147" font-size="8.5" class="m">+ getCost()</text>
+      <!-- CoffeeDecorator -->
+      <rect x="330" y="96" width="190" height="64" rx="2" fill="#fff" stroke="#16181d"/>
+      <text x="425" y="108" text-anchor="middle" font-size="8" fill="#4a505c">«abstract»</text>
+      <text x="425" y="120" text-anchor="middle" font-size="10" font-weight="700" font-style="italic">CoffeeDecorator</text>
+      <line x1="330" y1="124" x2="520" y2="124" stroke="#16181d"/>
+      <text x="338" y="135" font-size="8.5" class="m"># coffee : Coffee</text>
+      <line x1="330" y1="139" x2="520" y2="139" stroke="#16181d"/>
+      <text x="338" y="151" font-size="8.5" class="m">+ getDescription() + getCost()</text>
+      <!-- implements arrows (dashed + hollow triangle) -->
+      <path d="M95 105 L95 82 L240 82 L240 61" fill="none" stroke="#16181d" stroke-dasharray="4 3" marker-end="url(#tri)"/>
+      <path d="M390 96 L390 82 L320 82 L320 61" fill="none" stroke="#16181d" stroke-dasharray="4 3" marker-end="url(#tri)"/>
+      <!-- has-a aggregation -->
+      <path d="M500 96 L500 32 L366 32" fill="none" stroke="#16181d" marker-start="url(#dia)"/>
+      <text x="420" y="27" font-size="8.5" font-weight="700" fill="#0f9f6e">wraps  1</text>
+      <!-- concrete decorators -->
+      <rect x="285" y="180" width="80" height="22" rx="2" fill="#fff" stroke="#16181d"/>
+      <text x="325" y="195" text-anchor="middle" font-size="9" font-weight="700">Milk</text>
+      <rect x="385" y="180" width="80" height="22" rx="2" fill="#fff" stroke="#16181d"/>
+      <text x="425" y="195" text-anchor="middle" font-size="9" font-weight="700">Sugar</text>
+      <rect x="485" y="180" width="72" height="22" rx="2" fill="#fff" stroke="#16181d"/>
+      <text x="521" y="195" text-anchor="middle" font-size="9" font-weight="700">Chocolate</text>
+      <path d="M325 180 L325 170 L521 170 L521 180 M425 180 L425 161" fill="none" stroke="#16181d"/>
+      <path d="M425 171 L425 161" stroke="#16181d" marker-end="url(#tri)"/>
+      <!-- legend -->
+      <g font-size="8" fill="#4a505c">
+        <path d="M20 172 L50 172" stroke="#16181d" stroke-dasharray="4 3" marker-end="url(#tri)"/><text x="56" y="175">implements</text>
+        <path d="M20 186 L50 186" stroke="#16181d" marker-end="url(#tri)"/><text x="56" y="189">extends</text>
+        <path d="M22 200 L50 200" stroke="#16181d" marker-start="url(#dia)"/><text x="56" y="203">has-a (wraps) — the key arrow</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="grid2" style="align-items:start;grid-template-columns:112mm minmax(0,1fr)">
+    <div class="copy">
+      <span class="lbl">W3 · Java — copy in this order · 5 + 5 marks</span>
+<pre><span class="cm">// 1. COMPONENT — the interface they ask you to "define"</span>
+<span class="k">public interface</span> <b>Coffee</b> {
+    String getDescription();
+    double getCost();
+}
+<span class="cm">// 2. CONCRETE COMPONENT — the "basic" class</span>
+<span class="k">public class</span> <b>BasicCoffee</b> <span class="k">implements</span> Coffee {
+    <span class="k">public</span> String getDescription() { <span class="k">return</span> "Basic coffee"; }
+    <span class="k">public double</span> getCost() { <span class="k">return</span> 200.0; }
+}
+<span class="cm">// 3. ABSTRACT DECORATOR — is-a AND has-a Coffee</span>
+<span class="k">public abstract class</span> CoffeeDecorator <span class="k">implements</span> Coffee {
+    <span class="k">protected</span> Coffee coffee;              <span class="cm">// wrapped</span>
+    <span class="k">public</span> CoffeeDecorator(Coffee c) { coffee = c; }
+    <span class="k">public</span> String getDescription() { <span class="k">return</span> coffee.getDescription(); }
+    <span class="k">public double</span> getCost() { <span class="k">return</span> coffee.getCost(); }
+}
+<span class="cm">// 4. CONCRETE DECORATOR — add, then delegate</span>
+<span class="k">public class</span> <b>Milk</b> <span class="k">extends</span> CoffeeDecorator {
+    <span class="k">public</span> Milk(Coffee c) { <span class="k">super</span>(c); }
+    <span class="k">public</span> String getDescription() {
+        <span class="k">return</span> coffee.getDescription() + ", Milk"; }
+    <span class="k">public double</span> getCost() { <span class="k">return</span> coffee.getCost() + 80; }
+}   <span class="cm">// Sugar (+20), Chocolate (+120): same shape</span>
+
+<span class="cm">// 5. CLIENT — wrap at runtime</span>
+Coffee c = <span class="k">new</span> BasicCoffee();
+c = <span class="k">new</span> Milk(c);
+c = <span class="k">new</span> Sugar(c);
+System.out.println(c.getDescription()); <span class="cm">// Basic coffee, Milk, Sugar</span>
+System.out.println(c.getCost());        <span class="cm">// 300.0</span></pre>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:3mm">
+      <div class="box">
+        <h2><span class="n">W4</span> "Different profit?" <span class="marks">5m</span></h2>
+        <p class="small"><b>A</b> — add <code>getProfit()</code> to the interface; each class adds its margin.<br><b>B (better, OCP)</b> — a new decorator; nothing existing changes:</p>
+<pre style="font-size:6.9pt"><span class="k">class</span> ProfitMargin
+    <span class="k">extends</span> CoffeeDecorator {
+  <span class="k">double</span> rate;
+  ProfitMargin(Coffee c, <span class="k">double</span> r)
+    { <span class="k">super</span>(c); rate = r; }
+  <span class="k">public double</span> getCost() {
+    <span class="k">return</span> coffee.getCost()
+           * (1 + rate); }
+}</pre>
+      </div>
+      <div class="box">
+        <h2><span class="n">W5</span> Challenges → fix <span class="marks">3–4m</span></h2>
+        <ul class="small">
+          <li><b>Complexity</b> (many small classes) → one decorator = one job; a builder assembles common combos.</li>
+          <li><b>Debugging</b> through layers → log in each decorator; unit-test each alone.</li>
+          <li><b>Order matters</b> (discount→tax ≠ tax→discount) → fix the wrapping order in the builder.</li>
+          <li><b>Performance</b> (extra objects) → negligible for short chains; cache the cost.</li>
+          <li><b>Readability</b> (<code>new A(new B(x))</code>) → builder, clear names, docs.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>06 Decorator · Write · other scenario? take names from the rename table ←</span><span>SOLID link: OCP + SRP → tab 10</span></div>
+</section>
+
+<!-- ============================================================ PAGE 5 : MICROSERVICES KIT -->
+<section class="page arc">
+  <div class="tab pa" style="top:237mm"><span><b>11</b>MICRO</span></div>
+
+  <div class="hd">
+    <div class="num">11</div>
+    <div><h1>Q2 Microservices Kit</h1><div class="sub">Same 5 questions every year — only the business changes. Fill the blanks with your domain's services.</div></div>
+    <span class="chip">25 marks · every year</span>
+  </div>
+
+  <div class="box">
+    <h2><span class="n">1</span> Draw the scenario <span class="marks">4–5 marks · copy this skeleton, rename the middle column</span></h2>
+    <svg viewBox="0 0 560 150" width="100%" style="display:block">
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#4a505c"/></marker></defs>
+      <rect x="4" y="52" width="70" height="40" rx="3" fill="#efe8fe" stroke="#7c3aed"/>
+      <text x="39" y="69" text-anchor="middle" font-size="9" font-weight="700">Clients</text>
+      <text x="39" y="81" text-anchor="middle" font-size="7.5" fill="#4a505c">web · mobile</text>
+      <rect x="96" y="40" width="88" height="64" rx="3" fill="#7c3aed"/>
+      <text x="140" y="62" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff">API Gateway</text>
+      <text x="140" y="75" text-anchor="middle" font-size="7.5" fill="#fff">auth (JWT/OAuth2)</text>
+      <text x="140" y="86" text-anchor="middle" font-size="7.5" fill="#fff">routing · rate limit</text>
+      <path d="M74 72 L94 72" stroke="#4a505c" marker-end="url(#a3)"/>
+      <g font-size="8.5" font-weight="700">
+        <rect x="214" y="4" width="118" height="22" rx="3" fill="#fff" stroke="#16181d"/><text x="222" y="19">Service A</text><rect x="300" y="8" width="26" height="14" rx="6" fill="#efe8fe" stroke="#7c3aed"/><text x="313" y="18" font-size="6.5" text-anchor="middle">DB</text>
+        <rect x="214" y="32" width="118" height="22" rx="3" fill="#fff" stroke="#16181d"/><text x="222" y="47">Service B</text><rect x="300" y="36" width="26" height="14" rx="6" fill="#efe8fe" stroke="#7c3aed"/><text x="313" y="46" font-size="6.5" text-anchor="middle">DB</text>
+        <rect x="214" y="60" width="118" height="22" rx="3" fill="#fff" stroke="#16181d"/><text x="222" y="75">Service C</text><rect x="300" y="64" width="26" height="14" rx="6" fill="#efe8fe" stroke="#7c3aed"/><text x="313" y="74" font-size="6.5" text-anchor="middle">DB</text>
+        <rect x="214" y="88" width="118" height="22" rx="3" fill="#fff" stroke="#16181d"/><text x="222" y="103">Payment / Billing</text><rect x="300" y="92" width="26" height="14" rx="6" fill="#efe8fe" stroke="#7c3aed"/><text x="313" y="102" font-size="6.5" text-anchor="middle">DB</text>
+        <rect x="214" y="116" width="118" height="22" rx="3" fill="#fff" stroke="#16181d"/><text x="222" y="131">Notification</text><rect x="300" y="120" width="26" height="14" rx="6" fill="#efe8fe" stroke="#7c3aed"/><text x="313" y="130" font-size="6.5" text-anchor="middle">DB</text>
+      </g>
+      <path d="M184 72 L210 15 M184 72 L210 43 M184 72 L210 71 M184 72 L210 99 M184 72 L210 127" stroke="#4a505c" fill="none"/>
+      <rect x="362" y="44" width="92" height="56" rx="3" fill="#fff" stroke="#7c3aed" stroke-dasharray="4 2"/>
+      <text x="408" y="64" text-anchor="middle" font-size="9" font-weight="700">Message broker</text>
+      <text x="408" y="76" text-anchor="middle" font-size="7.5" fill="#4a505c">Kafka / RabbitMQ</text>
+      <text x="408" y="87" text-anchor="middle" font-size="7.5" fill="#4a505c">events · sagas</text>
+      <path d="M332 72 L360 72" stroke="#4a505c" marker-end="url(#a3)"/>
+      <g font-size="7.8">
+        <rect x="474" y="4" width="84" height="26" rx="3" fill="#f3f4f6"/><text x="480" y="15" font-weight="700">Service registry</text><text x="480" y="25" fill="#4a505c">+ config server</text>
+        <rect x="474" y="36" width="84" height="26" rx="3" fill="#f3f4f6"/><text x="480" y="47" font-weight="700">Docker + K8s</text><text x="480" y="57" fill="#4a505c">auto-scale, self-heal</text>
+        <rect x="474" y="68" width="84" height="26" rx="3" fill="#f3f4f6"/><text x="480" y="79" font-weight="700">CI/CD per service</text><text x="480" y="89" fill="#4a505c">blue-green, canary</text>
+        <rect x="474" y="100" width="84" height="26" rx="3" fill="#f3f4f6"/><text x="480" y="111" font-weight="700">Monitoring</text><text x="480" y="121" fill="#4a505c">logs, metrics, tracing</text>
+        <rect x="362" y="116" width="92" height="22" rx="3" fill="#f3f4f6"/><text x="368" y="130" font-weight="700">Cache / CDN (Redis)</text>
+      </g>
+    </svg>
+    <table class="small" style="margin-top:1mm">
+      <tr><th style="width:18%">If the domain is…</th><th>Service A · B · C (+ Payment, Notification)</th></tr>
+      <tr><td>Food delivery</td><td>User · Restaurant/Menu · Order · Delivery/Rider tracking</td></tr>
+      <tr><td>Banking</td><td>Customer · Account · Transaction · Loan · Fraud detection</td></tr>
+      <tr><td>LMS</td><td>User · Course/Content · Assessment/Grading · Enrolment</td></tr>
+      <tr><td>Hospital</td><td>Patient · Appointment · Doctor/Staff · Pharmacy · Lab results</td></tr>
+      <tr><td>Ride-hailing</td><td>Rider · Driver · Trip/Matching · Pricing · Location</td></tr>
+      <tr><td class="tiny">Already asked</td><td class="tiny">Supermarket (Purchasing, Sales/POS, Warehouse, Supplier, Branch) · Library (Book, User, Borrowing, Catalog Search) · Streaming (Profile, Content+CDN, Recommendation ML, Analytics)</td></tr>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <h2><span class="n">2</span> Scalability · fault isolation · CD <span class="marks">5m</span></h2>
+      <ul class="small">
+        <li><b>Scalability</b> — each service scales <b>independently</b> (horizontal pods, auto-scale on CPU/requests). Scale the busy one (e.g. <i>Content / Search</i>), not Billing. Stateless services; cache/CDN.</li>
+        <li><b>Fault isolation</b> — own process + own DB; <b>circuit breaker</b>, timeouts, retries with back-off, bulkheads; <b>graceful degradation</b> (Recommendations down → show popular list).</li>
+        <li><b>Continuous deployment</b> — own repo + CI/CD pipeline per service, automated tests, Docker images, <b>blue-green / canary</b>, versioned APIs; one team per service.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2><span class="n">3</span> Propose the architecture <span class="marks">4–5m</span></h2>
+      <ul class="small">
+        <li>One service per <b>business capability</b> (list yours from the table) — own codebase, own DB, own deployment.</li>
+        <li><b>API Gateway</b> as single entry; <b>service registry</b> for discovery.</li>
+        <li>Sync: REST/gRPC. Async: events through the <b>message broker</b>.</li>
+        <li>Containers on <b>Kubernetes</b>; central config, logging, monitoring.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2><span class="n">4</span> Data consistency <span class="marks">4–5m</span></h2>
+      <ul class="small">
+        <li><b>Database per service</b> ⇒ no shared transactions ⇒ <b>eventual consistency</b>.</li>
+        <li><b>Saga pattern</b> — local transactions + <b>compensating actions</b> (e.g. payment fails → cancel borrow). Choreography (events) or orchestration.</li>
+        <li><b>Transactional outbox</b> + idempotent consumers; <b>CQRS</b> for read models (search).</li>
+        <li>Two-phase commit only where strong consistency is critical (rare).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2><span class="n">5</span> Security <span class="marks">4–5m</span></h2>
+      <ul class="small">
+        <li><b>Users</b>: OAuth2 / OpenID Connect at the gateway, <b>JWT</b> tokens, role-based access (RBAC).</li>
+        <li><b>Service-to-service</b>: <b>mutual TLS</b>, service mesh, short-lived tokens.</li>
+        <li><b>Data</b>: HTTPS everywhere, encrypt at rest (PCI-DSS for payments), secrets vault, least-privilege DB access.</li>
+        <li>Rate limiting, input validation, WAF, audit logging.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box fill small"><b>2023 extra — "Why same hardware/config for each platform?"</b> Consistent environments (containers / infrastructure-as-code) ⇒ predictable deployment, scaling and failover; any node runs any service; easier capacity planning, monitoring, troubleshooting and DR rebuild. Exception: GPU nodes for ML services.</div>
+
+  <div class="foot"><span>11 Microservices kit</span><span>HA & DR → tab 12</span></div>
+</section>
+
+</body>
+</html>
